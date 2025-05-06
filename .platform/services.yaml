@@ -1,0 +1,5 @@
+# Each service listed will be deployed in its own container as part of your Platform.sh project.
+
+db:
+  type: postgresql:13  # Specifies the type and version of the database
+  disk: 1024          # Size of the persistent disk for the database in MB

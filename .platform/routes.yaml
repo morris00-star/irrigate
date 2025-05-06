@@ -1,0 +1,9 @@
+# Define how incoming URLs are processed
+
+"https://{default}/":
+  type: upstream
+  upstream: "smart_irrigation:http"  # Directs traffic to your application
+
+"https://www.{default}/":
+  type: redirect
+  to: "https://{default}/"  # Redirects www traffic to the non-www version
