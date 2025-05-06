@@ -27,7 +27,7 @@ SECRET_KEY = 'dykrtbc6)4c#t9nqwux_&-$!b_w849*zpgs1j7h(qj%jl-d$z@'
 DEBUG = False
 
 # Allow connections from localhost, your machine's IP, and the NodeMCU
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.43.108', 'irrigation-intelligent.onrender.com']
+ALLOWED_HOSTS = ['irrigation-intelligent.onrender.com', 'localhost', '127.0.0.1', '192.168.43.108']
 
 # Application definition
 INSTALLED_APPS = [
