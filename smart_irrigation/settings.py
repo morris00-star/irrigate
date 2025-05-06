@@ -1,9 +1,6 @@
 import os
 from pathlib import Path
 import mimetypes
-import dj_database_url
-import environ
-import logging
 
 # Add MIME type for JavaScript files
 mimetypes.add_type("application/javascript", ".js", True)
