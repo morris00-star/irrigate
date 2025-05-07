@@ -1,8 +1,10 @@
+from django.conf.urls.static import static
 from django.urls import path, include
 from django.contrib import admin
 from accounts.views import home
 from irrigation import views as irrigation_views
 from irrigation import api
+import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -21,3 +23,6 @@ urlpatterns = [
     path('api/get_threshold/', api.get_threshold, name='get_threshold'),
     path('api/set_threshold/', api.set_threshold, name='set_threshold'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
