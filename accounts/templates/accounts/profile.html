@@ -183,9 +183,6 @@
 
 {% block extra_js %}
 <script>
-    const profilePictureInput = document.getElementById('profile-picture-input');
-    const profilePictureContainer = document.getElementById('profile-picture-container');
-
     function copyApiKey() {
         const apiKeyInput = document.querySelector('input[value="{{ user.api_key }}"]');
         apiKeyInput.select();
@@ -198,13 +195,14 @@
     }
 
     function choosePicture(source) {
-        profilePictureInput.removeAttribute('capture');
+        const input = document.getElementById('profile-picture-input');
+        input.removeAttribute('capture');
 
         if (source === 'camera') {
-            profilePictureInput.setAttribute('capture', 'environment');
+            input.setAttribute('capture', 'environment');
         }
 
-        profilePictureInput.click();
+        input.click();
         closeOptions();
     }
 
@@ -213,6 +211,9 @@
     }
 
     // Handle profile picture upload
+    const profilePictureInput = document.getElementById('profile-picture-input');
+    const profilePictureContainer = document.getElementById('profile-picture-container');
+
     profilePictureInput.addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -232,8 +233,10 @@
             const reader = new FileReader();
 
             reader.onload = function(e) {
+                // Create form data
                 const formData = new FormData(document.getElementById('profile-form'));
 
+                // Send AJAX request
                 fetch(window.location.href, {
                     method: 'POST',
                     body: formData,
@@ -245,6 +248,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
+                        // Update profile picture
                         updateProfilePicture(data.profile_picture_url || e.target.result);
                         showToast('Profile picture updated successfully', 'success');
                     } else {
@@ -262,16 +266,19 @@
     });
 
     function updateProfilePicture(imageUrl) {
+        // Remove existing content
         while (profilePictureContainer.firstChild) {
             profilePictureContainer.removeChild(profilePictureContainer.firstChild);
         }
 
+        // Create and add new image
         const img = document.createElement('img');
         img.src = imageUrl;
         img.alt = 'Profile picture';
         img.className = 'profile-picture w-full h-full object-cover';
         profilePictureContainer.appendChild(img);
 
+        // Add hover overlay
         const overlay = document.createElement('div');
         overlay.className = 'absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200';
         overlay.innerHTML = `
@@ -293,6 +300,7 @@
         const container = document.getElementById('toast-container');
         container.appendChild(toast);
 
+        // Fade out and remove after 3 seconds
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
