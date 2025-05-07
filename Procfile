@@ -1,1 +1,1 @@
-web: gunicorn smart_irrigation.wsgi:application
+web: gunicorn intelligent_irrigation.wsgi:application
