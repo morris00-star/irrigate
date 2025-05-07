@@ -4,7 +4,7 @@ from django.contrib import admin
 from accounts.views import home
 from irrigation import views as irrigation_views
 from irrigation import api
-from smart_irrigation import settings
+from intelligent_irrigation import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),

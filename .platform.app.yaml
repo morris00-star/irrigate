@@ -1,4 +1,4 @@
-name: "smart_irrigation"
+name: "intelligent_irrigation"
 type: "python:3.11"
 
 relationships:
@@ -19,7 +19,7 @@ web:
     upstream:
         socket_family: unix
     commands:
-        start: "gunicorn -w 4 -b unix:$SOCKET --timeout 120 smart_irrigation.wsgi:application"
+        start: "gunicorn -w 4 -b unix:$SOCKET --timeout 120 intelligent_irrigation.wsgi:application"
     locations:
         "/":
             passthru: true

@@ -2,7 +2,7 @@
 
 "https://{default}/":
   type: upstream
-  upstream: "smart_irrigation:http"  # Directs traffic to your application
+  upstream: "intelligent_irrigation:http"  # Directs traffic to your application
 
 "https://www.{default}/":
   type: redirect

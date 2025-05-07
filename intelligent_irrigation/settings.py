@@ -56,14 +56,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'smart_irrigation.settings.CorrectMimeTypeMiddleware',
+    'intelligent_irrigation.settings.CorrectMimeTypeMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 # Use WhiteNoise for serving static files in production
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
-ROOT_URLCONF = 'smart_irrigation.urls'
+ROOT_URLCONF = 'intelligent_irrigation.urls'
 
 TEMPLATES = [
     {
@@ -92,8 +92,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'nduwayomorris@gmail.com'
 EMAIL_HOST_PASSWORD = 'owun hhxh bkkb emtl'
 
-WSGI_APPLICATION = 'smart_irrigation.wsgi.application'
-ASGI_APPLICATION = 'smart_irrigation.asgi.application'
+WSGI_APPLICATION = 'intelligent_irrigation.wsgi.application'
+ASGI_APPLICATION = 'intelligent_irrigation.asgi.application'
 
 # Database
 DATABASES = {
