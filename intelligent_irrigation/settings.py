@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
 import mimetypes
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Add MIME type for JavaScript files
 mimetypes.add_type("application/javascript", ".js", True)
