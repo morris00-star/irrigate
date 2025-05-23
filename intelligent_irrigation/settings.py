@@ -107,7 +107,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'irrigate_postg',  #
         'USER': 'irrigate_postg_user',
-        'PASSWORD': '3vBsAq0Sed60g0eGwl4XDNaiqXGFWDOI',
+        'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': 'dpg-d0o9mkje5dus73b98no0-a.oregon-postgres.render.com',
         'PORT': '5432',
         'OPTIONS': {
