@@ -24,7 +24,7 @@ class CorrectMimeTypeMiddleware:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -105,10 +105,10 @@ ASGI_APPLICATION = 'intelligent_irrigation.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("NAME"),
-        'USER': os.getenv("USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST': 'dpg-d0o9mkje5dus73b98no0-a.frankfurt-postgres.render.com',
+        'NAME': 'irrigate_postg',  #
+        'USER': 'irrigate_postg_user',
+        'PASSWORD': '3vBsAq0Sed60g0eGwl4XDNaiqXGFWDOI',
+        'HOST': 'dpg-d0o9mkje5dus73b98no0-a.oregon-postgres.render.com',
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require',
@@ -117,9 +117,9 @@ DATABASES = {
 }
 
 # Twilio SMS
-TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
