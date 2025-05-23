@@ -1,9 +1,6 @@
 import os
 from pathlib import Path
 import mimetypes
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Add MIME type for JavaScript files
 mimetypes.add_type("application/javascript", ".js", True)
@@ -104,12 +101,15 @@ ASGI_APPLICATION = 'intelligent_irrigation.asgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # Example for PostgreSQL
-        'NAME': os.getenv('DB_NAME'),                # Environment variable for database name
-        'USER': os.getenv('DB_USER'),                # Environment variable for database user
-        'PASSWORD': os.getenv('DB_PASSWORD'),        # Environment variable for user password
-        'HOST': os.getenv('DB_HOST', 'localhost'),   # Environment variable for host
-        'PORT': os.getenv('DB_PORT', '5432'),        # Environment variable for port
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'irrigate_postg',  #
+        'USER': 'irrigate_postg_user',
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': 'dpg-d0o9mkje5dus73b98no0-a',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
