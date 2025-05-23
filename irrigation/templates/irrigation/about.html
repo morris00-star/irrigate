@@ -1,0 +1,42 @@
+{% extends 'irrigation/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">About Intelligent Irrigation System</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white p-6 rounded shadow">
+            <p class="mb-4">
+                The Intelligent Irrigation System is a smart solution for efficient water management in agriculture and gardening.
+                Our system uses advanced sensors and machine learning algorithms to optimize water usage, ensuring your plants
+                receive the right amount of water at the right time.
+            </p>
+            <h2 class="text-2xl font-bold mb-2">Key Features:</h2>
+            <ul class="list-disc list-inside mb-4">
+                <li>Real-time soil moisture monitoring</li>
+                <li>Automated irrigation scheduling</li>
+                <li>Weather-based adjustments</li>
+                <li>Mobile app for remote control</li>
+                <li>Water usage analytics and reports</li>
+            </ul>
+            <p>
+                Developed by a passionate engineer, the main goal is to promote sustainable farming
+                practices and water conservation in Kakira region, Uganda.
+            </p>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+            <h2 class="text-2xl font-bold mb-4">Meet the Developer</h2>
+            <img src="{% static 'irrigation/images/developer_original.jpg' %}" alt="Developer's picture"
+                 class="w-64 h-64 object-cover rounded-full mx-auto mb-4">
+            <p class="text-center text-xl font-semibold">Nduwayo Morris</p>
+            <p class="text-center text-gray-600">Lead Developer</p>
+            <p class="mt-4 text-center">
+                Morris is a solo passionate chemical and process engineer with over 4 years of experience in python and
+                C++ programming, developing innovative solutions for agriculture and environmental sustainability.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

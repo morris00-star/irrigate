@@ -1,0 +1,197 @@
+{% extends 'irrigation/base.html' %}
+
+{% block title %}Control Panel{% endblock %}
+
+{% block content %}
+    <h1 class="text-3xl font-bold mb-8">Control Panel</h1>
+
+    <!-- Display System Status (Pump, Valve, Moisture Level) -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h2 class="text-2xl font-semibold mb-4">System Status</h2>
+        <div class="space-y-4">
+            <!-- Pump Status -->
+            <div class="flex items-center justify-between">
+                <span class="text-gray-700">Pump: <span id="pump-status">Loading...</span></span>
+                <button id="toggle-pump" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Toggle Pump
+                </button>
+            </div>
+            <!-- Valve Status -->
+            <div class="flex items-center justify-between">
+                <span class="text-gray-700">Valve: <span id="valve-status">Loading...</span></span>
+                <button id="toggle-valve" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Toggle Valve
+                </button>
+            </div>
+            <!-- Moisture Level -->
+            <div class="flex items-center justify-between">
+                <span class="text-gray-700">Moisture Level: <span id="moisture-level">Loading...</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display Current Threshold -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Current Threshold</h2>
+        <p class="text-gray-700">Moisture Threshold: <span id="current-threshold">Loading...</span></p>
+    </div>
+
+    <!-- Form to Set/Edit Threshold -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Set/Edit Threshold</h2>
+        <form id="set-threshold-form">
+            <div class="space-y-4">
+                <label class="block">
+                    <span class="text-gray-700">New Moisture Threshold (%):</span>
+                    <input type="number" name="threshold" id="threshold" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
+                </label>
+                <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                    Set Threshold
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Fetch and display the current system status (pump, valve, moisture level, and threshold)
+        function fetchSystemStatus() {
+            fetch('/api/status/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("System Status Data:", data); // Log the response for debugging
+
+                    // Update pump status
+                    document.getElementById('pump-status').textContent = data.pump;
+                    // Update valve status
+                    document.getElementById('valve-status').textContent = data.valve;
+                    // Update moisture level
+                    document.getElementById('moisture-level').textContent = data.moisture + '%';
+                    // Update threshold
+                    document.getElementById('current-threshold').textContent = data.threshold + '%';
+                })
+                .catch(error => {
+                    console.error("Error fetching system status:", error);
+                });
+        }
+
+        // Fetch the current threshold
+        function fetchCurrentThreshold() {
+            fetch('/api/get_threshold/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Threshold Data:", data); // Log the response for debugging
+                    document.getElementById('current-threshold').textContent = data.threshold + '%';
+                })
+                .catch(error => {
+                    console.error("Error fetching threshold:", error);
+                });
+        }
+
+        // Toggle Pump
+        document.getElementById('toggle-pump').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            fetch('/api/control/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
+                },
+                body: JSON.stringify({ action: 'toggle_pump' })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Pump state updated successfully!');
+                fetchSystemStatus(); // Refresh the system status
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert('Failed to update pump state. Check the console for details.');
+            });
+        });
+
+        // Toggle Valve
+        document.getElementById('toggle-valve').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            fetch('/api/control/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
+                },
+                body: JSON.stringify({ action: 'toggle_valve' })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Valve state updated successfully!');
+                fetchSystemStatus(); // Refresh the system status
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert('Failed to update valve state. Check the console for details.');
+            });
+        });
+
+        // Set/Edit Threshold
+        document.getElementById('set-threshold-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const threshold = document.getElementById('threshold').value;
+
+            fetch('/api/set_threshold/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
+                },
+                body: JSON.stringify({ threshold })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Threshold updated successfully!');
+                    fetchSystemStatus(); // Refresh the system status
+                    fetchCurrentThreshold(); // Refresh the displayed threshold
+                } else {
+                    alert('Failed to update threshold: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert('Failed to update threshold. Check the console for details.');
+            });
+        });
+
+        // Fetch the system status every 10 seconds (reduced frequency)
+        setInterval(fetchSystemStatus, 10000);
+
+        // Fetch the system status and threshold when the page loads
+        fetchSystemStatus();
+        fetchCurrentThreshold();
+    </script>
+{% endblock %}

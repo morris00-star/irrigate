@@ -1,0 +1,197 @@
+import csv
+import os
+from django.http import HttpResponse, Http404, JsonResponse
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse
+from .models import SensorData
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.timezone import localtime
+import pytz
+
+
+@login_required
+def about(request):
+    return render(request, 'irrigation/about.html')
+
+
+@login_required
+def contact(request):
+    return render(request, 'irrigation/contact.html')
+
+
+@login_required
+def help(request):
+    return render(request, 'irrigation/help.html')
+
+
+@login_required
+def dashboard(request):
+    sensor_data = SensorData.objects.filter(user=request.user).order_by('-timestamp')[:20]
+
+    context = {
+        'sensor_data': sensor_data,
+    }
+    return render(request, 'irrigation/dashboard.html', context)
+
+
+@login_required
+def download_user_manual_confirm(request):
+    return render(request, 'irrigation/download_user_manual_confirm.html')
+
+
+@login_required
+def download_user_manual(request):
+    if request.method == 'POST':
+        confirm = request.POST.get('confirm', 'no')
+        if confirm == 'yes':
+            try:
+                file_path = os.path.join(settings.BASE_DIR, 'irrigation', 'static', 'documents', 'user_guide.pdf')
+                if os.path.exists(file_path):
+                    response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+                    response['Content-Disposition'] = 'attachment; filename="user_guide.pdf"'
+                    return response
+                else:
+                    raise Http404("User manual not found")
+            except Exception as e:
+                return render(request, 'irrigation/error.html',
+                              {'error_message': 'An error occurred while downloading the manual.'})
+        else:
+            return redirect('dashboard')
+    else:
+        return redirect('download_user_manual_confirm')
+
+
+def send_support_message(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+
+        # Construct the email subject and body
+        subject = f"Support Request from {name}"
+        body = f"""
+        Name: {name}
+        Email: {email}
+        Message: {message}
+        """
+
+        # Send the email
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,  # Use the default email address
+            recipient_list=[settings.SUPPORT_EMAIL],  # Send to the support email
+            fail_silently=False,
+        )
+
+        # Notify the user that the message was sent
+        messages.success(request, "Your message has been sent to support. We'll get back to you soon!")
+        return redirect('help')
+
+    return redirect('help')
+
+
+@login_required
+def visualize_data(request):
+    """
+    Render the visualization page.
+    """
+    return render(request, 'irrigation/visualize.html')
+
+
+@login_required
+def get_sensor_data(request):
+    data_type = request.GET.get('type', 'temperature')  # Default to temperature
+    user = request.user
+
+    # Fetch the latest 50 sensor data entries for the logged-in user
+    sensor_data = SensorData.objects.filter(user=user).order_by('-timestamp')[:50]
+
+    # Prepare data for the chart (timestamps in UTC)
+    labels = [data.timestamp.isoformat() + 'Z' for data in sensor_data]  # Add 'Z' to indicate UTC
+    values = [getattr(data, data_type) for data in sensor_data]
+
+    return JsonResponse({
+        'labels': labels,
+        'values': values
+    })
+
+
+@login_required
+def download_data(request):
+    """
+    Download sensor data in CSV or Excel format with timestamps in East African Time (EAT).
+    """
+    format = request.GET.get('format', 'csv')  # Default to CSV
+
+    # Fetch sensor data for the logged-in user
+    sensor_data = SensorData.objects.filter(user=request.user).order_by('-timestamp')
+
+    # Define East African Time (EAT) timezone
+    eat_timezone = pytz.timezone('Africa/Nairobi')
+
+    if format == 'csv':
+        # Create CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="sensor_data.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Timestamp (EAT)', 'Temperature', 'Humidity', 'Moisture', 'Pump Status', 'Valve Status'])
+
+        for data in sensor_data:
+            # Convert UTC timestamp to East African Time (EAT)
+            timestamp_eat = localtime(data.timestamp, timezone=eat_timezone).strftime('%Y-%m-%d %H:%M:%S')
+            writer.writerow([
+                timestamp_eat,  # Timestamp in EAT
+                data.temperature,
+                data.humidity,
+                data.moisture,
+                data.pump_status,
+                data.valve_status
+            ])
+
+        return response
+
+    elif format == 'excel':
+        # Create Excel response (requires openpyxl)
+        from openpyxl import Workbook
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="sensor_data.xlsx"'
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Sensor Data"
+
+        # Add headers
+        ws.append(['Timestamp (EAT)', 'Temperature', 'Humidity', 'Moisture', 'Pump Status', 'Valve Status'])
+
+        # Add data
+        for data in sensor_data:
+            # Convert UTC timestamp to East African Time (EAT)
+            timestamp_eat = localtime(data.timestamp, timezone=eat_timezone).strftime('%Y-%m-%d %H:%M:%S')
+            ws.append([
+                timestamp_eat,  # Timestamp in EAT
+                data.temperature,
+                data.humidity,
+                data.moisture,
+                data.pump_status,
+                data.valve_status
+            ])
+
+        wb.save(response)
+        return response
+
+    else:
+        return HttpResponse("Invalid format", status=400)
+
+
+@login_required
+def control_panel(request):
+    """
+    View for the control panel page.
+    """
+    return render(request, 'irrigation/control_panel.html')

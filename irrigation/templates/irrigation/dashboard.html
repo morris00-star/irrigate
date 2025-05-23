@@ -1,0 +1,48 @@
+{% extends 'irrigation/base.html' %}
+
+{% block title %}Smart Irrigation Dashboard{% endblock %}
+
+{% block content %}
+    <h1 class="text-3xl font-bold mb-8">Smart Irrigation Dashboard</h1>
+
+    <h2 class="text-2xl font-semibold mb-4">Sensor Data</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300">
+            <thead class="bg-green-600 text-white">
+                <tr>
+                    <th class="px-4 py-2">Timestamp</th>
+                    <th class="px-4 py-2">Temperature (°C)</th>
+                    <th class="px-4 py-2">Humidity (%)</th>
+                    <th class="px-4 py-2">Moisture (%)</th>
+                    <th class="px-4 py-2">Pump Status</th>
+                    <th class="px-4 py-2">Valve Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in sensor_data %}
+                <tr class="hover:bg-gray-100">
+                    <td class="px-4 py-2 border">{{ data.timestamp }}</td>
+                    <td class="px-4 py-2 border">{{ data.temperature }}</td>
+                    <td class="px-4 py-2 border">{{ data.humidity }}</td>
+                    <td class="px-4 py-2 border">{{ data.moisture }}</td>
+                    <td class="px-4 py-2 border">{{ data.pump_status|yesno:"ON,OFF" }}</td>
+                    <td class="px-4 py-2 border">{{ data.valve_status|yesno:"OPEN,CLOSED" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Download Data Buttons -->
+    <div class="mt-6">
+        <label class="text-gray-700">Download Data:</label>
+        <div class="flex space-x-4 mt-2">
+            <a href="{% url 'download-data' %}?format=csv" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                Download as CSV
+            </a>
+            <a href="{% url 'download-data' %}?format=excel" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                Download as Excel
+            </a>
+        </div>
+    </div>
+{% endblock %}
