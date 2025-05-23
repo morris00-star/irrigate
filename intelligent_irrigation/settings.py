@@ -108,7 +108,7 @@ DATABASES = {
         'NAME': os.getenv("NAME"),
         'USER': os.getenv("USER"),
         'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST': os.getenv('HOST'),
+        'HOST': 'dpg-d0o9mkje5dus73b98no0-a.frankfurt-postgres.render.com',
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require',
