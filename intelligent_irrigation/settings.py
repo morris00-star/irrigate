@@ -104,7 +104,7 @@ ASGI_APPLICATION = 'intelligent_irrigation.asgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv("ENGINE"),
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv("NAME"),
         'USER': os.getenv("USER"),
         'PASSWORD': os.getenv("DB_PASSWORD"),
