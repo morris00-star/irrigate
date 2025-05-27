@@ -1,9 +1,8 @@
 import os
 from pathlib import Path
 import mimetypes
-from platformshconfig import Config
-from celery.schedules import crontab
-import logging
+from urllib.parse import urlparse
+import psycopg2
 
 # Add MIME type for JavaScript files
 mimetypes.add_type("application/javascript", ".js", True)
@@ -24,22 +23,23 @@ class CorrectMimeTypeMiddleware:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-your-secret-key-here'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Allow connections from localhost, your machine's IP, and the NodeMCU
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.43.108']
+ALLOWED_HOSTS = ['irrigation-intelligent.onrender.com', 'localhost', '127.0.0.1', '192.168.43.108']
 
 # Application definition
 INSTALLED_APPS = [
     'channels',
     'rest_framework',
     'rest_framework.authtoken',
-    'corsheaders',  # Add CORS headers for API access
+    'corsheaders',  # API access
     'accounts.apps.AccountsConfig',
     'irrigation',
+    'django_extensions',
 
     # Django default apps
     'django.contrib.admin',
@@ -95,16 +95,34 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'nduwayomorris@gmail.com'
 EMAIL_HOST_PASSWORD = 'owun hhxh bkkb emtl'
 
-WSGI_APPLICATION = 'smart_irrigation.wsgi.application'
-ASGI_APPLICATION = 'smart_irrigation.asgi.application'
+# WSGI_APPLICATION = 'smart_irrigation.wsgi.application'
+# ASGI_APPLICATION = 'smart_irrigation.asgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    db_info = urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'irrigate_postg',  #
+            'USER': 'irrigate_postg_user',
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': 'd0o9mkje5dus73b98no0-a.frankfurt-postgres.render.com',
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -260,7 +278,7 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.43.108:8000",  # Add your machine's IP
+    "http://192.168.43.108:8000",  # Machine's IP
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -273,26 +291,6 @@ IRRIGATION_SYSTEM = {
     'SENSOR_DATA_INTERVAL': 300,  # seconds (5 minutes)
 }
 
-# Platform.sh settings
-config = Config()
-if config.is_valid_platform():
-    ALLOWED_HOSTS.append('.platformsh.site')
-    DEBUG = False
-
-    if config.appDir:
-        STATIC_ROOT = Path(config.appDir) / 'static'
-    if config.projectEntropy:
-        SECRET_KEY = config.projectEntropy
-
-    if not config.in_build():
-        db_settings = config.credentials('database')
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': db_settings['path'],
-                'USER': db_settings['username'],
-                'PASSWORD': db_settings['password'],
-                'HOST': db_settings['host'],
-                'PORT': db_settings['port'],
-            },
-        }
+# Celery Settings
+CELERY_BROKER_URL = os.getenv('DATABASE_URL')
+CELERY_RESULT_BACKEND = 'django-db'
