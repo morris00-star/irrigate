@@ -4,12 +4,14 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
 import secrets
+from cloudinary.models import CloudinaryField
 
 
 def user_profile_path(instance, filename):
     # Get the file extension
     ext = filename.split('.')[-1]
     # Generate a new filename using the user's id
+    profile_picture = CloudinaryField('image', blank=True, null=True)
     filename = f'profile_pics/user_{instance.id}.{ext}'
     # If the file already exists, delete it
     if instance.profile_picture:
