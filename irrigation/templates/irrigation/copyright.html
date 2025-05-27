@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copyright Notice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #007BFF; /* Primary color */
+            margin-bottom: 20px;
+        }
+        .copyright-info {
+            margin: 20px auto;
+            max-width: 600px; /* Limit width for better readability */
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        }
+        p {
+            margin: 10px 0;
+            line-height: 1.5; /* Improve readability */
+        }
+        a {
+            color: #007BFF; /* Link color */
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline; /* Underline on hover */
+        }
+        button {
+            background-color: #007BFF; /* Primary color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 1em; /* Consistent font size */
+            margin-top: 20px; /* Spacing above the button */
+        }
+        button:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>Copyright Notice</h1>
+    <div class="copyright-info">
+        <p>&copy; 2025 Nduwayo Morris. All rights reserved.</p>
+        <p>This website and its content are licensed under the Creative Commons Attribution-NonCommercial 4.0
+            International License.</p>
+        <p>You may not use this material for commercial purposes without permission.</p>
+        <p>For more information, visit <a href="https://creativecommons.org/licenses/by-nc/4.0/"
+                                          target="_blank">Creative Commons License</a>.</p>
+    </div>
+    <p><a href="{% url 'dashboard' %}"><button>Back to Dashboard</button></a></p>
+</body>
+</html>

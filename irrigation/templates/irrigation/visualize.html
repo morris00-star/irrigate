@@ -1,0 +1,256 @@
+{% extends 'irrigation/base.html' %}
+
+{% block title %}Sensor Data Visualization{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">Sensor Data Visualization</h1>
+
+<!-- Dropdown to select chart type -->
+<div class="mb-6">
+    <label for="chart-type" class="block text-sm font-medium text-gray-700">Select Chart Type:</label>
+    <select id="chart-type" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+        <option value="line">Line Chart</option>
+        <option value="bar">Bar Chart</option>
+        <option value="scatter">Scatter Chart</option>
+    </select>
+</div>
+
+<!-- Checkboxes to select data types -->
+<fieldset class="mb-6">
+    <legend class="text-sm font-medium text-gray-700">Select Data Types:</legend>
+    <div class="mt-2 space-y-2">
+        <label class="inline-flex items-center">
+            <input type="checkbox" name="data-type" value="temperature" checked class="form-checkbox h-4 w-4 text-green-600">
+            <span class="ml-2 text-gray-700">Temperature</span>
+        </label>
+        <label class="inline-flex items-center">
+            <input type="checkbox" name="data-type" value="humidity" class="form-checkbox h-4 w-4 text-green-600">
+            <span class="ml-2 text-gray-700">Humidity</span>
+        </label>
+        <label class="inline-flex items-center">
+            <input type="checkbox" name="data-type" value="moisture" class="form-checkbox h-4 w-4 text-green-600">
+            <span class="ml-2 text-gray-700">Moisture</span>
+        </label>
+    </div>
+</fieldset>
+
+<!-- Buttons for creating and downloading the chart -->
+<div class="flex space-x-4 mb-6">
+    <button id="create-chart" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+        Create Chart
+    </button>
+    <button id="download-chart" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+        Download Chart as Image
+    </button>
+</div>
+
+<!-- Chart container -->
+<div class="bg-white p-4 rounded-lg shadow-lg">
+    <canvas id="sensorChart" width="800" height="400"></canvas>
+</div>
+
+<!-- Include Chart.js and date adapter -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+<script>
+    // Initialize the chart
+    let chart = null;
+    const ctx = document.getElementById('sensorChart').getContext('2d');
+    let updateInterval = null; // Variable to store the interval for real-time updates
+
+    // Function to initialize or update the chart
+    function initializeChart(dataTypes, chartType) {
+        console.log("Initializing chart with data types:", dataTypes, "and chart type:", chartType);
+
+        // Destroy the existing chart if it exists
+        if (chart) {
+            chart.destroy();
+            chart = null;
+        }
+
+        // Create a new chart
+        chart = new Chart(ctx, {
+            type: chartType, // Use the selected chart type
+            data: {
+                labels: [], // Will be populated with timestamps
+                datasets: [] // Will be populated with data for each selected type
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Sensor Data Visualization', // Chart title
+                        font: {
+                            size: 16
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'minute',
+                            tooltipFormat: 'MMM dd, yyyy HH:mm:ss', // Format for tooltips
+                            displayFormats: {
+                                minute: 'HH:mm', // Format for x-axis labels
+                                hour: 'HH:mm',
+                                day: 'MMM dd'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time', // X-axis label
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Value', // Y-axis label
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        console.log("Chart initialized:", chart);
+
+        // Start real-time updates
+        startRealTimeUpdates(dataTypes);
+    }
+
+    // Function to start real-time updates
+    function startRealTimeUpdates(dataTypes) {
+        // Clear any existing interval
+        if (updateInterval) {
+            clearInterval(updateInterval);
+        }
+
+        // Fetch and update data every 5 seconds
+        updateInterval = setInterval(() => {
+            updateChart(dataTypes);
+        }, 5000); // 5000 milliseconds = 5 seconds
+
+        // Fetch data immediately
+        updateChart(dataTypes);
+    }
+
+    // Function to fetch and update chart data
+    function updateChart(dataTypes) {
+        console.log("Fetching data for types:", dataTypes);
+
+        // Fetch data for each selected type
+        const fetchPromises = dataTypes.map(dataType =>
+            fetch(`/irrigation/get-sensor-data/?type=${dataType}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok for ${dataType}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.labels || !data.values) {
+                        throw new Error(`Invalid data structure for ${dataType}`);
+                    }
+                    console.log(`Data for ${dataType}:`, data); // Debugging
+                    return { type: dataType, data };
+                })
+                .catch(error => {
+                    console.error(`Error fetching data for ${dataType}:`, error);
+                    return null;
+                })
+        );
+
+        // Wait for all data to be fetched
+        Promise.all(fetchPromises)
+            .then(results => {
+                console.log("All data received:", results); // Debugging
+
+                if (chart) {
+                    // Clear existing datasets
+                    chart.data.datasets = [];
+
+                    // Add a dataset for each selected type
+                    results.forEach(result => {
+                        if (result) {
+                            // Filter out anomalous data (e.g., 0.0 or null values)
+                            const filteredData = result.data.values.map((value, index) => ({
+                                x: result.data.labels[index],
+                                y: value !== 0.0 ? value : null // Replace 0.0 with null to skip it
+                            }));
+
+                            chart.data.datasets.push({
+                                label: result.type.charAt(0).toUpperCase() + result.type.slice(1), // Capitalize the label
+                                data: filteredData,
+                                borderColor: getRandomColor(), // Assign a unique color
+                                borderWidth: 2,
+                                fill: false
+                            });
+                        }
+                    });
+
+                    // Use the labels from the first dataset (all datasets should have the same labels)
+                    if (results[0]) {
+                        chart.data.labels = results[0].data.labels;
+                    }
+
+                    // Update the chart
+                    chart.update();
+
+                    console.log("Chart updated:", chart); // Debugging
+                }
+            })
+            .catch(error => {
+                console.error("Error updating chart:", error); // Debugging
+            });
+    }
+
+    // Function to generate a random color
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    // Event listener for create chart button
+    document.getElementById('create-chart').addEventListener('click', function() {
+        const chartType = document.getElementById('chart-type').value;
+        const selectedDataTypes = Array.from(document.querySelectorAll('input[name="data-type"]:checked'))
+            .map(input => input.value);
+        initializeChart(selectedDataTypes, chartType);
+    });
+
+    // Event listener for download button
+    document.getElementById('download-chart').addEventListener('click', function() {
+        if (chart) {
+            // Convert the chart to a base64 image
+            const image = chart.toBase64Image();
+
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'chart.png'; // Set the file name
+            link.click(); // Trigger the download
+        } else {
+            alert("No chart available to download. Please create a chart first.");
+        }
+    });
+</script>
+{% endblock %}
