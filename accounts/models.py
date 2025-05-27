@@ -1,24 +1,10 @@
 import os
 import phonenumbers
+import secrets
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
-import secrets
 from cloudinary.models import CloudinaryField
-
-
-def user_profile_path(instance, filename):
-    # Get the file extension
-    ext = filename.split('.')[-1]
-    # Generate a new filename using the user's id
-    profile_picture = CloudinaryField('image', blank=True, null=True)
-    filename = f'profile_pics/user_{instance.id}.{ext}'
-    # If the file already exists, delete it
-    if instance.profile_picture:
-        old_file_path = instance.profile_picture.path
-        if os.path.exists(old_file_path):
-            os.remove(old_file_path)
-    return filename
 
 
 def validate_phone_number(value):
@@ -31,7 +17,20 @@ def validate_phone_number(value):
 
 
 class CustomUser(AbstractUser):
-    profile_picture = models.ImageField(upload_to=user_profile_path, blank=True, null=True)
+    # Cloudinary configuration for profile pictures
+    profile_picture = CloudinaryField(
+        'image',
+        folder='profile_pics/',
+        transformation=[
+            {'width': 300, 'height': 300, 'crop': 'fill', 'gravity': 'face'},
+            {'quality': 'auto'}
+        ],
+        default='profile_pics/default_profile',  # Set your default image in Cloudinary
+        blank=True,
+        null=True,
+        help_text="User profile picture"
+    )
+
     location = models.CharField(max_length=100, blank=True)
     age = models.PositiveIntegerField(null=True, blank=True)
     phone_number = models.CharField(
@@ -46,11 +45,44 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         if not self.api_key:
             self.api_key = secrets.token_hex(32)
+
+        # If profile picture is being updated and already exists in Cloudinary
+        if self.pk and self.profile_picture:
+            try:
+                old_user = CustomUser.objects.get(pk=self.pk)
+                if old_user.profile_picture and old_user.profile_picture.public_id != self.profile_picture.public_id:
+                    # Delete old image from Cloudinary
+                    from cloudinary.uploader import destroy
+                    destroy(old_user.profile_picture.public_id)
+            except CustomUser.DoesNotExist:
+                pass
+
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        # Delete the profile picture file when the user is deleted
+        # Delete the profile picture from Cloudinary when user is deleted
         if self.profile_picture:
-            if os.path.isfile(self.profile_picture.path):
-                os.remove(self.profile_picture.path)
+            from cloudinary.uploader import destroy
+            try:
+                destroy(self.profile_picture.public_id)
+            except Exception:
+                # Handle case where image might already be deleted
+                pass
         super().delete(*args, **kwargs)
+
+    @property
+    def profile_picture_url(self):
+        """Returns the URL of the profile picture with a default fallback"""
+        if self.profile_picture:
+            return self.profile_picture.url
+        return "https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v123/profile_pics/default_profile.jpg"
+
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+
+
+def user_profile_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = f'profile_pics/user_{instance.id}.{ext}'
+    return filename
