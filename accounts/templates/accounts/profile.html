@@ -18,8 +18,8 @@
                          onclick="showOptions()">
                         {% if user.profile_picture %}
                             <img src="{{ user.profile_picture.url }}?t={{ user.profile_picture.name|slugify }}"
-                                 alt="Profile picture"
-                                 class="profile-picture w-full h-full object-cover">
+                                alt="Profile picture" class="profile-picture w-full h-full object-cover"
+                                onerror="this.onerror=null; this.src={% static 'irrigation/images/irrigation_system_view2.png' %}'; this.alt='Default profile picture'">
                         {% else %}
                             <div class="w-full h-full flex items-center justify-center bg-gray-100">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
