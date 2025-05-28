@@ -17,7 +17,7 @@
                          class="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white cursor-pointer group"
                          onclick="showOptions()">
                         {% if user.profile_picture %}
-                            <img src="{{ user.profile_picture.url|default:'irrigation/images/developer_original.png'}}?t={{ user.profile_picture.name|slugify }}"
+                            <img src="{% static 'irrigation/images/irrigation_system_view2.png' %}"
                                  alt="Profile picture"
                                  class="profile-picture w-full h-full object-cover">
                         {% else %}
