@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import SensorData, ControlCommand, Threshold
 from django.core.cache import cache
 import logging
+from .sms import send_irrigation_alert
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,9 +30,8 @@ def receive_sensor_data(request):
                 user=request.user
             )
 
-            # Only send immediate alert for critical moisture levels
-            if sensor_data.moisture < sensor_data.threshold - 5:  # 5% below threshold
-                send_irrigation_alert(request.user, sensor_data)
+            # Send SMS alert immediately
+            send_irrigation_alert(request.user, sensor_data)
 
             return Response({"status": "success"}, status=status.HTTP_201_CREATED)
         except Exception as e:

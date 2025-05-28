@@ -15,6 +15,7 @@ urlpatterns = [
     path('contact/', irrigation_views.contact, name='contact'),
     path('help/', irrigation_views.help, name='help'),
     path('__debug__/', include('debug_toolbar.urls')),
+    path('keep-alive/', irrigation_views.keep_alive, name='keep-alive'),
 
     # API URLs (moved to project level)
     path('api/sensor-data/', api.receive_sensor_data, name='receive_sensor_data'),

@@ -4,6 +4,7 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
+from django.views.decorators.http import require_GET
 from .models import SensorData
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -195,3 +196,9 @@ def control_panel(request):
     View for the control panel page.
     """
     return render(request, 'irrigation/control_panel.html')
+
+
+@require_GET
+def keep_alive(request):
+    return JsonResponse({"status": "awake"}, status=200)
+
