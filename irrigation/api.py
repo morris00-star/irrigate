@@ -18,7 +18,7 @@ def receive_sensor_data(request):
         try:
             data = request.data
             # Save sensor data to the database
-            SensorData.objects.create(
+            sensor_data = SensorData.objects.create(
                 temperature=data.get('temperature'),
                 humidity=data.get('humidity'),
                 moisture=data.get('moisture'),
@@ -27,6 +27,11 @@ def receive_sensor_data(request):
                 threshold=data.get('threshold'),
                 user=request.user
             )
+
+            # Only send immediate alert for critical moisture levels
+            if sensor_data.moisture < sensor_data.threshold - 5:  # 5% below threshold
+                send_irrigation_alert(request.user, sensor_data)
+
             return Response({"status": "success"}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

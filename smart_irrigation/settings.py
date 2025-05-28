@@ -306,6 +306,13 @@ IRRIGATION_SYSTEM = {
     'SENSOR_DATA_INTERVAL': 300,  # seconds (5 minutes)
 }
 
-# Celery Settings
-CELERY_BROKER_URL = os.getenv('DATABASE_URL')
-CELERY_RESULT_BACKEND = 'django-db'
+# EgoSMS Configuration
+EGOSMS_USERNAME = os.getenv('EGOSMS_USERNAME')
+EGOSMS_PASSWORD = os.getenv('EGOSMS_PASSWORD')
+EGOSMS_SENDER_ID = os.getenv('EGOSMS_SENDER_ID')
+EGOSMS_API_URL = os.getenv('EGOSMS_API_URL')
+
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_TIMEZONE = 'Africa/Nairobi'
