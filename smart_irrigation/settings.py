@@ -1,8 +1,12 @@
 import os
+import sys
 from pathlib import Path
 import mimetypes
 from urllib.parse import urlparse
-import psycopg2
+from dotenv import load_dotenv
+
+# Load environment variables before any other settings
+load_dotenv()
 
 # Add MIME type for JavaScript files
 mimetypes.add_type("application/javascript", ".js", True)
@@ -19,31 +23,47 @@ class CorrectMimeTypeMiddleware:
         return response
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Environment Detection
+IS_PRODUCTION = os.getenv('ENVIRONMENT') == 'production'
+IS_DEVELOPMENT = not IS_PRODUCTION
+
+# Security Settings
 SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if IS_DEVELOPMENT:
+        SECRET_KEY = 'django-insecure-dev-key-only'  # For development only
+    else:
+        raise ValueError("SECRET_KEY must be set in production")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' if not IS_PRODUCTION else False
 
-# Allow connections from localhost, your machine's IP, and the NodeMCU
-ALLOWED_HOSTS = ['irrigation-intelligent.onrender.com', 'localhost', '127.0.0.1', '192.168.43.108']
+ALLOWED_HOSTS = [
+    'irrigation-intelligent.onrender.com',
+    'localhost',
+    '127.0.0.1',
+    '192.168.43.108',
+    # Add other hosts as needed
+]
 
 # Application definition
 INSTALLED_APPS = [
+    # Third-party apps
     'channels',
     'rest_framework',
     'rest_framework.authtoken',
-    'corsheaders',  # API access
-    'accounts.apps.AccountsConfig',
-    'irrigation',
+    'corsheaders',
     'django_extensions',
     'cloudinary',
     'cloudinary_storage',
 
-    # Django default apps
+    # Local apps
+    'accounts.apps.AccountsConfig',
+    'irrigation',
+
+    # Django core apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,26 +74,23 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'smart_irrigation.settings.CorrectMimeTypeMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
-
-# Use WhiteNoise for serving static files in production
-MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'smart_irrigation.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,60 +103,27 @@ TEMPLATES = [
     },
 ]
 
-# Support email address
-SUPPORT_EMAIL = "nduwayomorris@gmail.com"
-
-# Gmail settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'nduwayomorris@gmail.com'
-EMAIL_HOST_PASSWORD = 'owun hhxh bkkb emtl'
-
-# WSGI_APPLICATION = 'smart_irrigation.wsgi.application'
-# ASGI_APPLICATION = 'smart_irrigation.asgi.application'
-
 # Database
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-if DATABASE_URL:
-    db_info = urlparse(DATABASE_URL)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'irrigate_postg',  #
-            'USER': 'irrigate_postg_user',
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': 'd0o9mkje5dus73b98no0-a.frankfurt-postgres.render.com',
-            'PORT': '5432',
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql' if IS_PRODUCTION else 'django.db.backends.sqlite3',
+        'NAME': os.getenv('DB_NAME', 'irrigate_postg' if IS_PRODUCTION else 'db.sqlite3'),
+        'USER': os.getenv('DB_USER', 'irrigate_postg_user' if IS_PRODUCTION else ''),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'd0o9mkje5dus73b98no0-a.frankfurt-postgres.render.com' if IS_PRODUCTION else ''),
+        'PORT': os.getenv('DB_PORT', '5432' if IS_PRODUCTION else ''),
+        'OPTIONS': {
+            'sslmode': 'require' if IS_PRODUCTION else None,
+        } if IS_PRODUCTION else {},
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # Internationalization
@@ -148,19 +132,21 @@ TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Static files
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'irrigation', 'static'),
     os.path.join(BASE_DIR, 'accounts', 'static'),
 ]
-
-# Directory for collecting static files in production
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Cloudinary configuration
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# Cloudinary
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
@@ -170,32 +156,24 @@ CLOUDINARY_STORAGE = {
     'INVALIDATE': True,
 }
 
-# Media file handling
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Ensure media directories exist
-PROFILE_PICTURES_DIR = os.path.join(MEDIA_ROOT, 'profile_pics')
-os.makedirs(PROFILE_PICTURES_DIR, exist_ok=True)
-
-# Custom user model
-AUTH_USER_MODEL = 'accounts.CustomUser'
-
 # Authentication
+AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = 'login'
 
-# Email configuration (for development)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email Configuration
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-# REST Framework settings
+# REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -215,17 +193,17 @@ REST_FRAMEWORK = {
     },
 }
 
-# Channels configuration
+# Channels
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [(os.getenv('REDIS_HOST', '127.0.0.1'), int(os.getenv('REDIS_PORT', 6379)))],
         },
     },
 }
 
-# Security settings
+# Security Settings
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
@@ -234,11 +212,44 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-# Logging configuration
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://192.168.43.108:8000",
+]
+CORS_ORIGIN_ALLOW_ALL = DEBUG  # Only allow all in development
+
+# Custom irrigation settings
+IRRIGATION_SYSTEM = {
+    'DEFAULT_SOIL_MOISTURE_THRESHOLD': 50,
+    'DEFAULT_WATERING_DURATION': 10,
+    'MAX_SENSOR_DATA_AGE': 3600,
+    'SENSOR_DATA_INTERVAL': 300,
+}
+
+EGOSMS_CONFIG = {
+    'USERNAME': os.getenv('EGOSMS_USERNAME'),
+    'PASSWORD': os.getenv('EGOSMS_PASSWORD'),
+    'SENDER_ID': os.getenv('EGOSMS_SENDER_ID', 'IRRIGATE'),
+    'API_URL': os.getenv('EGOSMS_API_URL', 'https://www.egosms.co/api/v1/plain/'),
+    'TIMEOUT': 10,  # seconds
+    'PRIORITY': 0,  # 0=normal, 1=high
+    'TEST_MODE': os.getenv('EGOSMS_TEST_MODE', 'False').lower() == 'true',
+}
+
+DEFAULT_CHARSET = 'utf-8'
+
+# Celery
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_TIMEZONE = 'Africa/Nairobi'
+
+# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -247,72 +258,19 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-        },
-        'myapp': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
     },
 }
 
-# Cache configuration
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
-
-# File upload settings
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-FILE_UPLOAD_PERMISSIONS = 0o644
-FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
-
-# Session settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
-
-# Messages settings
-MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
-
-# CORS settings (for API access from other domains)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://192.168.43.108:8000",  # Machine's IP
-]
-
-CORS_ORIGIN_ALLOW_ALL = True
-
-# Custom settings for the Irrigation System
-IRRIGATION_SYSTEM = {
-    'DEFAULT_SOIL_MOISTURE_THRESHOLD': 30,  # percentage
-    'DEFAULT_WATERING_DURATION': 10,  # minutes
-    'MAX_SENSOR_DATA_AGE': 3600,  # seconds (1 hour)
-    'SENSOR_DATA_INTERVAL': 300,  # seconds (5 minutes)
-}
-
-# EgoSMS Configuration
-EGOSMS_USERNAME = os.getenv('EGOSMS_USERNAME')
-EGOSMS_PASSWORD = os.getenv('EGOSMS_PASSWORD')
-EGOSMS_SENDER_ID = os.getenv('EGOSMS_SENDER_ID')
-EGOSMS_API_URL = os.getenv('EGOSMS_API_URL')
-
-# Celery Configuration
-CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_TIMEZONE = 'Africa/Nairobi'
+# Ensure directories exist
+os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)
+os.makedirs(STATIC_ROOT, exist_ok=True)

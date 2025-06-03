@@ -41,6 +41,12 @@ class CustomUser(AbstractUser):
     )
     api_key = models.CharField(max_length=64, unique=True, blank=True)
 
+    receive_sms_alerts = models.BooleanField(
+        default=True,
+        verbose_name="Receive SMS Alerts",
+        help_text="Designates whether the user wants to receive SMS notifications."
+    )
+
     def save(self, *args, **kwargs):
         if not self.api_key:
             self.api_key = secrets.token_hex(32)
