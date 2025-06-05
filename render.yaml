@@ -19,6 +19,9 @@ services:
       - key: EGOSMS_PASSWORD
         sync: false
         isSecret: true
+      - key: EGOSMS_SENDER_ID
+        value: "Egosms"
+        sync: false
       - key: CLOUDINARY_URL
         sync: false
         isSecret: true

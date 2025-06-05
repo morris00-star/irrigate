@@ -199,12 +199,6 @@ def control_panel(request):
 
 
 def keep_alive(request):
-    if request.method == 'HEAD':
-        # Respond to HEAD with empty body and 200 OK
-        return JsonResponse(status=200)
-    elif request.method == 'GET':
-        return JsonResponse({"status": "awake"}, status=200)
-    else:
-        # Block all other methods
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+    return JsonResponse({"status": "OK"}, status=200)
+
 
