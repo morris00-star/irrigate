@@ -198,7 +198,13 @@ def control_panel(request):
     return render(request, 'irrigation/control_panel.html')
 
 
-@require_GET
 def keep_alive(request):
-    return JsonResponse({"status": "awake"}, status=200)
+    if request.method == 'HEAD':
+        # Respond to HEAD with empty body and 200 OK
+        return JsonResponse(status=200)
+    elif request.method == 'GET':
+        return JsonResponse({"status": "awake"}, status=200)
+    else:
+        # Block all other methods
+        return JsonResponse({"error": "Method not allowed"}, status=405)
 

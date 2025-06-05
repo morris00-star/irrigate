@@ -15,10 +15,13 @@ services:
         value: "False"
       - key: EGOSMS_USERNAME
         sync: false
+        isSecret: true
       - key: EGOSMS_PASSWORD
         sync: false
+        isSecret: true
       - key: CLOUDINARY_URL
         sync: false
+        isSecret: true
 
   - type: worker
     name: sms-worker
@@ -32,5 +35,7 @@ services:
           property: connectionString
       - key: EGOSMS_USERNAME
         sync: false
+        isSecret: true
       - key: EGOSMS_PASSWORD
         sync: false
+        isSecret: true
