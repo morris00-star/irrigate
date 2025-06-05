@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: smart-irrigation
+    name: irrigation-intelligent
     runtime: python
     buildCommand: "./build.sh"
     startCommand: "gunicorn smart_irrigation.wsgi:application"
