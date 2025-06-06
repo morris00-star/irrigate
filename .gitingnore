@@ -5,3 +5,4 @@ __pycache__/
 .env
 .platform.app.yaml
 .platform/
+render.yaml

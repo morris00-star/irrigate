@@ -1,5 +1,6 @@
 from django.urls import path, include
 from . import views
+from .views import EnvCheckView
 
 urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
@@ -10,4 +11,5 @@ urlpatterns = [
     path('visualize/', views.visualize_data, name='visualize-data'),
     path('get-sensor-data/', views.get_sensor_data, name='get-sensor-data'),
     path('download-data/', views.download_data, name='download-data'),
+    path('env-check/', EnvCheckView.as_view(), name='env_check'),
 ]

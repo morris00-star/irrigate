@@ -4,13 +4,16 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
-from django.views.decorators.http import require_GET
+from django.views import View
 from .models import SensorData
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.timezone import localtime
 import pytz
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -202,3 +205,24 @@ def keep_alive(request):
     return JsonResponse({"status": "OK"}, status=200)
 
 
+class EnvCheckView(View):
+    """View to verify environment variable access"""
+
+    def get(self, request):
+        env_vars = {
+            'DEBUG': str(settings.DEBUG),
+            'ENVIRONMENT': os.getenv('ENVIRONMENT', 'Not set'),
+            'DB_HOST': os.getenv('DB_HOST', 'Not set'),
+            'SECRET_KEY': '*****' if os.getenv('SECRET_KEY') else 'Not set',
+            'EGOSMS_CONFIG': {
+                'API_URL': settings.EGOSMS_CONFIG.get('API_URL', 'Not set'),
+                'USERNAME': '*****' if settings.EGOSMS_CONFIG.get('USERNAME') else 'Not set',
+                'TEST_MODE': str(settings.EGOSMS_CONFIG.get('TEST_MODE', 'Not set'))
+            }
+        }
+
+        logger.info("Environment variables checked")
+        return JsonResponse({
+            'status': 'success',
+            'environment_vars': env_vars
+        })
