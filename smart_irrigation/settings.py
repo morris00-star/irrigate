@@ -103,20 +103,29 @@ TEMPLATES = [
     },
 ]
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql' if IS_PRODUCTION else 'django.db.backends.sqlite3',
-        'NAME': os.getenv('DB_NAME', 'irrigate_postg' if IS_PRODUCTION else 'db.sqlite3'),
-        'USER': os.getenv('DB_USER', 'irrigate_postg_user' if IS_PRODUCTION else ''),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'd0o9mkje5dus73b98no0-a.frankfurt-postgres.render.com' if IS_PRODUCTION else ''),
-        'PORT': os.getenv('DB_PORT', '5432' if IS_PRODUCTION else ''),
-        'OPTIONS': {
-            'sslmode': 'require' if IS_PRODUCTION else None,
-        } if IS_PRODUCTION else {},
+# Database configuration
+if IS_PRODUCTION:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST', 'd0o9mkje5dus73b98no0-a.frankfurt-postgres.render.com'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'OPTIONS': {
+                'sslmode': 'require',
+                'connect_timeout': 5  # Add connection timeout
+            }
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
