@@ -1,27 +1,29 @@
-from celery import shared_task
-from django.contrib.auth import get_user_model
+from accounts.models import CustomUser
 from irrigation.models import SensorData
-from irrigation.sms import send_irrigation_alert
-from django.utils import timezone
-
-User = get_user_model()
+from irrigation.sms import SMSService
+from django.core.exceptions import ObjectDoesNotExist
 
 
-@shared_task
-def send_scheduled_alerts():
-    """Send irrigation status alerts every 5 minutes"""
-    # Get users with recent sensor data (last 10 mins)
-    time_threshold = timezone.now() - timezone.timedelta(minutes=10)
+def send_notifications_to_all_users():
+    try:
+        latest_data = SensorData.objects.latest('timestamp')
+        users = CustomUser.objects.filter(
+            is_active=True,
+            phone_number__isnull=False
+        ).exclude(phone_number='')
 
-    active_users = User.objects.filter(
-        sensordata__timestamp__gte=time_threshold
-    ).distinct()
+        results = []
+        for user in users:
+            success, message = SMSService.send_alert(user, latest_data)
+            results.append({
+                'user': user.username,
+                'phone': user.phone_number,
+                'status': 'success' if success else 'failed',
+                'message': message
+            })
+        return results
 
-    for user in active_users:
-        latest_data = SensorData.objects.filter(
-            user=user
-        ).order_by('-timestamp').first()
-
-        if latest_data:
-            send_irrigation_alert(user, latest_data)
-            
+    except ObjectDoesNotExist:
+        return {'error': 'No sensor data available'}
+    except Exception as e:
+        return {'error': str(e)}

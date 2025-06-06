@@ -251,6 +251,8 @@ EGOSMS_CONFIG = {
     'TEST_MODE': os.getenv('EGOSMS_TEST_MODE', 'False').lower() == 'true',
 }
 
+CRON_SECRET_KEY = os.getenv('CRON_SECRET_KEY', 'dev-secret-key-change-me')
+
 DEFAULT_CHARSET = 'utf-8'
 
 # Celery

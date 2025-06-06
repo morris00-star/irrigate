@@ -1,10 +1,13 @@
 import csv
 import os
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from accounts.models import CustomUser
 from .models import SensorData
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -12,6 +15,7 @@ from django.conf import settings
 from django.utils.timezone import localtime
 import pytz
 import logging
+from .sms import SMSService
 
 logger = logging.getLogger(__name__)
 
@@ -205,6 +209,7 @@ def keep_alive(request):
     return JsonResponse({"status": "OK"}, status=200)
 
 
+@login_required
 class EnvCheckView(View):
     """View to verify environment variable access"""
 
@@ -226,3 +231,41 @@ class EnvCheckView(View):
             'status': 'success',
             'environment_vars': env_vars
         })
+
+
+@csrf_exempt
+def trigger_notifications(request):
+    """Endpoint for cron service to trigger SMS notifications"""
+    # Authentication
+    if request.headers.get('X-CRON-TOKEN') != settings.CRON_SECRET_KEY:
+        logger.warning("Unauthorized cron attempt")
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=401)
+
+    # Process notifications
+    try:
+        latest_data = SensorData.objects.latest('timestamp')
+        users = CustomUser.objects.filter(
+            is_active=True,
+            phone_number__isnull=False
+        ).exclude(phone_number='')
+
+        results = []
+        for user in users:
+            success, msg = SMSService.send_alert(user, latest_data)
+            results.append({
+                'user': user.username,
+                'phone': user.phone_number[:4] + '*****',  # Partial masking
+                'status': 'success' if success else 'failed',
+                'message': msg
+            })
+            logger.info(f"Processed {user.username}")
+
+        return JsonResponse({'status': 'success', 'results': results})
+
+    except ObjectDoesNotExist:
+        logger.error("No sensor data available")
+        return JsonResponse({'status': 'error', 'message': 'No sensor data'}, status=404)
+    except Exception as e:
+        logger.error(f"Cron job failed: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
