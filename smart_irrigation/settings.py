@@ -111,7 +111,7 @@ if IS_PRODUCTION:
             'NAME': os.getenv('DB_NAME'),
             'USER': os.getenv('DB_USER'),
             'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST', 'd0o9mkje5dus73b98no0-a.frankfurt-postgres.render.com'),
+            'HOST': os.getenv('DB_HOST', 'd17i3fp5pdvs738dsju0 - a.frankfurt - postgres.render.com'),
             'PORT': os.getenv('DB_PORT', '5432'),
             'OPTIONS': {
                 'sslmode': 'require',
