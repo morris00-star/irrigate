@@ -11,7 +11,6 @@
         <div class="relative h-48 bg-gradient-to-r from-green-400 to-green-600">
             <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
                 <div class="relative">
-
                     <!-- Profile Picture Container -->
                     <div id="profile-picture-container"
                          class="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white cursor-pointer group"
@@ -66,7 +65,7 @@
                 <h1 class="text-2xl font-bold text-gray-900">{{ user.get_full_name|default:user.username }}</h1>
                 <p class="text-sm text-gray-500">Member since {{ user.date_joined|date:"F j, Y" }}</p>
                 {% if user.phone_number %}
-                    <p class="text-sm text-gray-500 mt-2">
+                    <p class="text-sm text-gray-500 mt-2" id="phone-display">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
@@ -75,9 +74,10 @@
                 {% endif %}
             </div>
 
-            <!-- Profile Form -->
-            <form method="post" enctype="multipart/form-data" id="profile-form" class="space-y-6">
+            <!-- Profile Update Form -->
+            <form method="post" enctype="multipart/form-data" id="profile-update-form" class="space-y-6">
                 {% csrf_token %}
+                <input type="hidden" name="form_type" value="profile_update">
 
                 <!-- Hidden file input -->
                 <input type="file"
@@ -178,6 +178,18 @@
                                 <p class="mt-1 text-sm text-red-600">{{ form.age.errors|join:", " }}</p>
                             {% endif %}
                         </div>
+
+                        <!-- SMS Alerts -->
+                        <div class="flex items-center">
+                            <input type="checkbox"
+                                   id="{{ form.receive_sms_alerts.id_for_label }}"
+                                   name="{{ form.receive_sms_alerts.html_name }}"
+                                   {% if form.receive_sms_alerts.value %}checked{% endif %}
+                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <label for="{{ form.receive_sms_alerts.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                                Receive SMS Alerts
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -189,6 +201,36 @@
                     </button>
                 </div>
             </form>
+
+            <!-- API Key Section -->
+            <div class="pt-6 border-t border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900 mb-2">API Token</h2>
+                <p class="text-sm text-gray-500 mb-4">Use this token to authenticate with our API services.</p>
+
+                <div class="flex items-center">
+                    <div class="relative flex-1">
+                        <input type="password"
+                               id="api-token-display"
+                               value="{{ user.auth_token.key }}"
+                               readonly
+                               class="bg-gray-100 border border-gray-300 rounded-l-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                        <div id="api-token-mask" class="absolute inset-0 flex items-center px-3 pointer-events-none">
+                            <span class="text-gray-500">••••••••••••••••••••••••••••••••</span>
+                        </div>
+                    </div>
+                    <button type="button"
+                            onclick="copyApiToken()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-r-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Copy
+                    </button>
+                    <a href="{% url 'confirm_token_regeneration' %}"
+                    class="ml-2 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Regenerate
+                    </a>
+                </div>
+                <p class="mt-2 text-xs text-gray-500">Keep your API token secure and don't share it publicly.</p>
+                <p class="mt-1 text-xs text-red-500">Warning: Regenerating will invalidate any devices using the current token.</p>
+            </div>
 
             <!-- Account Management Section -->
             <div class="mt-10 pt-6 border-t border-gray-200">
@@ -213,13 +255,31 @@
 
 {% block extra_js %}
 <script>
-    function copyApiKey() {
-        const apiKeyInput = document.querySelector('input[value="{{ user.api_key }}"]');
-        apiKeyInput.select();
-        document.execCommand('copy');
-        showToast('API key copied to clipboard!', 'success');
+    // Copy API token to clipboard and reveal temporarily
+    function copyApiToken() {
+        const apiTokenInput = document.getElementById('api-token-display');
+        const apiTokenMask = document.getElementById('api-token-mask');
+
+        // Reveal the token
+        apiTokenMask.classList.add('hidden');
+        apiTokenInput.type = 'text';
+        apiTokenInput.select();
+
+        try {
+            document.execCommand('copy');
+            showToast('API token copied to clipboard!', 'success');
+        } catch (err) {
+            showToast('Failed to copy token', 'error');
+        }
+
+        // Hide the token again after 3 seconds
+        setTimeout(() => {
+            apiTokenInput.type = 'password';
+            apiTokenMask.classList.remove('hidden');
+        }, 3000);
     }
 
+    // Profile picture options
     function showOptions() {
         document.getElementById('profile-picture-options').classList.remove('hidden');
     }
@@ -264,7 +324,7 @@
 
             reader.onload = function(e) {
                 // Create form data
-                const formData = new FormData(document.getElementById('profile-form'));
+                const formData = new FormData(document.getElementById('profile-update-form'));
 
                 // Send AJAX request
                 fetch(window.location.href, {
@@ -272,10 +332,15 @@
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        'X-CSRFToken': document.querySelector('#profile-update-form [name=csrfmiddlewaretoken]').value
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.status === 'success') {
                         // Update profile picture
@@ -320,25 +385,14 @@
         profilePictureContainer.appendChild(overlay);
     }
 
-    function showToast(message, type) {
-        const toast = document.createElement('div');
-        toast.className = `mb-4 p-4 rounded-md text-white ${
-            type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        } transition-opacity duration-300`;
-        toast.textContent = message;
+    // Reegenerate form submit handler Token:
+    document.querySelector('a[href="{% url 'confirm_token_regeneration' %}"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = this.href;
+    });
 
-        const container = document.getElementById('toast-container');
-        container.appendChild(toast);
-
-        // Fade out and remove after 3 seconds
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-
-    // Handle form submission
-    document.getElementById('profile-form').addEventListener('submit', function(e) {
+    // Handle profile update form submission
+    document.getElementById('profile-update-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const formData = new FormData(this);
@@ -348,16 +402,21 @@
             body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                'X-CSRFToken': document.querySelector('#profile-update-form [name=csrfmiddlewaretoken]').value
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'success') {
                 showToast('Profile updated successfully', 'success');
                 // Update phone number display if it was changed
                 if (data.phone_number) {
-                    const phoneDisplay = document.querySelector('.text-center .text-sm.text-gray-500:nth-child(3)');
+                    const phoneDisplay = document.getElementById('phone-display');
                     if (phoneDisplay) {
                         phoneDisplay.innerHTML = `
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -366,6 +425,10 @@
                             ${data.phone_number}
                         `;
                     }
+                }
+                // Update profile picture if changed
+                if (data.profile_picture_url) {
+                    updateProfilePicture(data.profile_picture_url);
                 }
             } else {
                 throw new Error(data.message || 'Error updating profile');
@@ -391,6 +454,24 @@
         // Update the input value
         e.target.value = value;
     });
+
+    // Toast notification system
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `mb-4 p-4 rounded-md text-white ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } transition-opacity duration-300`;
+        toast.textContent = message;
+
+        const container = document.getElementById('toast-container');
+        container.appendChild(toast);
+
+        // Fade out and remove after 3 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 </script>
 {% endblock %}
 {% endblock %}

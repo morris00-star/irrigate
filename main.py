@@ -1,10 +1,17 @@
-from pathlib import Path
+'''from mailersend import emails
+mailer = emails.NewEmail("mlsn.a11059ca06e6a901783c1edd40b89e7652036735406960d58f712b25112a50bb")
+print(mailer.test_api())  # Should return "PONG!"'''
 
+import mailersend
 
-BASE_DIR1 = Path(__file__).resolve().parent.parent
-BASE_DIR2 = Path(__file__).resolve().parent
-BASE_DIR3 = Path(__file__).resolve()
+mailer = mailersend.NewApiClient()
 
-print(BASE_DIR1)
-print(BASE_DIR2)
-print(BASE_DIR3)
+subject = "Subject"
+text = "Greetings from the team, you got this message through MailerSend."
+html = "Greetings from the team, you got this message through MailerSend."
+
+my_mail = "nduwayomorris@gmail.com"
+subscriber_list = ['nduwayomorris@gmail.com']
+
+mailer.send(my_mail, subscriber_list, subject, html, text)
+

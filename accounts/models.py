@@ -1,17 +1,15 @@
 import os
 import phonenumbers
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
-import secrets
+from django.urls import reverse
 
 
 def user_profile_path(instance, filename):
-    # Get the file extension
     ext = filename.split('.')[-1]
-    # Generate a new filename using the user's id
     filename = f'profile_pics/user_{instance.id}.{ext}'
-    # If the file already exists, delete it
     if instance.profile_picture:
         old_file_path = instance.profile_picture.path
         if os.path.exists(old_file_path):
@@ -37,24 +35,21 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True,
         validators=[validate_phone_number],
-        help_text="Format: +[country code][number], e.g., +1234567890"
+        help_text="Format: +[country code][number]"
     )
-    api_key = models.CharField(max_length=64, unique=True, blank=True)
-
-    receive_sms_alerts = models.BooleanField(
-        default=True,
-        verbose_name="Receive SMS Alerts",
-        help_text="Designates whether the user wants to receive SMS notifications."
-    )
+    receive_sms_alerts = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
-        if not self.api_key:
-            self.api_key = secrets.token_hex(32)
         super().save(*args, **kwargs)
+        # Create a token for the user when they're created
+        if not hasattr(self, 'auth_token'):
+            Token.objects.create(user=self)
 
     def delete(self, *args, **kwargs):
-        # Delete the profile picture file when the user is deleted
         if self.profile_picture:
             if os.path.isfile(self.profile_picture.path):
                 os.remove(self.profile_picture.path)
         super().delete(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('profile')

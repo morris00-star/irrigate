@@ -1,20 +1,24 @@
 import os
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.files.storage import default_storage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
-from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+from rest_framework.authtoken.models import Token
+from django.views.decorators.csrf import csrf_protect
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser
+from .utils import send_brevo_transactional_email
 
 
 def home(request):
@@ -139,25 +143,71 @@ def password_reset_request(request):
             email = form.cleaned_data['email']
             associated_users = CustomUser.objects.filter(email=email)
             if associated_users.exists():
+                current_site = get_current_site(request)
                 for user in associated_users:
-                    subject = "Password Reset Requested"
-                    email_template_name = "accounts/password_reset_email.txt"
-                    c = {
-                        "email": user.email,
-                        'domain': 'localhost:8000',
-                        'site_name': 'Irrigation System',
-                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                        "user": user,
+                    subject = "Password Reset Request"
+                    email_template = "accounts/password_reset_email.html"
+
+                    context = {
+                        'email': user.email,
+                        'domain': current_site.domain,
+                        'site_name': current_site.name,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'user': user,
                         'token': default_token_generator.make_token(user),
-                        'protocol': 'http',
+                        'protocol': 'https' if request.is_secure() else 'http',
                     }
-                    email = render_to_string(email_template_name, c)
-                    try:
-                        send_mail(subject, email, 'admin@example.com', [user.email], fail_silently=False)
-                    except Exception as e:
-                        return HttpResponse('Invalid header found.')
-                    return redirect("/password_reset/done/")
+
+                    email_content = render_to_string(email_template, context)
+
+                    # Use Brevo API to send email
+                    if send_brevo_transactional_email(user.email, subject, email_content):
+                        return redirect("password_reset_done")
+                    else:
+                        messages.error(request, "Failed to send password reset email. Please try again later.")
+                        return redirect("password_reset")
+
+            # Always return success to prevent email enumeration
+            return redirect("password_reset_done")
+
     else:
         form = PasswordResetForm()
+
     return render(request, "accounts/password_reset.html", {"form": form})
+
+
+@login_required
+def confirm_token_regeneration(request):
+    return render(request, 'accounts/confirm_token_regeneration.html')
+
+
+@require_POST
+@csrf_protect
+@login_required
+def regenerate_api_key(request):
+    if 'confirm' not in request.POST:
+        # If not confirmed, redirect to confirmation page
+        return redirect('confirm_token_regeneration')
+
+    if request.POST['confirm'] == 'yes':
+        # Delete the old token
+        Token.objects.filter(user=request.user).delete()
+        # Create a new token
+        new_token = Token.objects.create(user=request.user)
+
+        # If AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'success',
+                'message': 'API token regenerated successfully',
+                'new_api_token': new_token.key
+            })
+
+        # For regular form submission
+        messages.success(request, 'Your API token has been regenerated successfully.')
+        return redirect('profile')
+
+    # If confirmation was 'no'
+    messages.info(request, 'Token regeneration cancelled. Your current token remains active.')
+    return redirect('profile')
 
