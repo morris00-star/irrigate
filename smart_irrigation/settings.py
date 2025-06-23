@@ -194,11 +194,13 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
+        'rest_framework.throttling.UserRateThrottle',
+        'irrigation.throttling.DeviceRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '3600/hour',
-        'user': '86400/day'
+        'user': '86400/day',
+        'device': '12/minute',
     },
 }
 
