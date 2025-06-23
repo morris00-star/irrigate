@@ -52,9 +52,9 @@
                                     <span class="text-gray-700">Water Pump:</span>
                                     <span class="ml-2 font-medium" id="pump-status">OFF</span>
                                 </div>
-                                <button id="toggle-pump" class="relative inline-flex items-center h-8 rounded-full w-14 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-gray-200">
+                                <button id="toggle-pump" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-gray-200">
                                     <span class="sr-only">Toggle Pump</span>
-                                    <span id="pump-toggle-circle" class="translate-x-0 inline-block h-6 w-6 rounded-full bg-white shadow transform transition-transform"></span>
+                                    <span id="pump-toggle-circle" class="translate-x-0 inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200"></span>
                                 </button>
                             </div>
                         </div>
@@ -69,9 +69,9 @@
                                     <span class="text-gray-700">Water Valve:</span>
                                     <span class="ml-2 font-medium" id="valve-status">CLOSED</span>
                                 </div>
-                                <button id="toggle-valve" class="relative inline-flex items-center h-8 rounded-full w-14 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-gray-200">
+                                <button id="toggle-valve" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-gray-200">
                                     <span class="sr-only">Toggle Valve</span>
-                                    <span id="valve-toggle-circle" class="translate-x-0 inline-block h-6 w-6 rounded-full bg-white shadow transform transition-transform"></span>
+                                    <span id="valve-toggle-circle" class="translate-x-0 inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200"></span>
                                 </button>
                             </div>
                         </div>
@@ -219,7 +219,8 @@ const systemState = {
     lastUpdated: new Date(),
     esp32Connected: false,
     currentCrop: null,
-    currentSoil: null
+    currentSoil: null,
+    lastMoistureUpdate: new Date()
 };
 
 // DOM Elements
@@ -265,7 +266,7 @@ const elements = {
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     fetchSystemStatus();
-    setInterval(fetchSystemStatus, 5000); // Refresh every 5 seconds
+    setInterval(fetchSystemStatus, 3000); // Refresh every 3 seconds
 });
 
 // Event Listeners Setup
@@ -299,21 +300,15 @@ function setupEventListeners() {
 
 // Toggle Device Function
 async function toggleDevice(deviceType) {
-    if (!systemState.esp32Connected) {
-        showToast('ESP32 is not connected', 'error');
-        return;
-    }
-
     const button = elements[`toggle${deviceType.charAt(0).toUpperCase() + deviceType.slice(1)}`];
     const circle = elements[`${deviceType}ToggleCircle`];
     const statusElement = elements[`${deviceType}Status`];
     const deviceName = deviceType === 'pump' ? 'Water Pump' : 'Water Valve';
-    const action = systemState[deviceType] ? 'turn_off' : 'turn_on';
+    const newState = !systemState[deviceType];
 
     // Visual feedback before API call
     button.disabled = true;
-    circle.classList.add('translate-x-0', 'bg-gray-300');
-    circle.classList.remove('translate-x-6', 'bg-white');
+    updateToggleButton(deviceType, newState);
 
     try {
         const response = await fetch('/api/control/', {
@@ -366,11 +361,11 @@ function updateToggleButton(deviceType, isOn) {
         button.classList.remove('bg-gray-200');
         button.classList.add('bg-green-500');
         circle.classList.remove('translate-x-0');
-        circle.classList.add('translate-x-6');
+        circle.classList.add('translate-x-5');
     } else {
         button.classList.remove('bg-green-500');
         button.classList.add('bg-gray-200');
-        circle.classList.remove('translate-x-6');
+        circle.classList.remove('translate-x-5');
         circle.classList.add('translate-x-0');
     }
 }
@@ -492,12 +487,20 @@ async function fetchSystemStatus() {
 
         const data = await response.json();
 
-        // Update connection status
-        const esp32Connected = data.esp32_connected || false;
-        updateConnectionStatus(esp32Connected);
-
-        // Update moisture display
+        // Check for moisture changes to verify ESP32 connection
         if (typeof data.moisture !== 'undefined') {
+            const moistureChanged = data.moisture !== systemState.moisture;
+            if (moistureChanged) {
+                systemState.lastMoistureUpdate = new Date();
+            }
+
+            // ESP32 is considered connected if we got a moisture reading in the last 10 seconds
+            const secondsSinceLastUpdate = (new Date() - systemState.lastMoistureUpdate) / 1000;
+            const esp32Connected = secondsSinceLastUpdate < 10;
+
+            updateConnectionStatus(esp32Connected);
+
+            // Update moisture display
             systemState.moisture = data.moisture;
             elements.moistureLevel.textContent = `${systemState.moisture}%`;
             elements.moistureBar.style.width = `${systemState.moisture}%`;
@@ -533,6 +536,9 @@ async function fetchSystemStatus() {
 
 // Update connection status display
 function updateConnectionStatus(connected) {
+    // Only update if status changed
+    if (systemState.esp32Connected === connected) return;
+
     systemState.esp32Connected = connected;
 
     if (connected) {
@@ -544,6 +550,8 @@ function updateConnectionStatus(connected) {
         // Enable control buttons
         elements.togglePump.disabled = false;
         elements.toggleValve.disabled = false;
+
+        logMessage("ESP32 connection established");
     } else {
         elements.esp32Status.textContent = 'Disconnected';
         elements.esp32Status.className = 'font-medium text-red-600';
@@ -555,6 +563,7 @@ function updateConnectionStatus(connected) {
         elements.toggleValve.disabled = true;
 
         showToast('ESP32 is disconnected', 'error');
+        logMessage("WARNING: ESP32 disconnected");
     }
 }
 
@@ -593,29 +602,35 @@ function logMessage(message, type = 'info') {
 </script>
 
 <style>
-.toggle-btn {
-    @apply relative inline-flex items-center h-8 rounded-full w-14 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+/* Toggle Switch Styles */
+.toggle-switch {
+    @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
 }
 
-.toggle-btn:disabled {
+.toggle-switch:disabled {
     @apply opacity-50 cursor-not-allowed;
 }
 
-.toggle-btn-circle {
-    @apply inline-block h-6 w-6 rounded-full shadow transform transition-transform;
+.toggle-switch-circle {
+    @apply inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200;
 }
 
-.animate-spin {
-    animation: spin 1s linear infinite;
+/* Button Styles */
+button {
+    @apply transition-colors duration-200;
 }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+button:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+/* Input Styles */
+input[type="range"] {
+    @apply transition-colors duration-200;
 }
 
 /* Smooth transitions for all interactive elements */
-button, input[type="range"], select {
+button, input, select {
     @apply transition-colors duration-200;
 }
 </style>
