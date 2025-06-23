@@ -1,352 +1,622 @@
 {% extends 'irrigation/base.html' %}
 
-{% block title %}Smart Irrigation Control{% endblock %}
+{% block title %}Smart Irrigation Control Panel{% endblock %}
 
 {% block content %}
-    <h1 class="text-3xl font-bold mb-8 text-center text-green-700">Smart Irrigation Control Panel</h1>
+<div class="min-h-screen bg-gray-100">
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold">Smart Irrigation Control Panel</h1>
+            <p class="mt-1 text-green-100">Real-time monitoring and control</p>
+        </div>
+    </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Configuration Panel -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Crop Configuration</h2>
-
-            <!-- Auto-Apply Toggle -->
-            <div class="flex items-center justify-between mb-6 p-3 bg-blue-50 rounded-lg">
-                <span class="text-gray-700 font-medium">Auto-Apply Threshold:</span>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="auto-apply-toggle" class="sr-only peer" checked>
-                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                </label>
-            </div>
-
-            <!-- Crop and Soil Selection -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label class="block text-gray-700 mb-2 font-medium">Crop Type:</label>
-                    <select id="crop-select" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
-                        <option value="">-- Select Crop --</option>
-                        <option value="banana">Banana</option>
-                        <option value="maize">Maize</option>
-                        <option value="beans">Beans</option>
-                        <option value="coffee">Coffee</option>
-                        <option value="cassava">Cassava</option>
-                        <option value="rice">Rice</option>
-                        <option value="tomato">Tomato</option>
-                        <option value="potato">Potato</option>
-                        <option value="sugarcane">Sugarcane</option>
-                        <option value="vegetables">Vegetables</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-gray-700 mb-2 font-medium">Soil Type:</label>
-                    <select id="soil-select" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
-                        <option value="">-- Select Soil --</option>
-                        <option value="clay">Clay</option>
-                        <option value="loamy">Loamy</option>
-                        <option value="sandy">Sandy</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Recommendation Display -->
-            <div id="recommendation-container" class="hidden p-4 bg-green-50 rounded-lg mb-6 border border-green-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-700">
-                            <span class="font-medium">Recommended Threshold:</span>
-                            <span id="recommended-threshold" class="font-bold text-green-700 ml-2">--</span>%
-                        </p>
-                        <p id="recommendation-details" class="text-sm text-gray-600 mt-1"></p>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Configuration Panel -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- System Status Card -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">System Status</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-green-500 mr-2" id="system-status-indicator"></div>
+                                <span class="text-gray-700">System:</span>
+                                <span class="ml-1 font-medium" id="system-status">Online</span>
+                            </div>
+                            <span class="text-sm text-gray-500" id="last-updated">Just now</span>
+                        </div>
+                        <div class="pt-4 border-t border-gray-200">
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>ESP32 Connection:</span>
+                                <span class="font-medium" id="esp32-status">Checking...</span>
+                            </div>
+                        </div>
                     </div>
-                    <button id="apply-threshold" class="bg-green-600 text-white py-1 px-3 rounded-md text-sm hover:bg-green-700 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        Apply
-                    </button>
+                </div>
+
+                <!-- Device Control Card -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Device Control</h2>
+                    <div class="space-y-4">
+                        <!-- Pump Control -->
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    <span class="text-gray-700">Water Pump:</span>
+                                    <span class="ml-2 font-medium" id="pump-status">OFF</span>
+                                </div>
+                                <button id="toggle-pump" class="relative inline-flex items-center h-8 rounded-full w-14 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-gray-200">
+                                    <span class="sr-only">Toggle Pump</span>
+                                    <span id="pump-toggle-circle" class="translate-x-0 inline-block h-6 w-6 rounded-full bg-white shadow transform transition-transform"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Valve Control -->
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-gray-700">Water Valve:</span>
+                                    <span class="ml-2 font-medium" id="valve-status">CLOSED</span>
+                                </div>
+                                <button id="toggle-valve" class="relative inline-flex items-center h-8 rounded-full w-14 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-gray-200">
+                                    <span class="sr-only">Toggle Valve</span>
+                                    <span id="valve-toggle-circle" class="translate-x-0 inline-block h-6 w-6 rounded-full bg-white shadow transform transition-transform"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crop Configuration Card -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Crop Configuration</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+                            <select id="crop-select" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                                <option value="">-- Select Crop --</option>
+                                <option value="banana">Banana</option>
+                                <option value="maize">Maize</option>
+                                <option value="beans">Beans</option>
+                                <option value="coffee">Coffee</option>
+                                <option value="cassava">Cassava</option>
+                                <option value="rice">Rice</option>
+                                <option value="tomato">Tomato</option>
+                                <option value="potato">Potato</option>
+                                <option value="sugarcane">Sugarcane</option>
+                                <option value="vegetables">Vegetables</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Soil Type</label>
+                            <select id="soil-select" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                                <option value="">-- Select Soil --</option>
+                                <option value="clay">Clay</option>
+                                <option value="loamy">Loamy</option>
+                                <option value="sandy">Sandy</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div id="recommended-threshold-container" class="hidden">
+                            <span class="text-sm text-gray-700">Recommended:</span>
+                            <span id="recommended-threshold" class="ml-1 font-bold text-green-700">25%</span>
+                        </div>
+                        <button id="apply-crop-config" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors">
+                            Apply Configuration
+                        </button>
+                    </div>
+                    <div id="crop-info" class="hidden mt-3 p-2 bg-blue-50 rounded text-sm text-gray-700 border border-blue-200"></div>
                 </div>
             </div>
 
-            <!-- Manual Threshold Override -->
-            <div class="border-t pt-4">
-                <h3 class="text-lg font-medium mb-3 text-gray-700">Manual Threshold Control</h3>
-                <form id="set-threshold-form" class="flex items-end gap-2">
-                    <div class="flex-1">
-                        <label class="block text-gray-700 mb-1 text-sm">Moisture Threshold (%)</label>
-                        <input type="number" name="threshold" id="threshold" min="0" max="100"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200"
-                               placeholder="0-100">
+            <!-- Monitoring Panel -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Moisture Level Card -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Soil Moisture Monitoring</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-700">Current Moisture:</span>
+                                <span class="font-bold" id="moisture-level">--%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-4 mb-1">
+                                <div id="moisture-bar" class="bg-green-600 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500">
+                                <span>Dry</span>
+                                <span>Optimal</span>
+                                <span>Wet</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-700">Target Threshold:</span>
+                                <span class="font-bold" id="current-threshold">--%</span>
+                            </div>
+                            <div class="relative pt-1">
+                                <input type="range" min="0" max="100" value="30"
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500"
+                                       id="threshold-slider">
+                            </div>
+                            <div class="flex justify-between mt-4">
+                                <button id="decrease-threshold" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-3 rounded transition-colors">
+                                    -5%
+                                </button>
+                                <button id="set-threshold" class="bg-green-600 hover:bg-green-700 text-white py-1 px-4 rounded transition-colors">
+                                    Set Threshold
+                                </button>
+                                <button id="increase-threshold" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-3 rounded transition-colors">
+                                    +5%
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Set
-                    </button>
-                </form>
+                </div>
+
+                <!-- System Logs Card -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">System Logs</h2>
+                        <button id="clear-logs" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                            Clear Logs
+                        </button>
+                    </div>
+                    <div id="system-logs" class="h-40 overflow-y-auto p-3 bg-gray-50 rounded-md text-sm font-mono space-y-1"></div>
+                </div>
             </div>
         </div>
+    </main>
 
-        <!-- System Status Panel -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold mb-4 border-b pb-2">System Status</h2>
-
-            <!-- Moisture Level Indicator -->
-            <div class="mb-6">
-                <div class="flex justify-between mb-1">
-                    <span class="text-gray-700 font-medium">Soil Moisture</span>
-                    <span class="text-gray-700">
-                        <span id="moisture-level">--</span>%
-                        <span class="text-sm">(Target: <span id="current-threshold">--</span>%)</span>
-                    </span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-4">
-                    <div id="moisture-bar" class="bg-green-600 h-4 rounded-full" style="width: 0%"></div>
-                </div>
-                <div class="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Dry</span>
-                    <span>Optimal</span>
-                    <span>Wet</span>
-                </div>
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-4 right-4 hidden">
+        <div class="bg-gray-800 text-white px-4 py-2 rounded-md shadow-lg flex items-start transition-opacity duration-300">
+            <div class="flex-1 min-w-0">
+                <p id="toast-message" class="text-sm"></p>
             </div>
-
-            <!-- Control Buttons -->
-            <div class="space-y-4 mb-6">
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <span class="text-gray-700">Pump: <span id="pump-status" class="font-medium">--</span></span>
-                    </div>
-                    <button id="toggle-pump" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Toggle
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span class="text-gray-700">Valve: <span id="valve-status" class="font-medium">--</span></span>
-                    </div>
-                    <button id="toggle-valve" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Toggle
-                    </button>
-                </div>
-            </div>
-
-            <!-- System Messages -->
-            <div id="system-message" class="hidden p-3 rounded-lg mb-4 text-sm"></div>
-
-            <!-- Last Updated -->
-            <div class="text-right text-xs text-gray-500">
-                Last updated: <span id="last-updated">--</span>
-            </div>
+            <button id="toast-close" class="ml-2 text-gray-300 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
         </div>
     </div>
+</div>
 
-    <script>
-        // Database and Configuration
-        const thresholdDatabase = {
-            banana: { clay: 30, loamy: 30, sandy: 25, details: "Bananas need consistently moist soil, especially in clay which retains water well." },
-            maize: { clay: 25, loamy: 25, sandy: 20, details: "Maize requires moderate moisture, with critical needs during germination and tasseling." },
-            beans: { clay: 25, loamy: 24, sandy: 22, details: "Beans need careful moisture control during flowering and pod formation stages." },
-            coffee: { clay: 32, loamy: 30, sandy: 28, details: "Coffee is sensitive to drought, particularly during berry development." },
-            cassava: { clay: 22, loamy: 20, sandy: 18, details: "Cassava is drought-tolerant but benefits from early growth moisture." },
-            rice: { clay: 35, loamy: 30, sandy: 25, details: "Rice thrives in waterlogged conditions, especially in clay soils." },
-            tomato: { clay: 32, loamy: 30, sandy: 28, details: "Tomatoes need consistent moisture, especially during flowering and fruiting." },
-            potato: { clay: 28, loamy: 25, sandy: 22, details: "Potatoes require careful moisture control during tuber formation." },
-            sugarcane: { clay: 32, loamy: 30, sandy: 28, details: "Sugarcane needs deep, consistent moisture for optimal growth." },
-            vegetables: { clay: 28, loamy: 25, sandy: 22, details: "Leafy vegetables need consistent moisture to prevent wilting." }
-        };
+<script>
+// Crop Database with Optimal Moisture Levels
+const cropDatabase = {
+    banana: { clay: 30, loamy: 30, sandy: 25, info: "Bananas need consistently moist soil with good drainage." },
+    maize: { clay: 25, loamy: 25, sandy: 20, info: "Maize requires moderate moisture, especially during germination." },
+    beans: { clay: 25, loamy: 24, sandy: 22, info: "Beans need careful watering during flowering and pod formation." },
+    coffee: { clay: 32, loamy: 30, sandy: 28, info: "Coffee plants are sensitive to drought, particularly during berry development." },
+    cassava: { clay: 22, loamy: 20, sandy: 18, info: "Cassava is drought-tolerant but benefits from early growth moisture." },
+    rice: { clay: 35, loamy: 30, sandy: 25, info: "Rice thrives in waterlogged conditions, especially in clay soils." },
+    tomato: { clay: 32, loamy: 30, sandy: 28, info: "Tomatoes need consistent moisture, especially during fruiting." },
+    potato: { clay: 28, loamy: 25, sandy: 22, info: "Potatoes require careful moisture control during tuber formation." },
+    sugarcane: { clay: 32, loamy: 30, sandy: 28, info: "Sugarcane needs deep, consistent moisture for optimal growth." },
+    vegetables: { clay: 28, loamy: 25, sandy: 22, info: "Leafy vegetables need consistent moisture to prevent wilting." }
+};
 
-        // DOM Elements
-        const cropSelect = document.getElementById('crop-select');
-        const soilSelect = document.getElementById('soil-select');
-        const autoApplyToggle = document.getElementById('auto-apply-toggle');
-        const recommendationContainer = document.getElementById('recommendation-container');
-        const recommendedThreshold = document.getElementById('recommended-threshold');
-        const recommendationDetails = document.getElementById('recommendation-details');
-        const applyThresholdBtn = document.getElementById('apply-threshold');
-        const thresholdInput = document.getElementById('threshold');
-        const setThresholdForm = document.getElementById('set-threshold-form');
-        const systemMessage = document.getElementById('system-message');
-        const moistureBar = document.getElementById('moisture-bar');
-        const lastUpdated = document.getElementById('last-updated');
+// System State
+const systemState = {
+    pump: false,
+    valve: false,
+    moisture: 0,
+    threshold: 30,
+    lastUpdated: new Date(),
+    esp32Connected: false,
+    currentCrop: null,
+    currentSoil: null
+};
 
-        // Event Listeners
-        cropSelect.addEventListener('change', updateRecommendation);
-        soilSelect.addEventListener('change', updateRecommendation);
-        applyThresholdBtn.addEventListener('click', applyRecommendedThreshold);
-        setThresholdForm.addEventListener('submit', handleManualThreshold);
+// DOM Elements
+const elements = {
+    // Status Elements
+    systemStatus: document.getElementById('system-status'),
+    systemStatusIndicator: document.getElementById('system-status-indicator'),
+    esp32Status: document.getElementById('esp32-status'),
+    lastUpdated: document.getElementById('last-updated'),
 
-        // Update recommendation based on selections
-        function updateRecommendation() {
-            const crop = cropSelect.value;
-            const soil = soilSelect.value;
+    // Device Control
+    pumpStatus: document.getElementById('pump-status'),
+    valveStatus: document.getElementById('valve-status'),
+    togglePump: document.getElementById('toggle-pump'),
+    toggleValve: document.getElementById('toggle-valve'),
+    pumpToggleCircle: document.getElementById('pump-toggle-circle'),
+    valveToggleCircle: document.getElementById('valve-toggle-circle'),
 
-            if (crop && soil) {
-                const threshold = thresholdDatabase[crop][soil];
-                recommendedThreshold.textContent = threshold;
-                recommendationDetails.textContent = thresholdDatabase[crop].details;
-                recommendationContainer.classList.remove('hidden');
-                thresholdInput.value = threshold;
+    // Moisture Monitoring
+    moistureLevel: document.getElementById('moisture-level'),
+    moistureBar: document.getElementById('moisture-bar'),
+    currentThreshold: document.getElementById('current-threshold'),
+    thresholdSlider: document.getElementById('threshold-slider'),
 
-                // Auto-apply if toggle is on
-                if (autoApplyToggle.checked) {
-                    applyRecommendedThreshold();
-                }
-            } else {
-                recommendationContainer.classList.add('hidden');
-            }
-        }
+    // Crop Configuration
+    cropSelect: document.getElementById('crop-select'),
+    soilSelect: document.getElementById('soil-select'),
+    recommendedThresholdContainer: document.getElementById('recommended-threshold-container'),
+    recommendedThreshold: document.getElementById('recommended-threshold'),
+    applyCropConfig: document.getElementById('apply-crop-config'),
+    cropInfo: document.getElementById('crop-info'),
 
-        // Apply recommended threshold
-        function applyRecommendedThreshold(e) {
-            if (e) e.preventDefault();
-            const threshold = recommendedThreshold.textContent;
-            if (threshold && threshold !== '--') {
-                setThreshold(threshold, true);
-            }
-        }
+    // System Logs
+    systemLogs: document.getElementById('system-logs'),
 
-        // Handle manual threshold submission
-        function handleManualThreshold(e) {
-            e.preventDefault();
-            const threshold = thresholdInput.value;
-            if (threshold && threshold >= 0 && threshold <= 100) {
-                setThreshold(threshold, false);
-            } else {
-                showMessage('Please enter a valid threshold (0-100%)', 'error');
-            }
-        }
+    // Toast Notification
+    toast: document.getElementById('toast'),
+    toastMessage: document.getElementById('toast-message'),
+    toastClose: document.getElementById('toast-close')
+};
 
-        // Set threshold on server
-        function setThreshold(threshold, isAutoApplied) {
-            fetch('/api/set_threshold/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({ threshold })
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
+    fetchSystemStatus();
+    setInterval(fetchSystemStatus, 5000); // Refresh every 5 seconds
+});
+
+// Event Listeners Setup
+function setupEventListeners() {
+    // Device Toggle Buttons
+    elements.togglePump.addEventListener('click', () => toggleDevice('pump'));
+    elements.toggleValve.addEventListener('click', () => toggleDevice('valve'));
+
+    // Threshold Controls
+    document.getElementById('set-threshold').addEventListener('click', setThresholdFromSlider);
+    document.getElementById('increase-threshold').addEventListener('click', () => adjustThreshold(5));
+    document.getElementById('decrease-threshold').addEventListener('click', () => adjustThreshold(-5));
+    elements.thresholdSlider.addEventListener('input', updateThresholdPreview);
+
+    // Crop Configuration
+    elements.cropSelect.addEventListener('change', updateCropRecommendation);
+    elements.soilSelect.addEventListener('change', updateCropRecommendation);
+    elements.applyCropConfig.addEventListener('click', applyCropConfiguration);
+
+    // System Logs
+    document.getElementById('clear-logs').addEventListener('click', () => {
+        elements.systemLogs.innerHTML = '';
+        logMessage("Logs cleared");
+    });
+
+    // Toast Notification
+    elements.toastClose.addEventListener('click', () => {
+        elements.toast.classList.add('hidden');
+    });
+}
+
+// Toggle Device Function
+async function toggleDevice(deviceType) {
+    if (!systemState.esp32Connected) {
+        showToast('ESP32 is not connected', 'error');
+        return;
+    }
+
+    const button = elements[`toggle${deviceType.charAt(0).toUpperCase() + deviceType.slice(1)}`];
+    const circle = elements[`${deviceType}ToggleCircle`];
+    const statusElement = elements[`${deviceType}Status`];
+    const deviceName = deviceType === 'pump' ? 'Water Pump' : 'Water Valve';
+    const action = systemState[deviceType] ? 'turn_off' : 'turn_on';
+
+    // Visual feedback before API call
+    button.disabled = true;
+    circle.classList.add('translate-x-0', 'bg-gray-300');
+    circle.classList.remove('translate-x-6', 'bg-white');
+
+    try {
+        const response = await fetch('/api/control/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                action: `toggle_${deviceType}`,
+                device: deviceType,
+                timestamp: new Date().toISOString()
             })
-            .then(response => {
-                if (!response.ok) throw new Error('Network error');
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    const message = isAutoApplied
-                        ? `Auto-set threshold to ${threshold}% for ${cropSelect.options[cropSelect.selectedIndex].text} in ${soilSelect.value} soil`
-                        : `Manual threshold set to ${threshold}%`;
-                    showMessage(message, 'success');
-                    fetchSystemStatus();
-                } else {
-                    throw new Error(data.message || 'Unknown error');
-                }
-            })
-            .catch(error => {
-                showMessage(`Failed to update threshold: ${error.message}`, 'error');
-                console.error("Error:", error);
-            });
-        }
-
-        // Show system message
-        function showMessage(text, type) {
-            systemMessage.textContent = text;
-            systemMessage.className = `p-3 rounded-lg mb-4 text-sm ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
-            systemMessage.classList.remove('hidden');
-            setTimeout(() => systemMessage.classList.add('hidden'), 5000);
-        }
-
-        // Fetch and update system status
-        function fetchSystemStatus() {
-            fetch('/api/status/')
-                .then(response => {
-                    if (!response.ok) throw new Error('Network error');
-                    return response.json();
-                })
-                .then(data => {
-                    // Update pump status
-                    document.getElementById('pump-status').textContent = data.pump ? 'ON' : 'OFF';
-                    document.getElementById('pump-status').className = data.pump ? 'font-medium text-green-600' : 'font-medium text-red-600';
-
-                    // Update valve status
-                    document.getElementById('valve-status').textContent = data.valve ? 'OPEN' : 'CLOSED';
-                    document.getElementById('valve-status').className = data.valve ? 'font-medium text-green-600' : 'font-medium text-red-600';
-
-                    // Update moisture data
-                    const moisture = data.moisture || 0;
-                    document.getElementById('moisture-level').textContent = moisture;
-                    moistureBar.style.width = `${moisture}%`;
-                    moistureBar.className = moisture < (data.threshold - 10) ? 'bg-red-500 h-4 rounded-full'
-                                        : moisture > (data.threshold + 10) ? 'bg-blue-500 h-4 rounded-full'
-                                        : 'bg-green-600 h-4 rounded-full';
-
-                    // Update threshold display
-                    document.getElementById('current-threshold').textContent = data.threshold || '--';
-
-                    // Update timestamp
-                    lastUpdated.textContent = new Date().toLocaleTimeString();
-                })
-                .catch(error => {
-                    console.error("Error fetching system status:", error);
-                    showMessage('Failed to fetch system status', 'error');
-                });
-        }
-
-        // Toggle pump
-        document.getElementById('toggle-pump').addEventListener('click', function(e) {
-            e.preventDefault();
-            controlDevice('toggle_pump', 'Pump');
         });
 
-        // Toggle valve
-        document.getElementById('toggle-valve').addEventListener('click', function(e) {
-            e.preventDefault();
-            controlDevice('toggle_valve', 'Valve');
-        });
-
-        // Control device (pump/valve)
-        function controlDevice(action, deviceName) {
-            fetch('/api/control/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({ action })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Network error');
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    showMessage(`${deviceName} state updated successfully`, 'success');
-                    fetchSystemStatus();
-                } else {
-                    throw new Error(data.message || 'Unknown error');
-                }
-            })
-            .catch(error => {
-                showMessage(`Failed to update ${deviceName}: ${error.message}`, 'error');
-                console.error("Error:", error);
-            });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Server returned ${response.status}`);
         }
 
-        // Initialize
-        fetchSystemStatus();
-        setInterval(fetchSystemStatus, 10000); // Refresh every 10 seconds
-    </script>
+        const data = await response.json();
+
+        if (data.status !== 'success') {
+            throw new Error(data.message || 'Action failed without explanation');
+        }
+
+        // Update UI based on response
+        updateDeviceStatus(deviceType, data.new_state);
+        showToast(`${deviceName} set to ${data.new_state.toUpperCase()}`);
+        logMessage(`${deviceName} ${data.new_state.toUpperCase()}`);
+
+    } catch (error) {
+        console.error(`Error controlling ${deviceName}:`, error);
+        showToast(`Failed to control ${deviceName}: ${error.message}`, 'error');
+        logMessage(`ERROR: ${deviceName} control - ${error.message}`, 'error');
+
+        // Revert visual state on error
+        updateToggleButton(deviceType, systemState[deviceType]);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+// Update toggle button visual state
+function updateToggleButton(deviceType, isOn) {
+    const circle = elements[`${deviceType}ToggleCircle`];
+    const button = elements[`toggle${deviceType.charAt(0).toUpperCase() + deviceType.slice(1)}`];
+
+    if (isOn) {
+        button.classList.remove('bg-gray-200');
+        button.classList.add('bg-green-500');
+        circle.classList.remove('translate-x-0');
+        circle.classList.add('translate-x-6');
+    } else {
+        button.classList.remove('bg-green-500');
+        button.classList.add('bg-gray-200');
+        circle.classList.remove('translate-x-6');
+        circle.classList.add('translate-x-0');
+    }
+}
+
+// Update device status display
+function updateDeviceStatus(deviceType, state) {
+    const isOn = state === 'on' || state === true;
+    const statusElement = elements[`${deviceType}Status`];
+    const displayValue = deviceType === 'pump' ? (isOn ? 'ON' : 'OFF') : (isOn ? 'OPEN' : 'CLOSED');
+
+    if (statusElement) {
+        statusElement.textContent = displayValue;
+        statusElement.className = isOn ?
+            'ml-2 font-medium text-green-600' :
+            'ml-2 font-medium text-red-600';
+    }
+
+    // Update system state and toggle button
+    systemState[deviceType] = isOn;
+    updateToggleButton(deviceType, isOn);
+}
+
+// Update crop recommendation when selection changes
+function updateCropRecommendation() {
+    const crop = elements.cropSelect.value;
+    const soil = elements.soilSelect.value;
+
+    if (crop && soil) {
+        const threshold = cropDatabase[crop][soil];
+        elements.recommendedThreshold.textContent = `${threshold}%`;
+        elements.recommendedThresholdContainer.classList.remove('hidden');
+        elements.cropInfo.textContent = cropDatabase[crop].info;
+        elements.cropInfo.classList.remove('hidden');
+    } else {
+        elements.recommendedThresholdContainer.classList.add('hidden');
+        elements.cropInfo.classList.add('hidden');
+    }
+}
+
+// Apply crop configuration to system
+function applyCropConfiguration() {
+    const crop = elements.cropSelect.value;
+    const soil = elements.soilSelect.value;
+
+    if (!crop || !soil) {
+        showToast('Please select both crop and soil type', 'error');
+        return;
+    }
+
+    const threshold = cropDatabase[crop][soil];
+    elements.thresholdSlider.value = threshold;
+    setThreshold(threshold);
+
+    systemState.currentCrop = crop;
+    systemState.currentSoil = soil;
+
+    showToast(`Configured for ${crop} in ${soil} soil (Threshold: ${threshold}%)`);
+    logMessage(`System configured: ${crop} in ${soil} soil (Threshold: ${threshold}%)`);
+}
+
+// Threshold Management
+function setThresholdFromSlider() {
+    const newThreshold = parseInt(elements.thresholdSlider.value);
+    setThreshold(newThreshold);
+}
+
+function adjustThreshold(amount) {
+    const current = parseInt(elements.thresholdSlider.value);
+    const newValue = Math.min(100, Math.max(0, current + amount));
+    elements.thresholdSlider.value = newValue;
+    setThreshold(newValue);
+}
+
+function updateThresholdPreview() {
+    elements.currentThreshold.textContent = `${elements.thresholdSlider.value}%`;
+}
+
+async function setThreshold(threshold) {
+    try {
+        const response = await fetch('/api/set_threshold/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ threshold })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Server returned ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status !== 'success') {
+            throw new Error(data.message || 'Failed to set threshold');
+        }
+
+        systemState.threshold = threshold;
+        elements.currentThreshold.textContent = `${threshold}%`;
+        showToast(`Threshold set to ${threshold}%`);
+        logMessage(`Moisture threshold updated to ${threshold}%`);
+
+    } catch (error) {
+        console.error('Error setting threshold:', error);
+        showToast(`Failed to set threshold: ${error.message}`, 'error');
+        logMessage(`ERROR: Threshold update failed - ${error.message}`, 'error');
+    }
+}
+
+// System Status Updates
+async function fetchSystemStatus() {
+    try {
+        const response = await fetch('/api/status/');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Update connection status
+        const esp32Connected = data.esp32_connected || false;
+        updateConnectionStatus(esp32Connected);
+
+        // Update moisture display
+        if (typeof data.moisture !== 'undefined') {
+            systemState.moisture = data.moisture;
+            elements.moistureLevel.textContent = `${systemState.moisture}%`;
+            elements.moistureBar.style.width = `${systemState.moisture}%`;
+            updateMoistureBarColor();
+        }
+
+        // Update threshold if changed
+        if (data.threshold && data.threshold !== systemState.threshold) {
+            systemState.threshold = data.threshold;
+            elements.thresholdSlider.value = systemState.threshold;
+            elements.currentThreshold.textContent = `${systemState.threshold}%`;
+        }
+
+        // Update device states
+        if (typeof data.pump !== 'undefined') {
+            updateDeviceStatus('pump', data.pump);
+        }
+
+        if (typeof data.valve !== 'undefined') {
+            updateDeviceStatus('valve', data.valve);
+        }
+
+        // Update last updated time
+        systemState.lastUpdated = new Date();
+        elements.lastUpdated.textContent = systemState.lastUpdated.toLocaleTimeString();
+
+    } catch (error) {
+        console.error('Error fetching system status:', error);
+        updateConnectionStatus(false);
+        logMessage(`ERROR: Failed to fetch system status - ${error.message}`, 'error');
+    }
+}
+
+// Update connection status display
+function updateConnectionStatus(connected) {
+    systemState.esp32Connected = connected;
+
+    if (connected) {
+        elements.esp32Status.textContent = 'Connected';
+        elements.esp32Status.className = 'font-medium text-green-600';
+        elements.systemStatus.textContent = 'Online';
+        elements.systemStatusIndicator.className = 'w-3 h-3 rounded-full bg-green-500 mr-2';
+
+        // Enable control buttons
+        elements.togglePump.disabled = false;
+        elements.toggleValve.disabled = false;
+    } else {
+        elements.esp32Status.textContent = 'Disconnected';
+        elements.esp32Status.className = 'font-medium text-red-600';
+        elements.systemStatus.textContent = 'Offline';
+        elements.systemStatusIndicator.className = 'w-3 h-3 rounded-full bg-red-500 mr-2';
+
+        // Disable control buttons
+        elements.togglePump.disabled = true;
+        elements.toggleValve.disabled = true;
+
+        showToast('ESP32 is disconnected', 'error');
+    }
+}
+
+function updateMoistureBarColor() {
+    const moisture = systemState.moisture;
+    const threshold = systemState.threshold;
+
+    if (moisture < threshold - 10) {
+        elements.moistureBar.className = 'bg-red-500 h-4 rounded-full transition-all duration-500';
+    } else if (moisture > threshold + 10) {
+        elements.moistureBar.className = 'bg-blue-500 h-4 rounded-full transition-all duration-500';
+    } else {
+        elements.moistureBar.className = 'bg-green-600 h-4 rounded-full transition-all duration-500';
+    }
+}
+
+// UI Helpers
+function showToast(message, type = 'success') {
+    elements.toastMessage.textContent = message;
+    elements.toast.className = `fixed bottom-4 right-4 bg-${type === 'error' ? 'red' : 'gray'}-800 text-white px-4 py-2 rounded-md shadow-lg flex items-start transition-opacity duration-300`;
+    elements.toast.classList.remove('hidden');
+
+    setTimeout(() => {
+        elements.toast.classList.add('hidden');
+    }, 5000);
+}
+
+function logMessage(message, type = 'info') {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement('div');
+    logEntry.className = type === 'error' ? 'text-red-600' : 'text-gray-800';
+    logEntry.textContent = `[${timestamp}] ${message}`;
+    elements.systemLogs.appendChild(logEntry);
+    elements.systemLogs.scrollTop = elements.systemLogs.scrollHeight;
+}
+</script>
+
+<style>
+.toggle-btn {
+    @apply relative inline-flex items-center h-8 rounded-full w-14 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+}
+
+.toggle-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+.toggle-btn-circle {
+    @apply inline-block h-6 w-6 rounded-full shadow transform transition-transform;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Smooth transitions for all interactive elements */
+button, input[type="range"], select {
+    @apply transition-colors duration-200;
+}
+</style>
 {% endblock %}
