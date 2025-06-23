@@ -111,11 +111,12 @@ if IS_PRODUCTION:
             'NAME': os.getenv('DB_NAME'),
             'USER': os.getenv('DB_USER'),
             'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST', 'd17i3fp5pdvs738dsju0 - a.frankfurt - postgres.render.com'),
+            'HOST': os.getenv('DB_HOST', 'd17i3fp5pdvs738dsju0-a.frankfurt-postgres.render.com'),
             'PORT': os.getenv('DB_PORT', '5432'),
             'OPTIONS': {
                 'sslmode': 'require',
-                'connect_timeout': 5  # Add connection timeout
+                'connect_timeout': 5,
+                'conn_max_age': 600
             }
         }
     }
@@ -280,6 +281,12 @@ LOGGING = {
         'level': 'DEBUG' if DEBUG else 'INFO',
     },
 }
+
+# MQTT Settings
+MQTT_HOST = os.getenv('MQTT_HOST', 'localhost')
+MQTT_PORT = int(os.getenv('MQTT_PORT', 1883))
+MQTT_USER = os.getenv('MQTT_USER', 'django_server')
+MQTT_PASS = os.getenv('MQTT_PASS', 'serverpass')
 
 # Ensure directories exist
 os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)

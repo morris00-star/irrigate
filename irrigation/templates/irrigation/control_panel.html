@@ -1,197 +1,352 @@
 {% extends 'irrigation/base.html' %}
 
-{% block title %}Control Panel{% endblock %}
+{% block title %}Smart Irrigation Control{% endblock %}
 
 {% block content %}
-    <h1 class="text-3xl font-bold mb-8">Control Panel</h1>
+    <h1 class="text-3xl font-bold mb-8 text-center text-green-700">Smart Irrigation Control Panel</h1>
 
-    <!-- Display System Status (Pump, Valve, Moisture Level) -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 class="text-2xl font-semibold mb-4">System Status</h2>
-        <div class="space-y-4">
-            <!-- Pump Status -->
-            <div class="flex items-center justify-between">
-                <span class="text-gray-700">Pump: <span id="pump-status">Loading...</span></span>
-                <button id="toggle-pump" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                    Toggle Pump
-                </button>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Configuration Panel -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Crop Configuration</h2>
+
+            <!-- Auto-Apply Toggle -->
+            <div class="flex items-center justify-between mb-6 p-3 bg-blue-50 rounded-lg">
+                <span class="text-gray-700 font-medium">Auto-Apply Threshold:</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="auto-apply-toggle" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                </label>
             </div>
-            <!-- Valve Status -->
-            <div class="flex items-center justify-between">
-                <span class="text-gray-700">Valve: <span id="valve-status">Loading...</span></span>
-                <button id="toggle-valve" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                    Toggle Valve
-                </button>
+
+            <!-- Crop and Soil Selection -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">Crop Type:</label>
+                    <select id="crop-select" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                        <option value="">-- Select Crop --</option>
+                        <option value="banana">Banana</option>
+                        <option value="maize">Maize</option>
+                        <option value="beans">Beans</option>
+                        <option value="coffee">Coffee</option>
+                        <option value="cassava">Cassava</option>
+                        <option value="rice">Rice</option>
+                        <option value="tomato">Tomato</option>
+                        <option value="potato">Potato</option>
+                        <option value="sugarcane">Sugarcane</option>
+                        <option value="vegetables">Vegetables</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">Soil Type:</label>
+                    <select id="soil-select" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                        <option value="">-- Select Soil --</option>
+                        <option value="clay">Clay</option>
+                        <option value="loamy">Loamy</option>
+                        <option value="sandy">Sandy</option>
+                    </select>
+                </div>
             </div>
-            <!-- Moisture Level -->
-            <div class="flex items-center justify-between">
-                <span class="text-gray-700">Moisture Level: <span id="moisture-level">Loading...</span></span>
+
+            <!-- Recommendation Display -->
+            <div id="recommendation-container" class="hidden p-4 bg-green-50 rounded-lg mb-6 border border-green-200">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-700">
+                            <span class="font-medium">Recommended Threshold:</span>
+                            <span id="recommended-threshold" class="font-bold text-green-700 ml-2">--</span>%
+                        </p>
+                        <p id="recommendation-details" class="text-sm text-gray-600 mt-1"></p>
+                    </div>
+                    <button id="apply-threshold" class="bg-green-600 text-white py-1 px-3 rounded-md text-sm hover:bg-green-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Apply
+                    </button>
+                </div>
+            </div>
+
+            <!-- Manual Threshold Override -->
+            <div class="border-t pt-4">
+                <h3 class="text-lg font-medium mb-3 text-gray-700">Manual Threshold Control</h3>
+                <form id="set-threshold-form" class="flex items-end gap-2">
+                    <div class="flex-1">
+                        <label class="block text-gray-700 mb-1 text-sm">Moisture Threshold (%)</label>
+                        <input type="number" name="threshold" id="threshold" min="0" max="100"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200"
+                               placeholder="0-100">
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Set
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- System Status Panel -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 border-b pb-2">System Status</h2>
+
+            <!-- Moisture Level Indicator -->
+            <div class="mb-6">
+                <div class="flex justify-between mb-1">
+                    <span class="text-gray-700 font-medium">Soil Moisture</span>
+                    <span class="text-gray-700">
+                        <span id="moisture-level">--</span>%
+                        <span class="text-sm">(Target: <span id="current-threshold">--</span>%)</span>
+                    </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div id="moisture-bar" class="bg-green-600 h-4 rounded-full" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Dry</span>
+                    <span>Optimal</span>
+                    <span>Wet</span>
+                </div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="space-y-4 mb-6">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span class="text-gray-700">Pump: <span id="pump-status" class="font-medium">--</span></span>
+                    </div>
+                    <button id="toggle-pump" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Toggle
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-gray-700">Valve: <span id="valve-status" class="font-medium">--</span></span>
+                    </div>
+                    <button id="toggle-valve" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Toggle
+                    </button>
+                </div>
+            </div>
+
+            <!-- System Messages -->
+            <div id="system-message" class="hidden p-3 rounded-lg mb-4 text-sm"></div>
+
+            <!-- Last Updated -->
+            <div class="text-right text-xs text-gray-500">
+                Last updated: <span id="last-updated">--</span>
             </div>
         </div>
     </div>
 
-    <!-- Display Current Threshold -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 class="text-2xl font-semibold mb-4">Current Threshold</h2>
-        <p class="text-gray-700">Moisture Threshold: <span id="current-threshold">Loading...</span></p>
-    </div>
-
-    <!-- Form to Set/Edit Threshold -->
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold mb-4">Set/Edit Threshold</h2>
-        <form id="set-threshold-form">
-            <div class="space-y-4">
-                <label class="block">
-                    <span class="text-gray-700">New Moisture Threshold (%):</span>
-                    <input type="number" name="threshold" id="threshold" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
-                </label>
-                <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                    Set Threshold
-                </button>
-            </div>
-        </form>
-    </div>
-
     <script>
-        // Fetch and display the current system status (pump, valve, moisture level, and threshold)
-        function fetchSystemStatus() {
-            fetch('/api/status/')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("System Status Data:", data); // Log the response for debugging
+        // Database and Configuration
+        const thresholdDatabase = {
+            banana: { clay: 30, loamy: 30, sandy: 25, details: "Bananas need consistently moist soil, especially in clay which retains water well." },
+            maize: { clay: 25, loamy: 25, sandy: 20, details: "Maize requires moderate moisture, with critical needs during germination and tasseling." },
+            beans: { clay: 25, loamy: 24, sandy: 22, details: "Beans need careful moisture control during flowering and pod formation stages." },
+            coffee: { clay: 32, loamy: 30, sandy: 28, details: "Coffee is sensitive to drought, particularly during berry development." },
+            cassava: { clay: 22, loamy: 20, sandy: 18, details: "Cassava is drought-tolerant but benefits from early growth moisture." },
+            rice: { clay: 35, loamy: 30, sandy: 25, details: "Rice thrives in waterlogged conditions, especially in clay soils." },
+            tomato: { clay: 32, loamy: 30, sandy: 28, details: "Tomatoes need consistent moisture, especially during flowering and fruiting." },
+            potato: { clay: 28, loamy: 25, sandy: 22, details: "Potatoes require careful moisture control during tuber formation." },
+            sugarcane: { clay: 32, loamy: 30, sandy: 28, details: "Sugarcane needs deep, consistent moisture for optimal growth." },
+            vegetables: { clay: 28, loamy: 25, sandy: 22, details: "Leafy vegetables need consistent moisture to prevent wilting." }
+        };
 
-                    // Update pump status
-                    document.getElementById('pump-status').textContent = data.pump;
-                    // Update valve status
-                    document.getElementById('valve-status').textContent = data.valve;
-                    // Update moisture level
-                    document.getElementById('moisture-level').textContent = data.moisture + '%';
-                    // Update threshold
-                    document.getElementById('current-threshold').textContent = data.threshold + '%';
-                })
-                .catch(error => {
-                    console.error("Error fetching system status:", error);
-                });
+        // DOM Elements
+        const cropSelect = document.getElementById('crop-select');
+        const soilSelect = document.getElementById('soil-select');
+        const autoApplyToggle = document.getElementById('auto-apply-toggle');
+        const recommendationContainer = document.getElementById('recommendation-container');
+        const recommendedThreshold = document.getElementById('recommended-threshold');
+        const recommendationDetails = document.getElementById('recommendation-details');
+        const applyThresholdBtn = document.getElementById('apply-threshold');
+        const thresholdInput = document.getElementById('threshold');
+        const setThresholdForm = document.getElementById('set-threshold-form');
+        const systemMessage = document.getElementById('system-message');
+        const moistureBar = document.getElementById('moisture-bar');
+        const lastUpdated = document.getElementById('last-updated');
+
+        // Event Listeners
+        cropSelect.addEventListener('change', updateRecommendation);
+        soilSelect.addEventListener('change', updateRecommendation);
+        applyThresholdBtn.addEventListener('click', applyRecommendedThreshold);
+        setThresholdForm.addEventListener('submit', handleManualThreshold);
+
+        // Update recommendation based on selections
+        function updateRecommendation() {
+            const crop = cropSelect.value;
+            const soil = soilSelect.value;
+
+            if (crop && soil) {
+                const threshold = thresholdDatabase[crop][soil];
+                recommendedThreshold.textContent = threshold;
+                recommendationDetails.textContent = thresholdDatabase[crop].details;
+                recommendationContainer.classList.remove('hidden');
+                thresholdInput.value = threshold;
+
+                // Auto-apply if toggle is on
+                if (autoApplyToggle.checked) {
+                    applyRecommendedThreshold();
+                }
+            } else {
+                recommendationContainer.classList.add('hidden');
+            }
         }
 
-        // Fetch the current threshold
-        function fetchCurrentThreshold() {
-            fetch('/api/get_threshold/')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Threshold Data:", data); // Log the response for debugging
-                    document.getElementById('current-threshold').textContent = data.threshold + '%';
-                })
-                .catch(error => {
-                    console.error("Error fetching threshold:", error);
-                });
+        // Apply recommended threshold
+        function applyRecommendedThreshold(e) {
+            if (e) e.preventDefault();
+            const threshold = recommendedThreshold.textContent;
+            if (threshold && threshold !== '--') {
+                setThreshold(threshold, true);
+            }
         }
 
-        // Toggle Pump
-        document.getElementById('toggle-pump').addEventListener('click', function (e) {
+        // Handle manual threshold submission
+        function handleManualThreshold(e) {
             e.preventDefault();
+            const threshold = thresholdInput.value;
+            if (threshold && threshold >= 0 && threshold <= 100) {
+                setThreshold(threshold, false);
+            } else {
+                showMessage('Please enter a valid threshold (0-100%)', 'error');
+            }
+        }
 
-            fetch('/api/control/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
-                },
-                body: JSON.stringify({ action: 'toggle_pump' })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert('Pump state updated successfully!');
-                fetchSystemStatus(); // Refresh the system status
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert('Failed to update pump state. Check the console for details.');
-            });
-        });
-
-        // Toggle Valve
-        document.getElementById('toggle-valve').addEventListener('click', function (e) {
-            e.preventDefault();
-
-            fetch('/api/control/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
-                },
-                body: JSON.stringify({ action: 'toggle_valve' })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert('Valve state updated successfully!');
-                fetchSystemStatus(); // Refresh the system status
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert('Failed to update valve state. Check the console for details.');
-            });
-        });
-
-        // Set/Edit Threshold
-        document.getElementById('set-threshold-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const threshold = document.getElementById('threshold').value;
-
+        // Set threshold on server
+        function setThreshold(threshold, isAutoApplied) {
             fetch('/api/set_threshold/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
+                    'X-CSRFToken': '{{ csrf_token }}',
                 },
                 body: JSON.stringify({ threshold })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
+                if (!response.ok) throw new Error('Network error');
                 return response.json();
             })
             .then(data => {
                 if (data.status === 'success') {
-                    alert('Threshold updated successfully!');
-                    fetchSystemStatus(); // Refresh the system status
-                    fetchCurrentThreshold(); // Refresh the displayed threshold
+                    const message = isAutoApplied
+                        ? `Auto-set threshold to ${threshold}% for ${cropSelect.options[cropSelect.selectedIndex].text} in ${soilSelect.value} soil`
+                        : `Manual threshold set to ${threshold}%`;
+                    showMessage(message, 'success');
+                    fetchSystemStatus();
                 } else {
-                    alert('Failed to update threshold: ' + (data.message || 'Unknown error'));
+                    throw new Error(data.message || 'Unknown error');
                 }
             })
             .catch(error => {
+                showMessage(`Failed to update threshold: ${error.message}`, 'error');
                 console.error("Error:", error);
-                alert('Failed to update threshold. Check the console for details.');
             });
+        }
+
+        // Show system message
+        function showMessage(text, type) {
+            systemMessage.textContent = text;
+            systemMessage.className = `p-3 rounded-lg mb-4 text-sm ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+            systemMessage.classList.remove('hidden');
+            setTimeout(() => systemMessage.classList.add('hidden'), 5000);
+        }
+
+        // Fetch and update system status
+        function fetchSystemStatus() {
+            fetch('/api/status/')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network error');
+                    return response.json();
+                })
+                .then(data => {
+                    // Update pump status
+                    document.getElementById('pump-status').textContent = data.pump ? 'ON' : 'OFF';
+                    document.getElementById('pump-status').className = data.pump ? 'font-medium text-green-600' : 'font-medium text-red-600';
+
+                    // Update valve status
+                    document.getElementById('valve-status').textContent = data.valve ? 'OPEN' : 'CLOSED';
+                    document.getElementById('valve-status').className = data.valve ? 'font-medium text-green-600' : 'font-medium text-red-600';
+
+                    // Update moisture data
+                    const moisture = data.moisture || 0;
+                    document.getElementById('moisture-level').textContent = moisture;
+                    moistureBar.style.width = `${moisture}%`;
+                    moistureBar.className = moisture < (data.threshold - 10) ? 'bg-red-500 h-4 rounded-full'
+                                        : moisture > (data.threshold + 10) ? 'bg-blue-500 h-4 rounded-full'
+                                        : 'bg-green-600 h-4 rounded-full';
+
+                    // Update threshold display
+                    document.getElementById('current-threshold').textContent = data.threshold || '--';
+
+                    // Update timestamp
+                    lastUpdated.textContent = new Date().toLocaleTimeString();
+                })
+                .catch(error => {
+                    console.error("Error fetching system status:", error);
+                    showMessage('Failed to fetch system status', 'error');
+                });
+        }
+
+        // Toggle pump
+        document.getElementById('toggle-pump').addEventListener('click', function(e) {
+            e.preventDefault();
+            controlDevice('toggle_pump', 'Pump');
         });
 
-        // Fetch the system status every 10 seconds (reduced frequency)
-        setInterval(fetchSystemStatus, 10000);
+        // Toggle valve
+        document.getElementById('toggle-valve').addEventListener('click', function(e) {
+            e.preventDefault();
+            controlDevice('toggle_valve', 'Valve');
+        });
 
-        // Fetch the system status and threshold when the page loads
+        // Control device (pump/valve)
+        function controlDevice(action, deviceName) {
+            fetch('/api/control/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ action })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showMessage(`${deviceName} state updated successfully`, 'success');
+                    fetchSystemStatus();
+                } else {
+                    throw new Error(data.message || 'Unknown error');
+                }
+            })
+            .catch(error => {
+                showMessage(`Failed to update ${deviceName}: ${error.message}`, 'error');
+                console.error("Error:", error);
+            });
+        }
+
+        // Initialize
         fetchSystemStatus();
-        fetchCurrentThreshold();
+        setInterval(fetchSystemStatus, 10000); // Refresh every 10 seconds
     </script>
 {% endblock %}
