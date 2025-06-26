@@ -1,9 +1,13 @@
 import os
 import sys
-from pathlib import Path
 import mimetypes
 from urllib.parse import urlparse
 from dotenv import load_dotenv
+from pathlib import Path
+import dj_database_url
+
+# Determine if in production (on Render)
+IS_PRODUCTION = os.getenv('RENDER', '').lower() == 'true'
 
 # Load environment variables before any other settings
 load_dotenv()
@@ -105,20 +109,14 @@ TEMPLATES = [
 
 # Database configuration
 if IS_PRODUCTION:
+    # Recommended Render PostgreSQL configuration
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST', 'd17i3fp5pdvs738dsju0-a.frankfurt-postgres.render.com'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-            'OPTIONS': {
-                'sslmode': 'require',
-                'connect_timeout': 5,
-                'conn_max_age': 600
-            }
-        }
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True
+        )
     }
 else:
     DATABASES = {
