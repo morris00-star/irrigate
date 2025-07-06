@@ -6,7 +6,6 @@ from irrigation import api
 from django.conf import settings
 from django.conf.urls.static import static
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
@@ -17,7 +16,6 @@ urlpatterns = [
     path('help/', irrigation_views.help, name='help'),
     path('__debug__/', include('debug_toolbar.urls')),
     path('keep-alive/', irrigation_views.keep_alive, name='keep-alive'),
-    path('env-check/', irrigation_views.EnvCheckView.as_view, name='env_check'),
 
     # API URLs (moved to project level)
     path('api/sensor-data/', api.receive_sensor_data, name='receive_sensor_data'),

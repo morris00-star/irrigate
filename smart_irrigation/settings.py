@@ -292,9 +292,3 @@ MQTT_PASS = os.getenv('MQTT_PASS', 'serverpass')
 os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)
 os.makedirs(STATIC_ROOT, exist_ok=True)
 
-# Add to bottom of settings.py
-print("\n=== Environment Variables ===")
-print(f"DEBUG: {DEBUG}")
-print(f"SECRET_KEY: {'set' if SECRET_KEY else 'not set'}")
-print(f"DB_HOST: {os.getenv('DB_HOST', 'not set')}")
-print("============================\n")

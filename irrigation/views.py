@@ -212,7 +212,7 @@ def keep_alive(request):
 class EnvCheckView(View):
     """View to verify environment variable access"""
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         env_vars = {
             'DEBUG': str(settings.DEBUG),
             'ENVIRONMENT': os.getenv('ENVIRONMENT', 'Not set'),
