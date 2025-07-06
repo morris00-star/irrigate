@@ -209,7 +209,6 @@ def keep_alive(request):
     return JsonResponse({"status": "OK"}, status=200)
 
 
-@login_required
 class EnvCheckView(View):
     """View to verify environment variable access"""
 
