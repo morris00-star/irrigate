@@ -269,3 +269,11 @@ def trigger_notifications(request):
         logger.error(f"Cron job failed: {str(e)}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
+
+def env_check(request):
+    return JsonResponse({
+        'DJANGO_SECRET_KEY': bool(os.getenv('DJANGO_SECRET_KEY')),
+        'DATABASE_URL': bool(os.getenv('DATABASE_URL')),
+        'DEBUG': os.getenv('DEBUG')
+    })
+
