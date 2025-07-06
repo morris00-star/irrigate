@@ -1,5 +1,6 @@
 import csv
 import os
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect
@@ -209,7 +210,7 @@ def keep_alive(request):
     return JsonResponse({"status": "OK"}, status=200)
 
 
-class EnvCheckView(View):
+class EnvCheckView(LoginRequiredMixin, View):
     """View to verify environment variable access"""
 
     def get(self, request, *args, **kwargs):

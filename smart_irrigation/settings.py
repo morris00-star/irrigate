@@ -32,6 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Environment Detection
 IS_PRODUCTION = os.getenv('ENVIRONMENT') == 'production'
+
 IS_DEVELOPMENT = not IS_PRODUCTION
 
 # Security Settings
@@ -256,9 +257,51 @@ CRON_SECRET_KEY = os.getenv('CRON_SECRET_KEY', 'dev-secret-key-change-me')
 DEFAULT_CHARSET = 'utf-8'
 
 # Celery
-CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+url = urlparse(REDIS_URL)
+
+# Celery Configuration for Windows
+"""CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'"""
+CELERY_WORKER_POOL = 'eventlet'  # Required for Windows
+# CELERY_WORKER_CONCURRENCY = 4    # Optimal for Windows
+CELERY_TASK_ACKS_LATE = True
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_TASK_SEND_SENT_EVENT = True
+
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+
+CELERY_TASK_ALWAYS_EAGER = False
+
+CELERY_WORKER_CONCURRENCY = 1
+
 CELERY_TIMEZONE = 'Africa/Nairobi'
+
+CELERY_TASK_ROUTES = {
+    'irrigation.tasks.send_periodic_sms_alerts': {
+        'queue': 'sms_alerts',
+        'rate_limit': '10/m'  # Prevent SMS flooding
+    }
+}
+
+CELERY_BEAT_SCHEDULE = {
+    'send-sms-alerts': {
+        'task': 'irrigation.tasks.send_periodic_sms_alerts',
+        'schedule': 300.0,
+        'options': {
+            'expires': 290,  # Prevent duplicate runs
+            'queue': 'sms_alerts'
+        }
+    }
+}
 
 # Logging
 LOGGING = {
@@ -291,4 +334,3 @@ MQTT_PASS = os.getenv('MQTT_PASS', 'serverpass')
 # Ensure directories exist
 os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)
 os.makedirs(STATIC_ROOT, exist_ok=True)
-

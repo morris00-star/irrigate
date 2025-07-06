@@ -153,5 +153,7 @@ class SMSService:
         raise SMSServiceError(error_msg, phone)
 
 
-# Legacy interface
-send_irrigation_alert = SMSService.send_alert
+def send_irrigation_alert(user, sensor_data):
+    """Legacy interface maintained for compatibility"""
+    return SMSService.send_alert(user, sensor_data)
+

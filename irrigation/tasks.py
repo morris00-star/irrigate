@@ -1,29 +1,34 @@
+from celery import shared_task
+from .models import SensorData
 from accounts.models import CustomUser
-from irrigation.models import SensorData
-from irrigation.sms import SMSService
-from django.core.exceptions import ObjectDoesNotExist
+from .sms import SMSService
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def send_notifications_to_all_users():
+@shared_task(bind=True, name="irrigation.tasks.send_periodic_sms_alerts")  # Note the bind=True parameter
+def send_periodic_sms_alerts(self):  # Add 'self' parameter
+    """Task to send SMS alerts with proper Celery task signature"""
     try:
-        latest_data = SensorData.objects.latest('timestamp')
+        latest_data = SensorData.objects.order_by('-timestamp').first()
+        if not latest_data:
+            logger.warning("No sensor data available")
+            return "No data available"
+
         users = CustomUser.objects.filter(
             is_active=True,
             phone_number__isnull=False
         ).exclude(phone_number='')
 
-        results = []
         for user in users:
-            success, message = SMSService.send_alert(user, latest_data)
-            results.append({
-                'user': user.username,
-                'phone': user.phone_number,
-                'status': 'success' if success else 'failed',
-                'message': message
-            })
-        return results
+            SMSService.send_alert(user, latest_data)
 
-    except ObjectDoesNotExist:
-        return {'error': 'No sensor data available'}
+        logger.info(f"Sent SMS alerts to {users.count()} users")
+        return f"Successfully sent to {users.count()} users"
+
     except Exception as e:
-        return {'error': str(e)}
+        logger.error(f"SMS task failed: {str(e)}")
+        self.retry(exc=e, countdown=60)
+        return None
+
