@@ -13,5 +13,4 @@ urlpatterns = [
     path('download-data/', views.download_data, name='download-data'),
     path('env-check/', EnvCheckView, name='env_check'),
     path('cron/notifications/', trigger_notifications, name='trigger_notifications'),
-    path('env-check/', views.env_check, name='env-check'),
 ]
