@@ -336,26 +336,6 @@
             40% { transform: scale(1); }
         }
 
-        @media (max-width: 640px) {
-        /* Ensure content doesn't get hidden behind mobile browser UI */
-        body {
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        /* Adjust main content padding */
-        main {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-
-        /* Make sure emergency banner is visible */
-        #emergencyBanner {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-    }
-
     </style>
 
     {% block extra_head %}{% endblock %}
@@ -470,7 +450,7 @@
 
                     <!-- Mobile Menu Button -->
                     <button id="mobileMenuButton" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu">
-                        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
@@ -479,7 +459,7 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden md:hidden bg-green-700 px-4 pb-4 absolute w-full left-0 z-40 shadow-lg">
+        <div id="mobileMenu" class="hidden md:hidden bg-green-700 px-4 pb-4">
             <div class="flex flex-col space-y-3">
                 <a href="{% url 'dashboard' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
                     <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
@@ -492,6 +472,9 @@
                 </a>
                 <a href="{% url 'help' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
                     <i class="fas fa-question-circle mr-3"></i> Help
+                </a>
+                <a href="{% url 'chatbot' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
+                    <i class="fas fa-question-circle mr-3"></i> Ask Our Bot
                 </a>
                 <a href="{% url 'contact' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
                     <i class="fas fa-envelope mr-3"></i> Contact
@@ -508,10 +491,6 @@
                             {% if emergency_active %}Reset Emergency{% else %}Emergency Stop{% endif %}
                         </span>
                     </button>
-
-                    <button id="mobileChatbotToggle" class="w-full text-left text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
-                            <i class="fas fa-robot mr-3"></i> Ask Our Bot
-                        </button>
 
                     <div class="flex items-center space-x-2">
                         <span class="text-white font-medium hidden sm:inline">{{ user.username }}</span>
@@ -645,12 +624,6 @@
                 mobileMenu.classList.toggle('hidden');
                 this.setAttribute('aria-expanded', mobileMenu.classList.contains('hidden') ? 'false' : 'true');
             });
-
-            // Add to your DOMContentLoaded event listener
-            document.getElementById('mobileChatbotToggle').addEventListener('click', function() {
-                    document.getElementById('mobileMenu').classList.add('hidden');
-                    toggleChat();
-                });
 
             // Emergency button handlers
             function setupEmergencyButton(buttonId) {
@@ -1171,17 +1144,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 chatForm.dispatchEvent(new Event('submit'));
             }
-
-        // Better touch handling
-        chatInput.addEventListener('touchstart', function(e) {
-            this.focus();
-            }, { passive: true });
-
-            // Handle mobile keyboard appearance
-            window.addEventListener('resize', function() {
-                if (!chatContainer.classList.contains('chatbot-hidden')) {
-                    scrollToBottom();
-                }
         });
 
         // Initial greeting if no history
@@ -1193,19 +1155,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start the chatbot
     initChatbot();
 });
-
-    // Add swipe detection for mobile
-    let touchStartY = 0;
-
-    chatContainer.addEventListener('touchstart', function(e) {
-        touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    chatContainer.addEventListener('touchmove', function(e) {
-        if (touchStartY - e.touches[0].clientY > 100) {
-            toggleChat();
-        }
-    }, { passive: true });
 
 
     </script>
