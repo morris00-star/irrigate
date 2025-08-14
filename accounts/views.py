@@ -19,6 +19,8 @@ from django.views.decorators.csrf import csrf_protect
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser
 from .utils import send_brevo_transactional_email
+from django.db import transaction
+from irrigation.db_utils import acquire_connection
 
 
 def home(request):
@@ -29,10 +31,14 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Registration successful. Welcome!')
-            return redirect('dashboard')
+            with acquire_connection() as connection:
+                with transaction.atomic(using=connection.alias):
+                    user = form.save(commit=False)
+                    user.set_password(form.cleaned_data['password1'])
+                    user.save()
+                    login(request, user)
+                    messages.success(request, 'Registration successful. Welcome!')
+                    return redirect('dashboard')
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})

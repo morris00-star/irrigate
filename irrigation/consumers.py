@@ -1,45 +1,38 @@
-import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
-from .models import SensorData
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SensorDataConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        await self.accept()
-        await self.channel_layer.group_add("sensor_data", self.channel_name)
+        try:
+            self.user_id = self.scope['url_route']['kwargs']['user_id']
+            self.group_name = f'sensor_updates_{self.user_id}'
+
+            await self.channel_layer.group_add(
+                self.group_name,
+                self.channel_name
+            )
+            await self.accept()
+            logger.info(f"[WEBSOCKET] Client connected for user {self.user_id}")
+        except Exception as e:
+            logger.error(f"[WEBSOCKET] Connection error: {str(e)}")
+            await self.close()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard("sensor_data", self.channel_name)
+        try:
+            await self.channel_layer.group_discard(
+                self.group_name,
+                self.channel_name
+            )
+            logger.info(f"[WEBSOCKET] Client disconnected for user {self.user_id}")
+        except Exception as e:
+            logger.error(f"[WEBSOCKET] Disconnection error: {str(e)}")
 
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        await self.channel_layer.group_send(
-            "sensor_data",
-            {
-                'type': 'sensor_data_message',
-                'message': message
-            }
-        )
-
-    async def sensor_data_message(self, event):
-        message = event['message']
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
-
-    @database_sync_to_async
-    def get_latest_data(self):
-        latest_data = SensorData.objects.latest('timestamp')
-        next_schedule = IrrigationSchedule.objects.filter(user=self.scope['user']).order_by('start_time').first()
-        return {
-            'soil_moisture': latest_data.soil_moisture,
-            'temperature': latest_data.temperature,
-            'humidity': latest_data.humidity,
-            'timestamp': latest_data.timestamp.isoformat(),
-            'pump_status': 'On' if latest_data.soil_moisture < 50 else 'Off',
-            'valve_status': 'Open' if latest_data.soil_moisture < 50 else 'Closed',
-            'next_watering': next_schedule.start_time.strftime('%Y-%m-%d %H:%M') if next_schedule else 'Not scheduled'
-        }
-    
+    async def send_sensor_data(self, event):
+        try:
+            await self.send(text_data=event['data'])
+            logger.debug(f"[WEBSOCKET] Data sent to user {self.user_id}")
+        except Exception as e:
+            logger.error(f"[WEBSOCKET] Send error: {str(e)}")

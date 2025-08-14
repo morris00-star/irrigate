@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 import dj_database_url
 
-# Determine if in production (on Render)
-IS_PRODUCTION = os.getenv('RENDER', '').lower() == 'true'
+# Environment Detection
+IS_PRODUCTION = os.getenv('ENVIRONMENT') == 'production'
 
 # Load environment variables before any other settings
 load_dotenv()
@@ -30,9 +30,6 @@ class CorrectMimeTypeMiddleware:
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Environment Detection
-IS_PRODUCTION = os.getenv('ENVIRONMENT') == 'production'
-
 IS_DEVELOPMENT = not IS_PRODUCTION
 
 # Security Settings
@@ -49,7 +46,7 @@ ALLOWED_HOSTS = [
     'irrigation-intelligent.onrender.com',
     'localhost',
     '127.0.0.1',
-    '192.168.43.108',
+    '192.168.43.101',
     # Add other hosts as needed
 ]
 
@@ -88,6 +85,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'smart_irrigation.settings.CorrectMimeTypeMiddleware',
+    'irrigation.connection_middleware.ConnectionMiddleware',
+    'irrigation.db_middleware.DBConnectionMiddleware',
+    'irrigation.middleware.ThrottleHeaderMiddleware',
 ]
 
 ROOT_URLCONF = 'smart_irrigation.urls'
@@ -119,13 +119,28 @@ if IS_PRODUCTION:
             ssl_require=True
         )
     }
+
 else:
+
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'smart_irrigation_db',
+            'USER': os.getenv('USER_DB'),
+            'PASSWORD': os.getenv('PASSWORD_DB'),
+            'HOST': 'localhost',
+            'PORT': '5432',
+            'OPTIONS': {
+                'connect_timeout': 5,  # 5 seconds timeout
+            },
+            'CONN_MAX_AGE': 0,  # Don't persist connections
         }
     }
+
+"""# Ensure proper thread handling
+DATABASE_ROUTERS = []
+if not IS_PRODUCTION:
+    DATABASES['default']['OPTIONS']['isolation_level'] = None"""
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -203,15 +218,26 @@ REST_FRAMEWORK = {
     },
 }
 
-# Channels
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [(os.getenv('REDIS_HOST', '127.0.0.1'), int(os.getenv('REDIS_PORT', 6379)))],
+
+# Channels configuration
+if IS_PRODUCTION:
+    # Channels
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [(os.getenv('REDIS_HOST', '127.0.0.1'), int(os.getenv('REDIS_PORT', 6379)))],
+            },
         },
-    },
-}
+    }
+
+else:
+
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",  # Use in-memory for development
+        }
+    }
 
 # Security Settings
 if not DEBUG:
@@ -230,7 +256,7 @@ if not DEBUG:
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.43.108:8000",
+    "http://192.168.43.101:8000",
 ]
 CORS_ORIGIN_ALLOW_ALL = DEBUG  # Only allow all in development
 

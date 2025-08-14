@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
@@ -8,14 +9,18 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
 from accounts.models import CustomUser
-from .models import SensorData
+from .models import SensorData, SystemConfiguration
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.timezone import localtime
 import pytz
 import logging
+
+from .services.knowledge.guide_bot import IrrigationGuide
 from .sms import SMSService
 
 logger = logging.getLogger(__name__)
@@ -38,9 +43,15 @@ def help(request):
 
 @login_required
 def dashboard(request):
+    try:
+        config = SystemConfiguration.objects.get(user=request.user)
+        emergency_active = config.emergency_stop
+    except SystemConfiguration.DoesNotExist:
+        emergency_active = False
     sensor_data = SensorData.objects.filter(user=request.user).order_by('-timestamp')[:20]
 
     context = {
+        'emergency_active': emergency_active,
         'sensor_data': sensor_data,
     }
     return render(request, 'irrigation/dashboard.html', context)
@@ -109,6 +120,16 @@ def visualize_data(request):
     Render the visualization page.
     """
     return render(request, 'irrigation/visualize.html')
+
+
+@login_required
+def privacy_policy(request):
+    return render(request, 'irrigation/privacy.html')
+
+
+@login_required
+def terms_of_service(request):
+    return render(request, 'irrigation/terms.html')
 
 
 @login_required
@@ -268,4 +289,31 @@ def trigger_notifications(request):
     except Exception as e:
         logger.error(f"Cron job failed: {str(e)}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@require_POST
+def chatbot_view(request):
+    try:
+        # Handle both form-data and json requests
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            query = data.get('query', '').strip()
+        else:
+            query = request.POST.get('query', '').strip()
+
+        if not query:
+            return JsonResponse({
+                'error': 'Empty query',
+                'message': 'Please enter a question or command'
+            }, status=400)
+
+        guide = IrrigationGuide()
+        response_data = guide.get_help_response(query, request)
+        return JsonResponse(response_data)
+
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'message': 'An error occurred while processing your request'
+        }, status=500)
 

@@ -13,4 +13,5 @@ urlpatterns = [
     path('download-data/', views.download_data, name='download-data'),
     path('env-check/', EnvCheckView.as_view(), name='env_check'),
     path('cron/notifications/', trigger_notifications, name='trigger_notifications'),
+    path('chatbot/', views.chatbot_view, name='chatbot'),
 ]

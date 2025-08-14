@@ -1,36 +1,291 @@
 {% extends 'irrigation/base.html' %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    .contact-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .contact-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .social-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+    .social-icon:hover {
+        transform: scale(1.1);
+    }
+    .contact-method {
+        transition: all 0.3s ease;
+    }
+    .contact-method:hover {
+        background-color: #f0fdf4;
+    }
+    .route-card {
+        background-color: #f8fafc;
+        border-left: 4px solid #10b981;
+    }
+    .x-icon {
+        background-color: #000;
+        color: #fff;
+    }
+    .x-icon:hover {
+        background-color: #333;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="text-3xl font-bold mb-4">Contact Us</h1>
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">Get In Touch With Us</h1>
 
-<div class="bg-white p-4 rounded shadow">
-    <h2 class="text-2xl font-bold mb-2">Social Media</h2>
-    <ul class="mb-4">
-        <li>
-            <a href="https://www.facebook.com/magnus.morris.79" target="_blank" class="flex items-center">
-                <i class="fab fa-facebook mr-2"></i> Facebook
-            </a>
-        </li>
-        <li>
-            <a href="https://x.com/NduwayoMorris" target="_blank" class="flex items-center">
-                <i class="fab fa-twitter mr-2"></i> Twitter
-            </a>
-        </li>
-        <li>
-            <a href="https://www.linkedin.com/in/nduwayo-morris" target="_blank" class="flex items-center">
-                <i class="fab fa-linkedin mr-2"></i> LinkedIn
-            </a>
-        </li>
-        <li>
-            <a href="https://wa.me/+256780443345" target="_blank" class="flex items-center">
-                <i class="fab fa-whatsapp mr-2"></i> WhatsApp
-            </a>
-        </li>
-    </ul>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <!-- Contact Form -->
+        <div class="bg-white p-8 rounded-xl shadow-md contact-card">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Send Us a Message</h2>
+            <form class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                    <input type="text" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <input type="text" id="subject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Your Message</label>
+                    <textarea id="message" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                    Send Message
+                </button>
+            </form>
+        </div>
 
-    <h2 class="text-2xl font-bold mb-2">Contact Information</h2>
-    <p>Email: nduwayomorris@gmail.com</p>
-    <p>Phone: +256780443345</p>
-    <p>Address: Kyebando roundabout, Kampala City, Uganda</p>
+        <!-- Contact Information -->
+        <div class="space-y-8">
+            <div class="bg-white p-8 rounded-xl shadow-md contact-card">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Contact Information</h2>
+
+                <div class="space-y-6">
+                    <!-- Phone -->
+                    <div class="flex items-start contact-method p-4 rounded-lg">
+                        <div class="bg-green-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-phone-alt text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Call Us</h3>
+                            <a href="tel:+256780443345" class="text-green-600 hover:text-green-800 text-lg font-medium block mt-1">
+                                +256 780 443345
+                            </a>
+                            <p class="text-sm text-gray-500 mt-1">Mon-Fri: 8:00 AM - 5:00 PM</p>
+                            <button onclick="copyPhoneNumber()"
+                                    class="mt-2 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-600">
+                                <i class="far fa-copy mr-1"></i> Copy Number
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="flex items-start contact-method p-4 rounded-lg">
+                        <div class="bg-green-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-envelope text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Email Us</h3>
+                            <a href="mailto:nduwayomorris@gmail.com" class="text-green-600 hover:text-green-800 text-lg font-medium block mt-1">
+                                nduwayomorris@gmail.com
+                            </a>
+                            <p class="text-sm text-gray-500 mt-1">We'll respond within 24 hours</p>
+                        </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="flex items-start contact-method p-4 rounded-lg">
+                        <div class="bg-green-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-map-marker-alt text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Visit Us</h3>
+                            <p class="text-gray-600 mt-1">Kyebando roundabout</p>
+                            <p class="text-gray-600">Kampala City, Uganda</p>
+                            <a href="https://maps.google.com?q=Kyebando+roundabout,Kampala+City,Uganda"
+                               target="_blank"
+                               class="inline-block mt-2 text-sm text-green-600 hover:text-green-800">
+                                <i class="fas fa-directions mr-1"></i> Get Directions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Route Information -->
+            <div class="bg-white p-6 rounded-xl shadow-md route-card">
+                <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                    <i class="fas fa-route text-green-500 mr-2"></i>
+                    Quick Route From Kyebando
+                </h2>
+                <div class="space-y-2 text-gray-700">
+                    <p><span class="font-medium">Shared route</span><br>
+                    From (0.3499511,32.5886327) to Bukoto Mulimira Zone.</p>
+
+                    <p class="text-sm text-gray-500 mt-2">1 min (70 m)</p>
+
+                    <ol class="list-decimal pl-5 space-y-1 mt-3">
+                        <li>Head northwest</li>
+                        <li>Turn right</li>
+                        <li>Arrive at location: Bukoto Mulimira Zone</li>
+                    </ol>
+
+                    <a href="https://maps.app.goo.gl/iDjPednYn7ms6G8PA?g_st=ac"
+                       target="_blank"
+                       class="inline-flex items-center mt-4 text-green-600 hover:text-green-800 font-medium">
+                        <i class="fas fa-map-marked-alt mr-2"></i> View Full Route on Google Maps
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Social Media Section -->
+    <div class="bg-white p-8 rounded-xl shadow-md mb-8">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Connect With Us</h2>
+
+        <div class="flex flex-wrap justify-center gap-6">
+            <!-- Facebook -->
+            <a href="https://www.facebook.com/magnus.morris.79" target="_blank"
+               class="social-icon bg-blue-600 text-white hover:bg-blue-700">
+                <i class="fab fa-facebook-f text-2xl"></i>
+            </a>
+
+            <!-- X (Twitter) - Made more prominent -->
+            <a href="https://x.com/NduwayoMorris" target="_blank"
+               class="social-icon x-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+            </a>
+
+            <!-- LinkedIn -->
+            <a href="https://www.linkedin.com/in/nduwayo-morris" target="_blank"
+               class="social-icon bg-blue-500 text-white hover:bg-blue-600">
+                <i class="fab fa-linkedin-in text-2xl"></i>
+            </a>
+
+            <!-- WhatsApp -->
+            <a href="https://wa.me/+256780443345" target="_blank"
+               class="social-icon bg-green-500 text-white hover:bg-green-600">
+                <i class="fab fa-whatsapp text-2xl"></i>
+            </a>
+
+            <!-- Instagram -->
+            <a href="#" target="_blank"
+               class="social-icon bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600">
+                <i class="fab fa-instagram text-2xl"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="bg-white p-4 rounded-xl shadow-md">
+        <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Our Location</h2>
+        <div class="aspect-w-16 aspect-h-9">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.7526223157963!2d32.58164731475395!3d0.3477229997419665!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177dbb93c5695ab7%3A0x8e277819180b3c99!2sKyebando%20Roundabout!5e0!3m2!1sen!2sug!4v1620000000000!5m2!1sen!2sug"
+                    width="100%"
+                    height="400"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    class="rounded-lg">
+            </iframe>
+        </div>
+    </div>
 </div>
+
+<script>
+// Enhanced copy phone number functionality with error handling
+function copyPhoneNumber() {
+    const phoneNumber = '+256780443345';
+
+    // Modern clipboard API with fallback
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(phoneNumber).then(() => {
+            showCopySuccess();
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            fallbackCopyText(phoneNumber);
+        });
+    } else {
+        // Fallback for browsers that don't support clipboard API
+        fallbackCopyText(phoneNumber);
+    }
+}
+
+function fallbackCopyText(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';  // Prevent scrolling to bottom
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccess();
+        } else {
+            showCopyError();
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showCopyError();
+    } finally {
+        document.body.removeChild(textarea);
+    }
+}
+
+function showCopySuccess() {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg flex items-center';
+    toast.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        Phone number copied!
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function showCopyError() {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg flex items-center';
+    toast.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        Failed to copy. Please copy manually.
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Update the button to use the proper function
+document.addEventListener('DOMContentLoaded', function() {
+    const copyButton = document.querySelector('[onclick="copyPhoneNumber()"]');
+    if (copyButton) {
+        copyButton.onclick = copyPhoneNumber;
+    }
+});
+</script>
 {% endblock %}

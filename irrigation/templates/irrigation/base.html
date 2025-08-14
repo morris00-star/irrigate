@@ -1,80 +1,1169 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Intelligent Irrigation System for smart water management">
+    <meta name="theme-color" content="#059669">
+
     <title>{% block title %}Intelligent Irrigation System{% endblock %}</title>
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" as="style">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style">
+
+    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Favicons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="/static/favicon.ico" sizes="any">
+    <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="manifest" href="/static/manifest.webmanifest">
+
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --danger: #dc2626;
+            --warning: #d97706;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes pulse-emergency {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+            }
+        }
+
+        .emergency-pulse {
+            animation: pulse-emergency 1.5s infinite;
+        }
+
+        .emergency-flash {
+            animation: pulse 1s infinite;
+        }
+
+        .connection-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Smooth transitions */
+        .transition-all {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 200ms;
+        }
+
+        /* Focus styles */
+        .focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #10b981;
+                --primary-dark: #059669;
+            }
+
+            body {
+                background-color: #111827;
+                color: #f3f4f6;
+            }
+
+            .bg-gray-100 {
+                background-color: #1f2937;
+            }
+        }
+
+             /* Chatbot Button */
+        .chatbot-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-button:hover {
+            background: #3e8e41;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .notification-badge {
+            display: none;
+            width: 8px;
+            height: 8px;
+            background: #ff5252;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        /* Chatbot Container */
+        #chatbot-container {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        #chatbot-container.chatbot-hidden {
+            display: flex;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #chatbot-container:not(.chatbot-hidden) {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .chatbot-header {
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+        #chatbot-history {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f9f9f9;
+        }
+
+        #chatbot-form {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #eee;
+            background: white;
+            border-radius: 0 0 10px 10px;
+        }
+
+        #chatbot-form input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        #chatbot-form input:focus {
+            border-color: #4CAF50;
+        }
+
+        #chatbot-form button {
+            margin-left: 10px;
+            width: 40px;
+            height: 40px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #chatbot-form button:hover {
+            background: #3e8e41;
+        }
+
+        /* Chatbot message styling */
+        .message-content {
+            margin-bottom: 4px;
+            word-wrap: break-word;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-align: right;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .suggestion-chip {
+            background: #f3f4f6;
+            border: none;
+            border-radius: 9999px;
+            padding: 4px 12px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .suggestion-chip:hover {
+            background: #e5e7eb;
+        }
+
+        /* Messages */
+        .user-msg {
+            text-align: right;
+            background: #e3f2fd;
+            padding: 10px 15px;
+            border-radius: 18px 18px 0 18px;
+            margin-bottom: 10px;
+            display: inline-block;
+            max-width: 80%;
+            float: right;
+            clear: both;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .bot-msg {
+            text-align: left;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 18px 18px 18px 0;
+            margin-bottom: 10px;
+            display: inline-block;
+            max-width: 80%;
+            float: left;
+            clear: both;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+
+        .bot-msg.error {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #ffcdd2;
+        }
+
+        /* Typing Indicator */
+        #typing-indicator {
+            padding: 0 15px 10px;
+            height: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .typing-hidden {
+            opacity: 0;
+            height: 0;
+            padding: 0;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #9E9E9E;
+            border-radius: 50%;
+            display: inline-block;
+            animation: typing-animation 1.4s infinite both;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing-animation {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+    </style>
+
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-green-600 p-4 text-white">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="{% url 'home' %}" class="text-2xl font-bold">IIS</a>
-            <div class="hidden md:flex space-x-4">
+
+<body class="min-h-screen flex flex-col bg-gray-100">
+    <!-- Emergency Alert Banner -->
+    <div id="emergencyBanner" class="bg-red-600 text-white p-4 emergency-flash {% if not emergency_active %}hidden{% endif %}" role="alert" aria-live="assertive">
+        <div class="container mx-auto flex items-center justify-center">
+            <svg class="h-8 w-8 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div class="text-center">
+                <strong class="font-bold text-xl uppercase tracking-wider">Emergency Stop Activated</strong>
+                <p class="mt-1">All irrigation systems have been immediately shut down</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <header class="bg-green-600 shadow-md">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo and Brand -->
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'home' %}" class="flex items-center space-x-2" aria-label="Home">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span class="text-2xl font-bold text-white hidden sm:inline">McN</span>
+                    </a>
+
+                    <!-- Desktop Navigation -->
+                    <nav class="hidden md:flex space-x-6 ml-6">
+                        <a href="{% url 'dashboard' %}" class="text-white hover:text-green-200 font-medium transition-colors duration-200 flex items-center">
+                            <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                        </a>
+                        <a href="{% url 'control-panel' %}" class="text-white hover:text-green-200 font-medium transition-colors duration-200 flex items-center">
+                            <i class="fas fa-sliders-h mr-2"></i> Control Panel
+                        </a>
+                        <a href="{% url 'visualize-data' %}" class="text-white hover:text-green-200 font-medium transition-colors duration-200 flex items-center">
+                            <i class="fas fa-chart-line mr-2"></i> Analytics
+                        </a>
+                        <a href="{% url 'help' %}" class="text-white hover:text-green-200 font-medium transition-colors duration-200 flex items-center">
+                            <i class="fas fa-question-circle mr-2"></i> Help
+                        </a>
+                        <button id="chatbot-toggle" class="chatbot-button">
+                            <i class="fas fa-robot"></i> Ask Our Bot
+                            <span id="chat-notification" class="notification-badge"></span>
+                        </button>
+                    </nav>
+                    <!-- Chatbot Container -->
+                    <div id="chatbot-container" class="chatbot-hidden">
+                        <div class="chatbot-header">
+                            <h3><i class="fas fa-water"></i> Irrigation Helper</h3>
+                            <button id="chatbot-close">&times;</button>
+                        </div>
+                        <div id="chatbot-history"></div>
+                        <div id="typing-indicator" class="typing-hidden">
+                            <div class="typing-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <form id="chatbot-form">
+                            {% csrf_token %}
+                            <input type="text" id="chatbot-query" placeholder="Ask about the system..." autocomplete="off">
+                            <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Side Controls -->
+                <div class="flex items-center space-x-4">
+                    <!-- Connection Status -->
+                    <!-- <div id="connectionStatus" class="hidden md:flex items-center space-x-2 mr-4">
+                        <span id="connectionStatusDot" class="h-3 w-3 rounded-full bg-gray-400"></span>
+                        <span id="connectionStatusText" class="text-white font-medium">Checking...</span>
+                    </div> -->
+                    <!-- Notification Sound (hidden audio element) -->
+                    <audio id="notification-sound" src="{% static 'sounds/notification.mp3' %}"></audio>
+
+                    <!-- Emergency Button -->
+                    {% if user.is_authenticated %}
+                    <button id="emergencyToggleBtn"
+                            class="hidden md:flex items-center justify-center px-4 py-3 rounded-lg shadow-lg font-bold uppercase tracking-wide transition-all transform hover:scale-105 {% if emergency_active %}bg-green-600 hover:bg-green-700 emergency-pulse{% else %}bg-red-600 hover:bg-red-700{% endif %} border-2 border-white focus:outline-none focus:ring-4 focus:ring-red-300"
+                            aria-label="{% if emergency_active %}Reset emergency stop{% else %}Activate emergency stop{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span id="emergencyButtonText">
+                            {% if emergency_active %}Reset{% else %}Emergency{% endif %}
+                        </span>
+                    </button>
+                    {% endif %}
+
+                    <!-- User Menu -->
+                    <div class="relative">
+                        {% if user.is_authenticated %}
+                        <span class="text-white font-medium hidden sm:inline">{{ user.username }}</span>
+                        <div class="flex items-center space-x-2">
+                            <a href="{% url 'profile' %}" class="h-10 w-10 rounded-full bg-green-700 flex items-center justify-center text-white hover:bg-green-800 transition-colors">
+                                <i class="fas fa-user"></i>
+                            </a>
+                            <a href="{% url 'logout' %}" class="ml-2 text-red-300 hover:text-white transition-colors">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="flex space-x-2">
+                            <a href="{% url 'login' %}" class="px-4 py-2 text-white hover:text-green-200">Login</a>
+                            <a href="{% url 'register' %}" class="px-4 py-2 bg-white text-green-600 rounded-lg hover:bg-gray-100">Register</a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobileMenuButton" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu">
+                        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-green-700 px-4 pb-4">
+            <div class="flex flex-col space-y-3">
+                <a href="{% url 'dashboard' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
+                    <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
+                </a>
+                <a href="{% url 'control-panel' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
+                    <i class="fas fa-sliders-h mr-3"></i> Control Panel
+                </a>
+                <a href="{% url 'visualize-data' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
+                    <i class="fas fa-chart-line mr-3"></i> Analytics
+                </a>
+                <a href="{% url 'help' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
+                    <i class="fas fa-question-circle mr-3"></i> Help
+                </a>
+                <a href="{% url 'chatbot' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
+                    <i class="fas fa-question-circle mr-3"></i> Ask Our Bot
+                </a>
+                <a href="{% url 'contact' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
+                    <i class="fas fa-envelope mr-3"></i> Contact
+                </a>
+
                 {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard' %}" class="hover:text-green-200">Dashboard</a>
-                    <a href="{% url 'control-panel' %}" class="hover:text-green-200">Control Panel</a>
-                    <a href="{% url 'visualize-data' %}" class="hover:text-green-200">Visualize Data</a>
-                    <a href="{% url 'profile' %}" class="hover:text-green-200">Profile</a>
-                    <a href="{% url 'help' %}" class="hover:text-green-200">Help</a>
+                    <!-- Mobile Emergency Button -->
+                    <button id="mobileEmergencyToggleBtn"
+                            class="w-full flex items-center justify-center py-3 px-4 rounded-lg font-bold uppercase tracking-wide {% if emergency_active %}bg-green-600 hover:bg-green-700 emergency-pulse{% else %}bg-red-600 hover:bg-red-700{% endif %} border-2 border-white focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span id="mobileEmergencyButtonText">
+                            {% if emergency_active %}Reset Emergency{% else %}Emergency Stop{% endif %}
+                        </span>
+                    </button>
+
+                    <div class="flex items-center space-x-2">
+                        <span class="text-white font-medium hidden sm:inline">{{ user.username }}</span>
+                        <a href="{% url 'profile' %}" class="h-10 w-10 rounded-full bg-green-700 flex items-center justify-center text-white hover:bg-green-800 transition-colors">
+                            <i class="fas fa-user"></i>
+                        </a>
+                        <a href="{% url 'logout' %}" class="ml-2 text-red-300 hover:text-white transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
                 {% else %}
-                    <a href="{% url 'login' %}" class="hover:text-green-200">Login</a>
-                    <a href="{% url 'register' %}" class="hover:text-green-200">Register</a>
+                    <div class="flex space-x-2 pt-2 border-t border-green-500">
+                        <a href="{% url 'login' %}" class="flex-1 text-center py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-500">Login</a>
+                        <a href="{% url 'register' %}" class="flex-1 text-center py-2 px-4 bg-white text-green-600 rounded-lg hover:bg-gray-100">Register</a>
+                    </div>
                 {% endif %}
-                <a href="{% url 'about' %}" class="hover:text-green-200">About</a>
-                <a href="{% url 'contact' %}" class="hover:text-green-200">Contact</a>
-                <a href="{% url 'logout' %}" class="hover:text-green-200">Logout</a>
-            </div>
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-white focus:outline-none">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                    </svg>
-                </button>
             </div>
         </div>
-        <div id="mobile-menu" class="hidden md:hidden mt-2">
-            {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Dashboard</a>
-                <a href="{% url 'control-panel' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Control Panel</a>
-                <a href="{% url 'visualize-data' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Visualize Data</a>
-                <a href="{% url 'profile' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Profile</a>
-                <a href="{% url 'logout' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Login</a>
-                <a href="{% url 'register' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Register</a>
-            {% endif %}
-            <a href="{% url 'about' %}" class="block py-2 px-4 text-sm hover:bg-green-700">About</a>
-            <a href="{% url 'contact' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Contact</a>
-            <a href="{% url 'help' %}" class="block py-2 px-4 text-sm hover:bg-green-700">Help</a>
-        </div>
-    </nav>
-    <main class="container mx-auto mt-8 px-4">
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- Messages/Alerts -->
         {% if messages %}
-            <div class="messages mb-8">
+            <div class="messages mb-8 space-y-3">
                 {% for message in messages %}
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                        {{ message }}
+                    <div class="relative bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-sm" role="alert">
+                        <button class="absolute top-2 right-2 text-green-500 hover:text-green-700 focus:outline-none" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-3"></i>
+                            <span>{{ message }}</span>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
+
+        <!-- Page Content -->
         {% block content %}
         {% endblock %}
     </main>
-    <footer class="bg-green-600 text-white p-4 mt-8">
-        <div class="container mx-auto text-center">
-            <p>&copy; 2025 Intelligent Irrigation System. All rights reserved.</p>
-            <a href="{% url 'download_user_manual' %}" class="text-white underline">Download User Manual</a>
+
+    <!-- Footer -->
+    <footer class="bg-green-600 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p>&copy; {% now "Y" %} Intelligent Irrigation System. All rights reserved.</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="{% url 'privacy' %}" class="hover:text-green-200 flex items-center">
+                        <i class="fas fa-shield-alt mr-1"></i> Privacy Policy
+                    </a>
+                    <a href="{% url 'terms' %}" class="hover:text-green-200 flex items-center">
+                        <i class="fas fa-file-contract mr-1"></i> Terms
+                    </a>
+                    <a href="{% url 'contact' %}" class="hover:text-green-200 flex items-center">
+                        <i class="fas fa-envelope mr-1"></i> Contact
+                    </a>
+                    <a href="{% url 'about' %}" class="hover:text-green-200 flex items-center">
+                        <i class="fas fa-info-circle mr-1"></i> About
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'logout' %}" class="text-red-300 hover:text-white">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Emergency Confirmation Modal -->
+    <div id="emergencyModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <!-- Modal content -->
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full {% if emergency_active %}bg-green-100 text-green-600{% else %}bg-red-100 text-red-600{% endif %} sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas {% if emergency_active %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="emergencyModalTitle">
+                                {% if emergency_active %}Reset Emergency Stop{% else %}Activate Emergency Stop{% endif %}
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500" id="emergencyModalMessage">
+                                    {% if emergency_active %}
+                                        This will restore normal irrigation system operations.
+                                    {% else %}
+                                        This will immediately shut down all irrigation systems. Only use in case of emergency!
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="emergencyConfirmBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white {% if emergency_active %}bg-green-600 hover:bg-green-700 focus:ring-green-500{% else %}bg-red-600 hover:bg-red-700 focus:ring-red-500{% endif %} focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm">
+                        {% if emergency_active %}Confirm Reset{% else %}Confirm Emergency Stop{% endif %}
+                    </button>
+                    <button type="button" onclick="hideEmergencyModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600 mb-4"></div>
+            <p class="text-gray-700">Processing...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
     <script>
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            var mobileMenu = document.getElementById('mobile-menu');
-            mobileMenu.classList.toggle('hidden');
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            document.getElementById('mobileMenuButton').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('hidden');
+                this.setAttribute('aria-expanded', mobileMenu.classList.contains('hidden') ? 'false' : 'true');
+            });
+
+            // Emergency button handlers
+            function setupEmergencyButton(buttonId) {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    button.addEventListener('click', function() {
+                        const isEmergencyActive = document.querySelector('#emergencyModal h3').textContent.includes('Reset');
+                        showEmergencyModal(isEmergencyActive);
+                    });
+                }
+            }
+
+            setupEmergencyButton('emergencyToggleBtn');
+            setupEmergencyButton('mobileEmergencyToggleBtn');
+
+            // Modal confirm button
+            document.getElementById('emergencyConfirmBtn').addEventListener('click', confirmEmergencyAction);
+
+            // Initialize connection monitoring
+            initializeConnectionMonitoring();
+
+            // Initialize emergency state
+            initializeEmergencyState();
         });
+
+        // Show loading spinner
+        function showLoading() {
+            document.getElementById('loadingSpinner').classList.remove('hidden');
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            document.getElementById('loadingSpinner').classList.add('hidden');
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'success') {
+            const colors = {
+                success: { bg: 'bg-green-100', border: 'border-green-500', text: 'text-green-700', icon: 'fa-check-circle' },
+                error: { bg: 'bg-red-100', border: 'border-red-500', text: 'text-red-700', icon: 'fa-exclamation-circle' },
+                warning: { bg: 'bg-yellow-100', border: 'border-yellow-500', text: 'text-yellow-700', icon: 'fa-exclamation-triangle' },
+                info: { bg: 'bg-blue-100', border: 'border-blue-500', text: 'text-blue-700', icon: 'fa-info-circle' }
+            };
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${colors[type].bg} border-l-4 ${colors[type].border} ${colors[type].text} max-w-md z-50 transition-all duration-300 transform translate-x-0 opacity-100`;
+            alertDiv.innerHTML = `
+                <div class="flex items-start">
+                    <i class="fas ${colors[type].icon} mt-1 mr-3"></i>
+                    <div class="flex-1">
+                        <p class="font-medium">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 5000);
+        }
+
+        // Emergency modal functions
+        function showEmergencyModal(isEmergencyActive) {
+            updateEmergencyUI(isEmergencyActive);
+            document.getElementById('emergencyModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function hideEmergencyModal() {
+            document.getElementById('emergencyModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function updateEmergencyUI(isActive) {
+            const buttonElement = document.getElementById('emergencyToggleBtn');
+            const buttonTextElement = document.getElementById('emergencyButtonText');
+            const mobileButtonElement = document.getElementById('mobileEmergencyToggleBtn');
+            const mobileButtonTextElement = document.getElementById('mobileEmergencyButtonText');
+            const emergencyBanner = document.getElementById('emergencyBanner');
+            const modalTitle = document.getElementById('emergencyModalTitle');
+            const modalMessage = document.getElementById('emergencyModalMessage');
+            const confirmBtn = document.getElementById('emergencyConfirmBtn');
+
+            if (isActive) {
+                // Update buttons
+                if (buttonTextElement) buttonTextElement.textContent = 'RESET';
+                if (buttonElement) {
+                    buttonElement.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    buttonElement.classList.add('bg-green-600', 'hover:bg-green-700', 'emergency-pulse');
+                }
+
+                if (mobileButtonTextElement) mobileButtonTextElement.textContent = 'Reset Emergency';
+                if (mobileButtonElement) {
+                    mobileButtonElement.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    mobileButtonElement.classList.add('bg-green-600', 'hover:bg-green-700', 'emergency-pulse');
+                }
+
+                // Update modal
+                modalTitle.textContent = 'Reset Emergency Stop';
+                modalMessage.textContent = 'This will restore normal irrigation system operations.';
+                confirmBtn.textContent = 'Confirm Reset';
+                confirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-500');
+                confirmBtn.classList.add('bg-green-600', 'hover:bg-green-700', 'focus:ring-green-500');
+
+                // Show banner
+                if (emergencyBanner) emergencyBanner.classList.remove('hidden');
+            } else {
+                // Update buttons
+                if (buttonTextElement) buttonTextElement.textContent = 'EMERGENCY';
+                if (buttonElement) {
+                    buttonElement.classList.remove('bg-green-600', 'hover:bg-green-700', 'emergency-pulse');
+                    buttonElement.classList.add('bg-red-600', 'hover:bg-red-700');
+                }
+
+                if (mobileButtonTextElement) mobileButtonTextElement.textContent = 'Emergency Stop';
+                if (mobileButtonElement) {
+                    mobileButtonElement.classList.remove('bg-green-600', 'hover:bg-green-700', 'emergency-pulse');
+                    mobileButtonElement.classList.add('bg-red-600', 'hover:bg-red-700');
+                }
+
+                // Update modal
+                modalTitle.textContent = 'Activate Emergency Stop';
+                modalMessage.textContent = 'This will immediately shut down all irrigation systems. Only use in case of emergency!';
+                confirmBtn.textContent = 'Confirm Emergency Stop';
+                confirmBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'focus:ring-green-500');
+                confirmBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-500');
+
+                // Hide banner
+                if (emergencyBanner) emergencyBanner.classList.add('hidden');
+            }
+        }
+
+        // Confirm emergency action
+        function confirmEmergencyAction() {
+            const isEmergencyActive = document.getElementById('emergencyModalTitle').textContent.includes('Reset');
+            const button = document.getElementById('emergencyConfirmBtn');
+            const originalText = button.innerHTML;
+
+            showLoading();
+            button.disabled = true;
+
+            const action = isEmergencyActive ? 'reset_emergency' : 'emergency_stop';
+            const successMessage = isEmergencyActive ? 'Emergency reset successfully' : 'Emergency stop activated';
+
+            fetch('/api/control/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ action: action })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Request failed');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                updateEmergencyUI(!isEmergencyActive);
+                showAlert(successMessage, 'success');
+                hideEmergencyModal();
+            })
+            .catch(error => {
+                showAlert(`Failed to ${action.replace('_', ' ')}: ${error.message}`, 'error');
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                hideLoading();
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        // Initialize emergency state from server
+        async function initializeEmergencyState() {
+            try {
+                const response = await fetch('/api/control/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ action: 'get_state' })
+                });
+
+                if (!response.ok) throw new Error('Failed to get system state');
+
+                const data = await response.json();
+                updateEmergencyUI(data.emergency);
+
+            } catch (error) {
+                console.error('Error initializing state:', error);
+                // Fall back to template value if API fails
+                updateEmergencyUI({% if emergency_active %}true{% else %}false{% endif %});
+            }
+        }
+
+        // Connection monitoring
+        function initializeConnectionMonitoring() {
+            const statusDot = document.getElementById('connectionStatusDot');
+            const statusText = document.getElementById('connectionStatusText');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+
+            if (!statusDot || !statusText) return;
+
+            async function checkConnection() {
+                try {
+                    const response = await fetch('/api/control/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ action: 'get_state' })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        updateConnectionStatus(data.connected, data.last_seen);
+                    } else {
+                        updateConnectionStatus(false);
+                    }
+                } catch (error) {
+                    updateConnectionStatus(false);
+                }
+            }
+
+            function updateConnectionStatus(isConnected, lastSeen) {
+                if (isConnected) {
+                    statusDot.className = 'h-3 w-3 rounded-full bg-green-500 animate-pulse';
+                    statusText.textContent = `Online ${lastSeen ? '(Last: ' + formatTime(lastSeen) + ')' : ''}`;
+                    if (disconnectBtn) disconnectBtn.classList.remove('hidden');
+                } else {
+                    statusDot.className = 'h-3 w-3 rounded-full bg-red-500';
+                    statusText.textContent = 'Offline';
+                    if (disconnectBtn) disconnectBtn.classList.add('hidden');
+                }
+            }
+
+            function formatTime(timestamp) {
+                if (!timestamp) return '';
+                const date = new Date(timestamp);
+                return date.toLocaleTimeString();
+            }
+
+            // Initial check
+            checkConnection();
+
+            // Periodic checks every 5 seconds
+            setInterval(checkConnection, 5000);
+
+            // Setup disconnect button if exists
+            if (disconnectBtn) {
+                disconnectBtn.addEventListener('click', async function() {
+                    showLoading();
+                    try {
+                        const response = await fetch('/api/control/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ action: 'disconnect' })
+                        });
+
+                        if (response.ok) {
+                            showAlert('Device disconnected successfully', 'success');
+                            updateConnectionStatus(false);
+                        } else {
+                            throw new Error('Failed to disconnect');
+                        }
+                    } catch (error) {
+                        showAlert('Failed to disconnect device: ' + error.message, 'error');
+                    } finally {
+                        hideLoading();
+                    }
+                });
+            }
+        }
+    // Initialize chatbot when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Chatbot elements
+    const chatButton = document.getElementById('chatbot-toggle');
+    const chatContainer = document.getElementById('chatbot-container');
+    const chatForm = document.getElementById('chatbot-form');
+    const chatInput = document.getElementById('chatbot-query');
+    const chatHistory = document.getElementById('chatbot-history');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Load chat history from localStorage
+    function loadChatHistory() {
+        const savedHistory = localStorage.getItem('chatHistory');
+        if (savedHistory) {
+            chatHistory.innerHTML = savedHistory;
+            scrollToBottom();
+        }
+    }
+
+    // Save chat to localStorage
+    function saveChat() {
+        localStorage.setItem('chatHistory', chatHistory.innerHTML);
+    }
+
+    // Scroll to bottom of chat
+    function scrollToBottom() {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    // Add message to chat
+    function addMessage(content, isUser = false, isError = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = isUser ? 'user-msg' : isError ? 'bot-msg error' : 'bot-msg';
+
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        messageDiv.innerHTML = `
+            <div class="message-content">${content}</div>
+            <div class="message-time">${timeString}</div>
+        `;
+
+        chatHistory.appendChild(messageDiv);
+        scrollToBottom();
+        saveChat();
+    }
+
+    // Show typing indicator
+    function showTyping() {
+        typingIndicator.classList.remove('typing-hidden');
+        scrollToBottom();
+    }
+
+    // Hide typing indicator
+    function hideTyping() {
+        typingIndicator.classList.add('typing-hidden');
+    }
+
+    // Toggle chatbot visibility
+    function toggleChat() {
+        chatContainer.classList.toggle('chatbot-hidden');
+        if (!chatContainer.classList.contains('chatbot-hidden')) {
+            chatInput.focus();
+        }
+    }
+
+    // Handle form submission
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const query = chatInput.value.trim();
+        if (!query) return;
+
+        // Add user message
+        addMessage(query, true);
+        chatInput.value = '';
+
+        // Show typing indicator
+        showTyping();
+
+        try {
+            const response = await fetch("/irrigation/chatbot/", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrftoken,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            processBotResponse(data);
+
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage("Sorry, I'm having trouble connecting. Please try again later.", false, true);
+        } finally {
+            hideTyping();
+        }
+    }
+
+    // Process bot response
+    function processBotResponse(data) {
+        if (data.matched) {
+            let responseContent = '';
+
+            // Handle different response types
+            switch(data.type) {
+                case 'route':
+                    responseContent = `
+                        <div class="flex items-center mb-2">
+                            <i class="fas ${data.resource.icon} mr-2 text-green-600"></i>
+                            <strong>${data.resource.name}</strong>
+                        </div>
+                        <p class="mb-2">${data.resource.description}</p>
+                        <a href="${data.resource.url}" class="text-green-600 hover:underline" target="_blank">
+                            Go to page <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    `;
+                    break;
+
+                case 'command':
+                    responseContent = `
+                        <div class="flex items-center mb-2">
+                            <i class="fas ${data.resource.icon} mr-2 text-green-600"></i>
+                            <strong>${data.resource.name}</strong>
+                        </div>
+                        <p class="mb-3">${data.resource.description}</p>
+                        ${data.resource.safety_warning ?
+                            `<div class="bg-red-50 border-l-4 border-red-500 p-3 mb-3">
+                                <strong class="text-red-700">⚠️ Warning:</strong> ${data.resource.safety_warning}
+                            </div>` : ''
+                        }
+                        <div class="bg-gray-50 p-3 rounded-md mb-3">
+                            <h4 class="font-medium text-sm mb-2">Usage Examples:</h4>
+                            <ul class="list-disc pl-5 space-y-1 text-sm">
+                                ${data.resource.examples.map(ex => `<li>${ex}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    break;
+
+                default:
+                    responseContent = data.resource.description || "I found some information for you.";
+            }
+
+            addMessage(responseContent);
+
+            // Add suggestions if available
+            if (data.suggestions && data.suggestions.length > 0) {
+                const suggestionsDiv = document.createElement('div');
+                suggestionsDiv.className = 'suggestions mt-3 space-y-2';
+
+                data.suggestions.forEach(suggestion => {
+                    const button = document.createElement('button');
+                    button.className = 'suggestion-chip bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-sm transition-colors';
+                    button.textContent = suggestion.name;
+                    button.onclick = () => {
+                        chatInput.value = suggestion.name;
+                        chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
+                    };
+                    suggestionsDiv.appendChild(button);
+                });
+
+                chatHistory.appendChild(suggestionsDiv);
+                scrollToBottom();
+            }
+        } else {
+            // No match found
+            let responseContent = `
+                <p>${data.message || "I couldn't find an exact match for your query."}</p>
+            `;
+
+            addMessage(responseContent);
+
+            // Show suggestions
+            if (data.suggestions && data.suggestions.length > 0) {
+                const suggestionsDiv = document.createElement('div');
+                suggestionsDiv.className = 'suggestions mt-3 space-y-2';
+
+                data.suggestions.forEach(suggestion => {
+                    const button = document.createElement('button');
+                    button.className = 'suggestion-chip bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-sm transition-colors';
+                    button.textContent = suggestion.name;
+                    button.onclick = () => {
+                        chatInput.value = suggestion.name;
+                        chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
+                    };
+                    suggestionsDiv.appendChild(button);
+                });
+
+                chatHistory.appendChild(suggestionsDiv);
+                scrollToBottom();
+            }
+        }
+    }
+
+    // Initialize chatbot
+    function initChatbot() {
+        // Load any saved history
+        loadChatHistory();
+
+        // Event listeners
+        chatButton.addEventListener('click', toggleChat);
+        document.getElementById('chatbot-close').addEventListener('click', toggleChat);
+        chatForm.addEventListener('submit', handleSubmit);
+
+        // Send message on Enter key (but allow Shift+Enter for new lines)
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Initial greeting if no history
+        if (chatHistory.children.length === 0) {
+            addMessage("Hello! I'm your irrigation assistant. How can I help you today?", false);
+        }
+    }
+
+    // Start the chatbot
+    initChatbot();
+});
+
+
     </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

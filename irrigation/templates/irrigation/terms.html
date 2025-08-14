@@ -1,0 +1,184 @@
+{% extends 'irrigation/base.html' %}
+
+{% load static %}
+
+{% block title %}Terms of Service - Intelligent Irrigation System{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <!-- Themed header -->
+    <div class="bg-white shadow-lg rounded-t-xl overflow-hidden border border-gray-200">
+        <div class="px-6 py-8 bg-gradient-to-r from-green-600 to-yellow-500 relative">
+            <div class="absolute top-4 right-4">
+                <img src="{% static 'irrigation/images/uganda_flag.jpeg' %}" alt="Uganda Flag" class="h-12 opacity-20">
+            </div>
+            <div class="relative z-10">
+                <h1 class="text-3xl font-bold text-white">Terms of Service</h1>
+                <p class="mt-2 text-white/90">Intelligent Irrigation System - Made in Uganda</p>
+                <p class="mt-1 text-white/80 text-sm">Last updated: {% now "F j, Y" %}</p>
+            </div>
+        </div>
+
+        <!-- Legal context -->
+        <div class="px-6 py-8 bg-white">
+            <div class="prose max-w-none">
+                <!-- Section with Ugandan legal reference -->
+                <div class="mb-10 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <i class="fas fa-balance-scale mr-2 text-yellow-600"></i>
+                        Ugandan Law Compliance
+                    </h3>
+                    <p class="mt-2 text-gray-700">
+                        This agreement is governed by the laws of the Republic of Uganda, in accordance with:
+                    </p>
+                    <ul class="list-disc pl-5 mt-2 text-gray-700">
+                        <li>The Computer Misuse Act, 2011</li>
+                        <li>The Data Protection and Privacy Act, 2019</li>
+                        <li>The Electronic Transactions Act, 2011</li>
+                    </ul>
+                </div>
+
+                <!-- Main terms sections -->
+                <div class="space-y-8">
+                    <section class="border-b border-gray-100 pb-6">
+                        <h2 class="text-xl font-bold text-green-700 flex items-center">
+                            <span class="bg-green-100 text-green-700 rounded-full w-8 h-8 flex items-center justify-center mr-3">1</span>
+                            Acceptance of Terms
+                        </h2>
+                        <p class="mt-3 text-gray-700">
+                            By accessing or using the Intelligent Irrigation System ("Service"), you agree to be bound by these Terms of Service, which constitute a legally binding agreement between you and Nduwayo Morris (Developer), operating in Kakira, Uganda.
+                        </p>
+                    </section>
+
+                    <section class="border-b border-gray-100 pb-6">
+                        <h2 class="text-xl font-bold text-green-700 flex items-center">
+                            <span class="bg-green-100 text-green-700 rounded-full w-8 h-8 flex items-center justify-center mr-3">2</span>
+                            Description of Service
+                        </h2>
+                        <p class="mt-3 text-gray-700">
+                            The Service provides smart irrigation solutions tailored for Ugandan agricultural conditions, including:
+                        </p>
+                        <ul class="list-disc pl-5 mt-2 text-gray-700 space-y-1">
+                            <li>Remote monitoring and control of irrigation systems</li>
+                            <li>Real-time soil moisture and weather data analysis</li>
+                            <li>Water conservation technology for East African climate</li>
+                            <li>Mobile and web-based management interfaces</li>
+                        </ul>
+                    </section>
+
+                    <section class="border-b border-gray-100 pb-6">
+                        <h2 class="text-xl font-bold text-green-700 flex items-center">
+                            <span class="bg-green-100 text-green-700 rounded-full w-8 h-8 flex items-center justify-center mr-3">3</span>
+                            User Responsibilities
+                        </h2>
+                        <p class="mt-3 text-gray-700">
+                            As a user of this Ugandan-developed technology, you agree to:
+                        </p>
+                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                                <i class="fas fa-user-shield text-green-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium">Account Security</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Maintain confidentiality of your login credentials</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                                <i class="fas fa-hand-holding-water text-green-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium">Proper Use</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Use the system only for intended agricultural purposes</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                                <i class="fas fa-ban text-green-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium">Prohibited Actions</h4>
+                                    <p class="text-sm text-gray-600 mt-1">No reverse engineering or unauthorized access</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                                <i class="fas fa-comment-alt text-green-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium">Feedback</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Share improvement suggestions for local adaptation</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="border-b border-gray-100 pb-6">
+                        <h2 class="text-xl font-bold text-green-700 flex items-center">
+                            <span class="bg-green-100 text-green-700 rounded-full w-8 h-8 flex items-center justify-center mr-3">4</span>
+                            Limitation of Liability
+                        </h2>
+                        <div class="mt-3 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
+                            <p class="text-red-700 font-medium flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Important Notice
+                            </p>
+                            <p class="mt-1 text-gray-700 text-sm">
+                                The Service is provided "as is" without warranties. As a locally-developed solution, we prioritize but cannot guarantee perfect reliability given Uganda's infrastructure challenges. We shall not be liable for agricultural losses resulting from service interruptions.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section class="border-b border-gray-100 pb-6">
+                        <h2 class="text-xl font-bold text-green-700 flex items-center">
+                            <span class="bg-green-100 text-green-700 rounded-full w-8 h-8 flex items-center justify-center mr-3">5</span>
+                            Payment Terms (For Premium Services)
+                        </h2>
+                        <p class="mt-3 text-gray-700">
+                            For any paid services:
+                        </p>
+                        <ul class="list-disc pl-5 mt-2 text-gray-700 space-y-1">
+                            <li>All payments are in Uganda Shillings (UGX)</li>
+                            <li>Mobile Money payments are accepted (MTN, Airtel)</li>
+                            <li>No refunds for customized solutions developed for your specific farm</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2 class="text-xl font-bold text-green-700 flex items-center">
+                            <span class="bg-green-100 text-green-700 rounded-full w-8 h-8 flex items-center justify-center mr-3">6</span>
+                            Governing Law and Dispute Resolution
+                        </h2>
+                        <p class="mt-3 text-gray-700">
+                            These Terms shall be governed by and construed in accordance with the laws of Uganda. Any disputes shall first be resolved through mediation at the Jinja District Commercial Court before pursuing other legal remedies.
+                        </p>
+                        <div class="mt-4 flex items-center text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>
+                            <span>Jurisdiction: Kampala District, Uganda</span>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Contact information !-->
+                <div class="mt-12 p-6 bg-green-50 rounded-lg border border-green-100">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <i class="fas fa-headset mr-2 text-green-600"></i>
+                        Contact Information
+                    </h3>
+                    <div class="mt-3 grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <h4 class="font-medium text-gray-800">Developer:</h4>
+                            <p class="text-gray-600">Nduwayo Morris</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">Location:</h4>
+                            <p class="text-gray-600">Kyebando Roundabout, Kampala District, Uganda</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">Phone:</h4>
+                            <p class="text-gray-600">+256 780 443 345</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">Email:</h4>
+                            <p class="text-gray-600">nduwayomorris@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

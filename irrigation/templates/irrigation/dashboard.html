@@ -3,46 +3,244 @@
 {% block title %}Smart Irrigation Dashboard{% endblock %}
 
 {% block content %}
-    <h1 class="text-3xl font-bold mb-8">Smart Irrigation Dashboard</h1>
-
-    <h2 class="text-2xl font-semibold mb-4">Sensor Data</h2>
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-300">
-            <thead class="bg-green-600 text-white">
-                <tr>
-                    <th class="px-4 py-2">Timestamp</th>
-                    <th class="px-4 py-2">Temperature (°C)</th>
-                    <th class="px-4 py-2">Humidity (%)</th>
-                    <th class="px-4 py-2">Moisture (%)</th>
-                    <th class="px-4 py-2">Pump Status</th>
-                    <th class="px-4 py-2">Valve Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in sensor_data %}
-                <tr class="hover:bg-gray-100">
-                    <td class="px-4 py-2 border">{{ data.timestamp }}</td>
-                    <td class="px-4 py-2 border">{{ data.temperature }}</td>
-                    <td class="px-4 py-2 border">{{ data.humidity }}</td>
-                    <td class="px-4 py-2 border">{{ data.moisture }}</td>
-                    <td class="px-4 py-2 border">{{ data.pump_status|yesno:"ON,OFF" }}</td>
-                    <td class="px-4 py-2 border">{{ data.valve_status|yesno:"OPEN,CLOSED" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Download Data Buttons -->
-    <div class="mt-6">
-        <label class="text-gray-700">Download Data:</label>
-        <div class="flex space-x-4 mt-2">
-            <a href="{% url 'download-data' %}?format=csv" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                Download as CSV
-            </a>
-            <a href="{% url 'download-data' %}?format=excel" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                Download as Excel
-            </a>
+<div class="container mx-auto px-4 py-8">
+    <!-- Dashboard Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Smart Irrigation Dashboard</h1>
+            <p class="text-gray-600 mt-2">Real-time monitoring of your irrigation system</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <div class="flex space-x-3">
+                <a href="{% url 'visualize-data' %}" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Analytics (Visualization of data)
+                </a>
+                <a href="{% url 'control-panel' %}" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543.826 3.31 2.37 2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Control Panel
+                </a>
+            </div>
         </div>
     </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Temperature Card -->
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Temperature</p>
+                    <p class="text-2xl font-semibold text-gray-800">
+                        {% if sensor_data.0.temperature %}
+                            {{ sensor_data.0.temperature|floatformat:1 }}°C
+                        {% else %}
+                            --
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Humidity Card -->
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Humidity</p>
+                    <p class="text-2xl font-semibold text-gray-800">
+                        {% if sensor_data.0.humidity %}
+                            {{ sensor_data.0.humidity|floatformat:1 }}%
+                        {% else %}
+                            --
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Soil Moisture Card -->
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Soil Moisture</p>
+                    <p class="text-2xl font-semibold text-gray-800">
+                        {% if sensor_data.0.moisture %}
+                            {{ sensor_data.0.moisture|floatformat:1 }}%
+                        {% else %}
+                            --
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sensor Data Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-800">Recent Sensor Data</h2>
+            <div class="flex space-x-3">
+                <button onclick="showDownloadModal('csv')" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-3 rounded-md transition-colors flex items-center" id="downloadCsvBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    CSV
+                </button>
+                <button onclick="showDownloadModal('excel')" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-3 rounded-md transition-colors flex items-center" id="downloadExcelBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Excel
+                </button>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temperature (°C)</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Humidity (%)</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Moisture (%)</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pump</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valve</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for data in sensor_data %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ data.timestamp|date:"M d, Y H:i:s" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ data.temperature|floatformat:1 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ data.humidity|floatformat:1 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ data.moisture }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if data.pump_status %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ data.pump_status|yesno:"ON,OFF" }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if data.valve_status %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ data.valve_status|yesno:"OPEN,CLOSED" }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="px-6 py-3 bg-gray-50 text-right text-sm text-gray-500">
+            Showing last {{ sensor_data|length }} records
+        </div>
+    </div>
+</div>
+
+<!-- Download Confirmation Modal -->
+<div id="downloadModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="downloadModalTitle">
+                            Confirm Download
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500" id="downloadModalMessage">
+                                Are you sure you want to download the sensor data in <span id="downloadFormat">CSV</span> format?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="confirmDownload()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Download
+                </button>
+                <button type="button" onclick="hideDownloadModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDownloadFormat = 'csv';
+
+    // Show download confirmation modal
+    function showDownloadModal(format) {
+        currentDownloadFormat = format;
+        const formatDisplay = format.toUpperCase();
+        document.getElementById('downloadFormat').textContent = formatDisplay;
+        document.getElementById('downloadModal').classList.remove('hidden');
+    }
+
+    // Hide download confirmation modal
+    function hideDownloadModal() {
+        document.getElementById('downloadModal').classList.add('hidden');
+    }
+
+    // Confirm download and redirect
+    function confirmDownload() {
+        hideDownloadModal();
+        showLoading(
+            document.getElementById(`download${currentDownloadFormat === 'csv' ? 'Csv' : 'Excel'}Btn`),
+            `Downloading ${currentDownloadFormat.toUpperCase()}...`
+        );
+        // Use the correct URL pattern from your urls.py
+        window.location.href = `{% url 'download-data' %}?format=${currentDownloadFormat}`;
+    }
+
+    // Show loading state on buttons
+    function showLoading(button, text) {
+        const originalHtml = button.innerHTML;
+        button.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            ${text}
+        `;
+        button.classList.add('cursor-not-allowed', 'opacity-75');
+
+        setTimeout(() => {
+            button.innerHTML = originalHtml;
+            button.classList.remove('cursor-not-allowed', 'opacity-75');
+        }, 5000);
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Any additional initialization can go here
+    });
+</script>
 {% endblock %}
