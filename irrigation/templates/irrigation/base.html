@@ -4,7 +4,7 @@
 <html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Intelligent Irrigation System for smart water management">
     <meta name="theme-color" content="#059669">
 
@@ -336,6 +336,62 @@
             40% { transform: scale(1); }
         }
 
+        /* Mobile-specific chatbot styles */
+        @media (max-width: 640px) {
+            #chatbot-container {
+                width: 100%;
+                height: 70vh;
+                bottom: 70px;
+                right: 0;
+                border-radius: 0;
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+            }
+
+            .chatbot-button {
+                bottom: 10px;
+                right: 10px;
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+
+            .user-msg, .bot-msg {
+                max-width: 90%;
+            }
+        }
+
+    /* Better touch targets */
+    button, a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Prevent zoom on form inputs */
+    input, select, textarea {
+        font-size: 16px;
+        touch-action: manipulation;
+    }
+
+    @media (max-width: 640px) {
+    /* Ensure content doesn't get hidden behind mobile browser UI */
+    body {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* Adjust main content padding */
+    main {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Make sure emergency banner is visible */
+    #emergencyBanner {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+}
+
     </style>
 
     {% block extra_head %}{% endblock %}
@@ -382,8 +438,9 @@
                         <a href="{% url 'help' %}" class="text-white hover:text-green-200 font-medium transition-colors duration-200 flex items-center">
                             <i class="fas fa-question-circle mr-2"></i> Help
                         </a>
-                        <button id="chatbot-toggle" class="chatbot-button">
-                            <i class="fas fa-robot"></i> Ask Our Bot
+                        <button id="chatbot-toggle" class="chatbot-button fixed bottom-4 right-4 md:static md:ml-4">
+                            <i class="fas fa-robot"></i>
+                            <span class="hidden md:inline">Ask Our Bot</span>
                             <span id="chat-notification" class="notification-badge"></span>
                         </button>
                     </nav>
@@ -455,7 +512,7 @@
 
                     <!-- Mobile Menu Button -->
                     <button id="mobileMenuButton" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu">
-                        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
@@ -464,7 +521,7 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden md:hidden bg-green-700 px-4 pb-4">
+        <div id="mobileMenu" class="hidden md:hidden bg-green-700 px-4 pb-4 absolute w-full left-0 z-40 shadow-lg">
             <div class="flex flex-col space-y-3">
                 <a href="{% url 'dashboard' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
                     <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
@@ -478,22 +535,26 @@
                 <a href="{% url 'help' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
                     <i class="fas fa-question-circle mr-3"></i> Help
                 </a>
-                <a href="{% url 'chatbot' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
-                    <i class="fas fa-question-circle mr-3"></i> Ask Our Bot
-                </a>
+                <button id="mobileChatbotToggle" class="w-full text-left text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
+                        <i class="fas fa-robot mr-3"></i> Ask Our Bot
+                    </button>
+                </div>
                 <a href="{% url 'contact' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center">
                     <i class="fas fa-envelope mr-3"></i> Contact
                 </a>
 
                 {% if user.is_authenticated %}
-                    <!-- Mobile Emergency Button -->
+                    <!-- Emergency Button - Mobile Version -->
                     <button id="mobileEmergencyToggleBtn"
-                            class="w-full flex items-center justify-center py-3 px-4 rounded-lg font-bold uppercase tracking-wide {% if emergency_active %}bg-green-600 hover:bg-green-700 emergency-pulse{% else %}bg-red-600 hover:bg-red-700{% endif %} border-2 border-white focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            class="w-full flex items-center justify-center py-3 px-4 rounded-lg font-bold uppercase tracking-wide text-sm
+                                   {% if emergency_active %}bg-green-600 hover:bg-green-700 emergency-pulse
+                                   {% else %}bg-red-600 hover:bg-red-700{% endif %}
+                                   border-2 border-white focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <span id="mobileEmergencyButtonText">
-                            {% if emergency_active %}Reset Emergency{% else %}Emergency Stop{% endif %}
+                            {% if emergency_active %}Reset{% else %}Emergency{% endif %}
                         </span>
                     </button>
 
@@ -513,7 +574,6 @@
                     </div>
                 {% endif %}
             </div>
-        </div>
     </header>
 
     <!-- Main Content -->
@@ -628,6 +688,10 @@
                 const mobileMenu = document.getElementById('mobileMenu');
                 mobileMenu.classList.toggle('hidden');
                 this.setAttribute('aria-expanded', mobileMenu.classList.contains('hidden') ? 'false' : 'true');
+            });
+            document.getElementById('mobileChatbotToggle').addEventListener('click', function() {
+                document.getElementById('mobileMenu').classList.add('hidden');
+                toggleChat();
             });
 
             // Emergency button handlers
@@ -1144,12 +1208,17 @@ document.addEventListener('DOMContentLoaded', function() {
         chatForm.addEventListener('submit', handleSubmit);
 
         // Send message on Enter key (but allow Shift+Enter for new lines)
-        chatInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                chatForm.dispatchEvent(new Event('submit'));
+        chatInput.addEventListener('touchstart', function(e) {
+        this.focus();
+        }, { passive: true });
+
+        // Handle mobile keyboard appearance
+        window.addEventListener('resize', function() {
+            if (!chatContainer.classList.contains('chatbot-hidden')) {
+                scrollToBottom();
             }
         });
+    }
 
         // Initial greeting if no history
         if (chatHistory.children.length === 0) {
@@ -1160,6 +1229,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start the chatbot
     initChatbot();
 });
+
+        let touchStartY = 0;
+
+        chatContainer.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        chatContainer.addEventListener('touchmove', function(e) {
+            if (touchStartY - e.touches[0].clientY > 100) {
+                toggleChat();
+            }
+        }, { passive: true });
 
 
     </script>
