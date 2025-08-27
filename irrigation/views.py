@@ -1,6 +1,9 @@
 import csv
+import datetime
 import json
 import os
+from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, Http404, JsonResponse
@@ -34,6 +37,11 @@ def about(request):
 @login_required
 def contact(request):
     return render(request, 'irrigation/contact.html')
+
+
+@login_required
+def ask_bot(request):
+    return render(request, 'irrigation/chatbot.html')
 
 
 @login_required
@@ -291,29 +299,65 @@ def trigger_notifications(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+
+@csrf_exempt
 @require_POST
 def chatbot_view(request):
+    """API endpoint for chatbot requests with enhanced error handling"""
     try:
-        # Handle both form-data and json requests
-        if request.content_type == 'application/json':
-            data = json.loads(request.body)
+        # Log the request for debugging
+        logger.info(f"Chatbot request received: {request.method}, Content-Type: {request.content_type}")
+
+        # Parse the request body
+        try:
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+            else:
+                data = request.POST
+
             query = data.get('query', '').strip()
-        else:
-            query = request.POST.get('query', '').strip()
+        except Exception as e:
+            logger.error(f"Error parsing request data: {str(e)}")
+            return JsonResponse({
+                'error': 'Invalid request data',
+                'message': 'Please provide valid data'
+            }, status=400)
 
         if not query:
+            logger.warning("Empty query received")
             return JsonResponse({
                 'error': 'Empty query',
                 'message': 'Please enter a question or command'
             }, status=400)
 
-        guide = IrrigationGuide()
-        response_data = guide.get_help_response(query, request)
+        # Log the query
+        logger.info(f"Processing query: {query}")
+
+        # Import here to avoid circular imports
+        try:
+            guide = IrrigationGuide()
+            response_data = guide.get_help_response(query, request)
+        except Exception as e:
+            logger.error(f"Error creating IrrigationGuide: {str(e)}")
+            return JsonResponse({
+                'error': 'Server configuration error',
+                'message': 'Unable to process your request at this time'
+            }, status=500)
+
+        # Add typing simulation metadata
+        response_data['typing_duration'] = min(len(query) * 0.05, 2.5)
+        response_data['response_time'] = datetime.now().strftime('%H:%M:%S')
+
+        # Log successful response
+        logger.info(f"Response generated for query: {query}")
+
         return JsonResponse(response_data)
 
     except Exception as e:
-        return JsonResponse({
-            'error': str(e),
-            'message': 'An error occurred while processing your request'
-        }, status=500)
+        # Log the full error with traceback
+        logger.error(f"Unexpected error in chatbot_view: {str(e)}", exc_info=True)
 
+        return JsonResponse({
+            'error': 'Internal server error',
+            'message': 'An unexpected error occurred while processing your request'
+        }, status=500)
