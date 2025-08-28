@@ -36,6 +36,7 @@
             --text-light: #f8fafc;
             --gradient-start: #059669;
             --gradient-end: #047857;
+            --chat-bg: #f0f9ff;
         }
 
         @keyframes pulse {
@@ -64,6 +65,11 @@
             100% { background-position: calc(200px + 100%) 0; }
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .emergency-pulse {
             animation: pulse-emergency 1.5s infinite;
         }
@@ -80,11 +86,15 @@
             animation: float 3s ease-in-out infinite;
         }
 
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
         /* Smooth transitions */
         .transition-all {
             transition-property: all;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-            transition-duration: 300ms;
+            transition-duration: 200ms;
         }
 
         /* Focus styles */
@@ -178,6 +188,7 @@
                 --primary: #10b981;
                 --primary-dark: #059669;
                 --text-dark: #f8fafc;
+                --chat-bg: #1a2a3a;
             }
 
             body {
@@ -195,13 +206,15 @@
             }
         }
 
-        /* Chatbot styles */
+        /* Chatbot styles - Improved for mobile */
         #chatbot-container {
             position: fixed;
             bottom: 100px;
             right: 20px;
             width: 350px;
+            max-width: 90vw;
             height: 450px;
+            max-height: 70vh;
             background: white;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -236,7 +249,7 @@
             flex: 1;
             padding: 16px;
             overflow-y: auto;
-            background: #f8fafc;
+            background: var(--chat-bg);
         }
 
         #chatbot-form {
@@ -245,6 +258,8 @@
             background: white;
             border-bottom-left-radius: 16px;
             border-bottom-right-radius: 16px;
+            display: flex;
+            align-items: center;
         }
 
         .user-msg, .bot-msg {
@@ -254,6 +269,7 @@
             max-width: 80%;
             line-height: 1.4;
             position: relative;
+            word-wrap: break-word;
         }
 
         .user-msg {
@@ -278,6 +294,7 @@
             font-size: 0.7rem;
             opacity: 0.7;
             margin-top: 4px;
+            display: block;
         }
 
         .chatbot-button {
@@ -296,6 +313,7 @@
             cursor: pointer;
             z-index: 999;
             transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .chatbot-button:hover {
@@ -359,6 +377,28 @@
             40% { transform: scale(1); }
         }
 
+        /* Quick reply buttons */
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .quick-reply-btn {
+            background: rgba(5, 150, 105, 0.1);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-reply-btn:hover {
+            background: rgba(5, 150, 105, 0.2);
+        }
+
         /* Mobile optimizations */
         @media (max-width: 640px) {
             #chatbot-container {
@@ -384,8 +424,8 @@
             }
 
             #chatbot-form input {
-                padding: 8px 14px;
-                font-size: 0.85rem;
+                padding: 12px 14px;
+                font-size: 16px; /* Prevents zoom on iOS */
             }
 
             /* Footer adjustments */
@@ -437,6 +477,15 @@
 
             #chatbot-form {
                 padding: 10px;
+            }
+
+            /* Improve touch targets */
+            .nav-link, .btn, a {
+                min-height: 44px;
+                min-width: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
         }
 
@@ -538,12 +587,17 @@
             0% { transform: translateY(-100%) rotate(45deg); }
             100% { transform: translateY(100%) rotate(45deg); }
         }
+
+        /* Prevent blue highlight on tap for mobile */
+        .no-tap-highlight {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="min-h-screen flex flex-col bg-gray-50">
+<body class="min-h-screen flex flex-col bg-gray-50 no-tap-highlight">
     <!-- Emergency Alert Banner -->
     <div id="emergencyBanner" class="bg-red-600 text-white p-4 emergency-flash {% if not emergency_active %}hidden{% endif %}" role="alert" aria-live="assertive">
         <div class="container mx-auto flex items-center justify-center">
@@ -565,7 +619,7 @@
                 <div class="flex items-center space-x-2">
                     <a href="{% url 'home' %}" class="flex items-center space-x-2 water-drop p-2 rounded-lg" aria-label="Home">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 md:h-10 md:w-10 text-white float-animation" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                         </svg>
                         <span class="text-xl md:text-2xl font-bold text-white">McN Irrigation</span>
                     </a>
@@ -584,9 +638,6 @@
                     </a>
                     <a href="{% url 'help' %}" class="nav-link text-white hover:text-green-200 font-medium transition-colors duration-200 flex items-center">
                         <i class="fas fa-question-circle mr-2"></i> Help
-                    </a>
-                    <a href="{% url 'ask_chatbot' %}" class="nav-link text-white hover:text-green-200 font-medium transition-colors duration-200 flex items-center">
-                        <i class="fas fa-robot mr-2"></i>Ask AI
                     </a>
                 </nav>
 
@@ -650,9 +701,6 @@
                 </a>
                 <a href="{% url 'help' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center transition-colors">
                     <i class="fas fa-question-circle mr-3"></i> Help
-                </a>
-                <a href="{% url 'ask_chatbot' %}" class="text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center transition-colors">
-                    <i class="fas fa-robot mr-3"></i> Ask AI
                 </a>
 
                 {% if user.is_authenticated %}
@@ -1137,7 +1185,7 @@
             }
         }
 
-        // Enhanced Chatbot functionality with improved draggable feature
+        // Enhanced Chatbot functionality with improved mobile experience
         function initializeChatbot() {
             // Chatbot elements
             const chatButton = document.getElementById('chatbot-toggle');
@@ -1146,14 +1194,7 @@
             const chatInput = document.getElementById('chatbot-query');
             const chatHistory = document.getElementById('chatbot-history');
             const closeButton = document.getElementById('chatbot-close');
-            const dragHandle = document.getElementById('chatbot-drag-handle');
-
-            // Draggable functionality variables
-            let isDragging = false;
-            let offsetX, offsetY;
-            let startX, startY;
-            let posX = 0, posY = 0;
-            let touchStartTime = 0;
+            const typingIndicator = document.getElementById('typing-indicator');
 
             // Get CSRF token
             function getCookie(name) {
@@ -1172,12 +1213,24 @@
             }
             const csrftoken = getCookie('csrftoken');
 
+            // Predefined quick replies
+            const quickReplies = [
+                "How do I set up irrigation schedules?",
+                "What's the current water usage?",
+                "How do I check soil moisture?",
+                "Show me system status"
+            ];
+
             // Load chat history from localStorage
             function loadChatHistory() {
                 const savedHistory = localStorage.getItem('chatHistory');
                 if (savedHistory) {
                     chatHistory.innerHTML = savedHistory;
                     scrollToBottom();
+                } else {
+                    // Show welcome message if no history
+                    addMessage("Hi there! I'm your irrigation assistant. I can help you manage your irrigation system, check status, and answer questions. How can I help you today?", false);
+                    showQuickReplies();
                 }
             }
 
@@ -1194,19 +1247,50 @@
             // Add message to chat
             function addMessage(content, isUser = false, isError = false) {
                 const messageDiv = document.createElement('div');
-                messageDiv.className = isUser ? 'user-msg' : isError ? 'bot-msg error' : 'bot-msg';
+                messageDiv.className = isUser ? 'user-msg fade-in' : isError ? 'bot-msg error fade-in' : 'bot-msg fade-in';
 
                 const now = new Date();
                 const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 messageDiv.innerHTML = `
                     <div class="message-content">${content}</div>
-                    <div class="message-time">${timeString}</div>
+                    <span class="message-time">${timeString}</span>
                 `;
 
                 chatHistory.appendChild(messageDiv);
                 scrollToBottom();
                 saveChat();
+            }
+
+            // Show quick reply buttons
+            function showQuickReplies() {
+                const quickRepliesContainer = document.createElement('div');
+                quickRepliesContainer.className = 'quick-replies';
+
+                quickReplies.forEach(reply => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'quick-reply-btn';
+                    button.textContent = reply;
+                    button.addEventListener('click', () => {
+                        chatInput.value = reply;
+                        handleSubmit(new Event('submit'));
+                    });
+                    quickRepliesContainer.appendChild(button);
+                });
+
+                chatHistory.appendChild(quickRepliesContainer);
+                scrollToBottom();
+            }
+
+            // Show typing indicator
+            function showTypingIndicator() {
+                typingIndicator.classList.remove('typing-hidden');
+            }
+
+            // Hide typing indicator
+            function hideTypingIndicator() {
+                typingIndicator.classList.add('typing-hidden');
             }
 
             // Toggle chatbot visibility
@@ -1229,6 +1313,9 @@
                 addMessage(query, true);
                 chatInput.value = '';
 
+                // Show typing indicator
+                showTypingIndicator();
+
                 try {
                     const response = await fetch("/irrigation/chatbot/", {
                         method: "POST",
@@ -1244,10 +1331,15 @@
                     }
 
                     const data = await response.json();
-                    processBotResponse(data);
+                    // Simulate typing delay for better UX
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        processBotResponse(data);
+                    }, 1000);
 
                 } catch (error) {
                     console.error('Error:', error);
+                    hideTypingIndicator();
                     addMessage("Sorry, I'm having trouble connecting. Please try again later.", false, true);
                 }
             }
@@ -1299,157 +1391,17 @@
 
                     addMessage(responseContent);
 
-                    // Add suggestions if available
-                    if (data.suggestions && data.suggestions.length > 0) {
-                        const suggestionsDiv = document.createElement('div');
-                        suggestionsDiv.className = 'suggestions mt-3 space-y-2';
-
-                        data.suggestions.forEach(suggestion => {
-                            const button = document.createElement('button');
-                            button.className = 'suggestion-chip bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-sm transition-colors';
-                            button.textContent = suggestion.name;
-                            button.onclick = () => {
-                                chatInput.value = suggestion.name;
-                                chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
-                            };
-                            suggestionsDiv.appendChild(button);
-                        });
-
-                        chatHistory.appendChild(suggestionsDiv);
-                        scrollToBottom();
-                    }
                 } else {
                     // No match found
                     let responseContent = `
-                        <p>${data.message || "I couldn't find an exact match for your query."}</p>
+                        <p>${data.message || "I couldn't find an exact match for your query. Try asking about irrigation schedules, water usage, or system status."}</p>
                     `;
 
                     addMessage(responseContent);
-
-                    // Show suggestions
-                    if (data.suggestions && data.suggestions.length > 0) {
-                        const suggestionsDiv = document.createElement('div');
-                        suggestionsDiv.className = 'suggestions mt-3 space-y-2';
-
-                        data.suggestions.forEach(suggestion => {
-                            const button = document.createElement('button');
-                            button.className = 'suggestion-chip bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-sm transition-colors';
-                            button.textContent = suggestion.name;
-                            button.onclick = () => {
-                                chatInput.value = suggestion.name;
-                                chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
-                            };
-                            suggestionsDiv.appendChild(button);
-                        });
-
-                        chatHistory.appendChild(suggestionsDiv);
-                        scrollToBottom();
-                    }
-                }
-            }
-
-            // Enhanced Draggable functionality
-            function setupDraggable() {
-                dragHandle.addEventListener('mousedown', startDrag);
-                dragHandle.addEventListener('touchstart', startDrag, { passive: false });
-
-                function startDrag(e) {
-                    e.preventDefault();
-                    isDragging = true;
-                    touchStartTime = Date.now();
-
-                    // Get initial position
-                    const rect = chatContainer.getBoundingClientRect();
-
-                    if (e.type === 'mousedown') {
-                        offsetX = e.clientX - rect.left;
-                        offsetY = e.clientY - rect.top;
-                        startX = e.clientX;
-                        startY = e.clientY;
-                    } else if (e.type === 'touchstart') {
-                        offsetX = e.touches[0].clientX - rect.left;
-                        offsetY = e.touches[0].clientY - rect.top;
-                        startX = e.touches[0].clientX;
-                        startY = e.touches[0].clientY;
-                    }
-
-                    // Add event listeners for moving and stopping
-                    document.addEventListener('mousemove', drag);
-                    document.addEventListener('touchmove', drag, { passive: false });
-                    document.addEventListener('mouseup', stopDrag);
-                    document.addEventListener('touchend', stopDrag);
-
-                    // Add active class for visual feedback
-                    chatContainer.classList.add('shadow-lg', 'ring-2', 'ring-green-500');
                 }
 
-                function drag(e) {
-                    if (!isDragging) return;
-                    e.preventDefault();
-
-                    let clientX, clientY;
-
-                    if (e.type === 'mousemove') {
-                        clientX = e.clientX;
-                        clientY = e.clientY;
-                    } else if (e.type === 'touchmove') {
-                        clientX = e.touches[0].clientX;
-                        clientY = e.touches[0].clientY;
-                    }
-
-                    // Calculate new position
-                    let newLeft = clientX - offsetX;
-                    let newTop = clientY - offsetY;
-
-                    // Constrain to viewport
-                    const containerWidth = chatContainer.offsetWidth;
-                    const containerHeight = chatContainer.offsetHeight;
-                    const viewportWidth = window.innerWidth;
-                    const viewportHeight = window.innerHeight;
-
-                    newLeft = Math.max(0, Math.min(viewportWidth - containerWidth, newLeft));
-                    newTop = Math.max(0, Math.min(viewportHeight - containerHeight, newTop));
-
-                    // Apply new position
-                    chatContainer.style.left = `${newLeft}px`;
-                    chatContainer.style.top = `${newTop}px`;
-                    chatContainer.style.right = 'auto';
-                    chatContainer.style.bottom = 'auto';
-                }
-
-                function stopDrag(e) {
-                    if (!isDragging) return;
-
-                    // Check if this was a click (very small movement or short time)
-                    let endX, endY;
-                    if (e.type === 'mouseup') {
-                        endX = e.clientX;
-                        endY = e.clientY;
-                    } else if (e.type === 'touchend') {
-                        if (e.changedTouches.length > 0) {
-                            endX = e.changedTouches[0].clientX;
-                            endY = e.changedTouches[0].clientY;
-                        }
-                    }
-
-                    const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-                    const duration = Date.now() - touchStartTime;
-
-                    if (distance < 5 || duration < 200) {
-                        // Treat as click - focus input
-                        chatInput.focus();
-                    }
-
-                    // Clean up
-                    isDragging = false;
-                    document.removeEventListener('mousemove', drag);
-                    document.removeEventListener('touchmove', drag);
-                    document.removeEventListener('mouseup', stopDrag);
-                    document.removeEventListener('touchend', stopDrag);
-
-                    // Remove active class
-                    chatContainer.classList.remove('shadow-lg', 'ring-2', 'ring-green-500');
-                }
+                // Show quick replies after response
+                setTimeout(showQuickReplies, 100);
             }
 
             // Initialize chatbot
@@ -1457,8 +1409,13 @@
                 // Load any saved history
                 loadChatHistory();
 
-                // Event listeners
+                // Event listeners with improved mobile touch handling
                 chatButton.addEventListener('click', toggleChat);
+                chatButton.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    toggleChat();
+                }, { passive: false });
+
                 closeButton.addEventListener('click', toggleChat);
                 chatForm.addEventListener('submit', handleSubmit);
 
@@ -1470,20 +1427,12 @@
                     }
                 });
 
-                // Initial greeting if no history
-                if (chatHistory.children.length === 0) {
-                    addMessage("Hello! I'm your irrigation assistant. How can I help you today?", false);
-                }
-
-                // Close chat when clicking outside (but not when dragging)
+                // Close chat when clicking outside
                 document.addEventListener('click', function(e) {
-                    if (!isDragging && !chatContainer.contains(e.target) && e.target !== chatButton && chatContainer.classList.contains('chatbot-visible')) {
+                    if (!chatContainer.contains(e.target) && e.target !== chatButton && chatContainer.classList.contains('chatbot-visible')) {
                         toggleChat();
                     }
                 });
-
-                // Setup draggable functionality
-                setupDraggable();
             }
 
             // Start the chatbot
