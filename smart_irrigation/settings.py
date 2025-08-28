@@ -7,7 +7,7 @@ from pathlib import Path
 import dj_database_url
 
 # Environment Detection
-IS_PRODUCTION = os.getenv('ENVIRONMENT') == 'production'
+IS_PRODUCTION = os.getenv('RENDER', 'False').lower() == 'true' or os.getenv('ENVIRONMENT') == 'production'
 
 # Load environment variables before any other settings
 load_dotenv()
