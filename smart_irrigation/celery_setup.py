@@ -1,4 +1,10 @@
-# from .eventlet_patch import *  # noqa
+from .settings import IS_DEVELOPMENT
+
+# Database configuration
+if IS_DEVELOPMENT:
+    from .eventlet_patch import *  # noqa
+else:
+    None
 
 import os
 from celery import Celery
