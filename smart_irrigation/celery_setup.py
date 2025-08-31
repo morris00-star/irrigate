@@ -1,4 +1,4 @@
-from .eventlet_patch import *  # noqa
+# from .eventlet_patch import *  # noqa
 
 import os
 from celery import Celery
