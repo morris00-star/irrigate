@@ -29,12 +29,10 @@ from .sms import SMSService
 logger = logging.getLogger(__name__)
 
 
-@login_required
 def about(request):
     return render(request, 'irrigation/about.html')
 
 
-@login_required
 def contact(request):
     return render(request, 'irrigation/contact.html')
 
@@ -130,12 +128,10 @@ def visualize_data(request):
     return render(request, 'irrigation/visualize.html')
 
 
-@login_required
 def privacy_policy(request):
     return render(request, 'irrigation/privacy.html')
 
 
-@login_required
 def terms_of_service(request):
     return render(request, 'irrigation/terms.html')
 
