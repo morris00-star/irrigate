@@ -181,7 +181,7 @@
 
     .bot-message {
         background: rgba(255, 255, 255, 0.95);
-        color: #1e293b;
+        color: #065f46; /* Changed to green text */
         margin-right: auto;
         border-bottom-left-radius: 8px;
         border: 1px solid rgba(226, 232, 240, 0.8);
@@ -202,7 +202,7 @@
     }
 
     .bot-message .message-time {
-        color: #64748b;
+        color: #047857; /* Green time text */
     }
 
     .user-message .message-time {
@@ -572,7 +572,7 @@
         }
     }
 
-    /* Welcome message */
+    /* Welcome message - Green text theme */
     .welcome-message {
         text-align: center;
         padding: 1.5rem;
@@ -583,13 +583,13 @@
     }
 
     .welcome-title {
-        color: #2563eb;
+        color: #065f46; /* Dark green */
         margin-bottom: 0.5rem;
         font-weight: 600;
     }
 
     .welcome-text {
-        color: #64748b;
+        color: #065f46; /* Dark green */
         margin-bottom: 1rem;
     }
 
@@ -604,19 +604,19 @@
 
     .quick-reply {
         padding: 0.5rem 0.875rem;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
+        background: #d1fae5; /* Light green */
+        border: 1px solid #a7f3d0;
         border-radius: 16px;
         cursor: pointer;
         font-size: 0.8rem;
         transition: all 0.3s ease;
-        color: #374151;
+        color: #065f46; /* Dark green */
     }
 
     .quick-reply:hover {
-        background: #2563eb;
+        background: #10b981; /* Medium green */
         color: white;
-        border-color: #2563eb;
+        border-color: #10b981;
     }
 
     /* Suggestions container */
@@ -629,7 +629,7 @@
 
     .suggestions-title {
         font-size: 0.85rem;
-        color: #64748b;
+        color: #065f46; /* Dark green */
         margin-bottom: 0.75rem;
         font-weight: 500;
         display: flex;
@@ -644,23 +644,23 @@
     }
 
     .suggestion-chip {
-        background: white;
-        border: 1px solid #e2e8f0;
+        background: #d1fae5; /* Light green */
+        border: 1px solid #a7f3d0;
         border-radius: 20px;
         padding: 0.5rem 1rem;
         font-size: 0.85rem;
         cursor: pointer;
         transition: all 0.3s ease;
-        color: #374151;
+        color: #065f46; /* Dark green */
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .suggestion-chip:hover {
-        background: #2563eb;
+        background: #10b981; /* Medium green */
         color: white;
-        border-color: #2563eb;
+        border-color: #10b981;
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.2);
     }
 
     /* Chat input area */
@@ -690,17 +690,18 @@
         transition: all 0.3s ease;
         line-height: 1.5;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        color: #065f46; /* Green text */
     }
 
     .chat-input:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        border-color: #10b981; /* Green border */
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
     }
 
     .chat-submit {
         width: 46px;
         height: 46px;
-        background: #2563eb;
+        background: #2563eb; /* Blue button */
         color: white;
         border: none;
         border-radius: 50%;
@@ -738,7 +739,7 @@
         cursor: pointer;
         font-size: 0.75rem;
         transition: all 0.3s ease;
-        color: #64748b;
+        color: #065f46; /* Green text */
         display: flex;
         align-items: center;
         gap: 0.25rem;
@@ -749,7 +750,7 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    /* Typing indicator */
+    /* Typing indicator - Green theme */
     .typing-indicator {
         display: flex;
         align-items: center;
@@ -767,7 +768,7 @@
 
     .typing-text {
         font-size: 0.85rem;
-        color: #64748b;
+        color: #065f46; /* Green text */
         font-weight: 500;
     }
 
@@ -779,7 +780,7 @@
     .typing-dot {
         width: 8px;
         height: 8px;
-        background: #94a3b8;
+        background: #10b981; /* Green dots */
         border-radius: 50%;
         animation: typingAnimation 1.4s infinite both;
     }
@@ -812,6 +813,46 @@
             opacity: 1;
             transform: translateY(0);
         }
+    }
+
+    /* Green text styles for all bot content */
+    .bot-message strong,
+    .bot-message h3,
+    .bot-message h4 {
+        color: #065f46; /* Dark green */
+    }
+
+    .navigation-header strong {
+        color: #065f46; /* Dark green */
+    }
+
+    .resource-title {
+        color: #065f46; /* Dark green */
+    }
+
+    .resource-description {
+        color: #065f46; /* Dark green */
+    }
+
+    .contact-label {
+        color: #065f46; /* Dark green */
+    }
+
+    .contact-value {
+        color: #047857; /* Medium green */
+    }
+
+    /* Message content styling */
+    .message-content {
+        color: inherit; /* Inherit parent color */
+    }
+
+    .message-content strong {
+        color: #065f46; /* Dark green for bold text in bot messages */
+    }
+
+    .user-message .message-content strong {
+        color: white; /* White for bold text in user messages */
     }
 </style>
 {% endblock %}
