@@ -523,6 +523,19 @@
             width: 100%;
             justify-content: center;
         }
+
+        /* Mobile-specific text clarity improvements */
+        body, html {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        .message, .chat-input, .action-button, .quick-reply, .suggestion-chip {
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
     }
 
     /* Comfort and Accessibility Features */
@@ -854,7 +867,25 @@
     .user-message .message-content strong {
         color: white; /* White for bold text in user messages */
     }
+
+    /* Text clarity improvements for mobile */
+    @media (max-width: 768px) {
+        body {
+            text-shadow: 0 0 1px transparent;
+            -webkit-text-stroke: 0.45px transparent;
+        }
+
+        .message, .chat-input, .action-button, .quick-reply, .suggestion-chip {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .chat-history {
+            background-attachment: fixed;
+        }
+    }
 </style>
+
 {% endblock %}
 
 {% block content %}
