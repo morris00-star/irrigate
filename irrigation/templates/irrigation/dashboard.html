@@ -85,7 +85,7 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-green-800">Pump Status</h3>
                 <span class="px-3 py-1 rounded-full text-xs font-medium {% if sensor_data.0.pump_status %}text-blue-800{% else %}text-blue-800{% endif %}">
-                    {{ sensor_data.0.pump_status|yesno:"ACTIVE,INACTIVE" }}
+                    {{ sensor_data.0.pump_status|yesno:"ON,OFF" }}
                 </span>
             </div>
             <div class="flex items-center">
