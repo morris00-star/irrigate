@@ -63,9 +63,9 @@
         <div class="pt-20 pb-8 px-6">
             <div class="text-center mb-8">
                 <h1 class="text-2xl font-bold text-gray-900">{{ user.get_full_name|default:user.username }}</h1>
-                <p class="text-sm text-gray-500">Member since {{ user.date_joined|date:"F j, Y" }}</p>
+                <p class="text-sm font-bold text-gray-500">Member since {{ user.date_joined|date:"F j, Y" }}</p>
                 {% if user.phone_number %}
-                    <p class="text-sm text-gray-500 mt-2" id="phone-display">
+                    <p class="text-sm font-bold text-gray-500 mt-2" id="phone-display">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
@@ -98,7 +98,7 @@
                                    id="{{ form.first_name.id_for_label }}"
                                    name="{{ form.first_name.html_name }}"
                                    value="{{ form.first_name.value|default:'' }}"
-                                   class="mt-1 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                   class="mt-1 font-medium block w-full rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
                             {% if form.first_name.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.first_name.errors|join:", " }}</p>
                             {% endif %}
@@ -113,7 +113,7 @@
                                    value="{{ form.last_name.value|default:'' }}"
                                    class="mt-1 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
                             {% if form.last_name.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.last_name.errors|join:", " }}</p>
+                                <p class="mt-1 text-sm  text-red-600">{{ form.last_name.errors|join:", " }}</p>
                             {% endif %}
                         </div>
 
@@ -134,7 +134,7 @@
                         <div>
                             <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700">Phone Number</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
-                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                <span class="inline-flex items-center px-3 font-medium rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
@@ -159,7 +159,7 @@
                                    id="{{ form.location.id_for_label }}"
                                    name="{{ form.location.html_name }}"
                                    value="{{ form.location.value|default:'' }}"
-                                   class="mt-1 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                   class="mt-1 block w-full font-medium rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
                             {% if form.location.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.location.errors|join:", " }}</p>
                             {% endif %}
@@ -173,14 +173,14 @@
                                    name="{{ form.age.html_name }}"
                                    value="{{ form.age.value|default:'' }}"
                                    min="0"
-                                   class="mt-1 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                   class="mt-1 block w-full font-medium rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
                             {% if form.age.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.age.errors|join:", " }}</p>
                             {% endif %}
                         </div>
 
                         <!-- SMS Alerts -->
-                        <div class="flex items-center">
+                        <div class="font-medium flex items-center">
                             <input type="checkbox"
                                    id="{{ form.receive_sms_alerts.id_for_label }}"
                                    name="{{ form.receive_sms_alerts.html_name }}"
@@ -204,8 +204,8 @@
 
             <!-- API Key Section -->
             <div class="pt-6 border-t border-gray-200">
-                <h2 class="text-lg font-medium text-gray-900 mb-2">API Token</h2>
-                <p class="text-sm text-gray-500 mb-4">Use this token to authenticate with our API services.</p>
+                <h2 class="text-lg font-bold text-gray-900 mb-2">API Token</h2>
+                <p class="text-sm font-medium text-gray-500 mb-4">Use this token to authenticate with our API services.</p>
 
                 <div class="flex items-center">
                     <div class="relative flex-1">
@@ -215,7 +215,7 @@
                                readonly
                                class="bg-gray-100 border border-gray-300 rounded-l-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
                         <div id="api-token-mask" class="absolute inset-0 flex items-center px-3 pointer-events-none">
-                            <span class="text-gray-500">••••••••••••••••••••••••••••••••</span>
+                            <span class="text-gray-500">••••••••••••••</span>
                         </div>
                     </div>
                     <button type="button"
@@ -228,7 +228,7 @@
                     Regenerate
                     </a>
                 </div>
-                <p class="mt-2 text-xs text-gray-500">Keep your API token secure and don't share it publicly.</p>
+                <p class="mt-2 font-medium text-xs text-gray-500">Keep your API token secure and don't share it publicly.</p>
                 <p class="mt-1 text-xs text-red-500">Warning: Regenerating will invalidate any devices using the current token.</p>
             </div>
 
@@ -315,7 +315,7 @@
             }
 
             // Validate file type
-            if (!file.type.startsWith('image/')) {
+            if (!file.type.startsWith('images/')) {
                 showToast('Please select an image file.', 'error');
                 return;
             }
