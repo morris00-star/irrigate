@@ -98,7 +98,7 @@
                                    id="{{ form.first_name.id_for_label }}"
                                    name="{{ form.first_name.html_name }}"
                                    value="{{ form.first_name.value|default:'' }}"
-                                   class="mt-1 font-medium block w-full rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                   class="mt-1text-gray-700 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-700 focus:ring-gray-700">
                             {% if form.first_name.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.first_name.errors|join:", " }}</p>
                             {% endif %}
@@ -111,7 +111,7 @@
                                    id="{{ form.last_name.id_for_label }}"
                                    name="{{ form.last_name.html_name }}"
                                    value="{{ form.last_name.value|default:'' }}"
-                                   class="mt-1 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                   class="mt-1 block w-full text-gray-700 rounded-md border-gray-700 shadow-sm focus:border-gray-700 focus:ring-gray-700">
                             {% if form.last_name.errors %}
                                 <p class="mt-1 text-sm  text-red-600">{{ form.last_name.errors|join:", " }}</p>
                             {% endif %}
@@ -124,7 +124,7 @@
                                    id="{{ form.email.id_for_label }}"
                                    name="{{ form.email.html_name }}"
                                    value="{{ form.email.value|default:'' }}"
-                                   class="mt-1 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                   class="mt-1 text-gray-700 block w-full rounded-md border-gray-700 shadow-sm focus:border-gray-500 focus:ring-gray-500">
                             {% if form.email.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.email.errors|join:", " }}</p>
                             {% endif %}
@@ -144,7 +144,7 @@
                                        name="{{ form.phone_number.html_name }}"
                                        value="{{ form.phone_number.value|default:'' }}"
                                        placeholder="+[country code][number]"
-                                       class="focus:ring-green-500 focus:border-green-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-700">
+                                       class="focus:ring-gray-700 text-gray-700 focus:border-gray-700 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-700">
                             </div>
                             {% if form.phone_number.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.phone_number.errors|join:", " }}</p>
@@ -159,7 +159,7 @@
                                    id="{{ form.location.id_for_label }}"
                                    name="{{ form.location.html_name }}"
                                    value="{{ form.location.value|default:'' }}"
-                                   class="mt-1 block w-full font-medium rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                   class="mt-1 block w-full text-gray-700 font-medium rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-ggray-700">
                             {% if form.location.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.location.errors|join:", " }}</p>
                             {% endif %}
@@ -173,7 +173,7 @@
                                    name="{{ form.age.html_name }}"
                                    value="{{ form.age.value|default:'' }}"
                                    min="0"
-                                   class="mt-1 block w-full font-medium rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                   class="mt-1 block w-full text-gray-700 font-medium rounded-md border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500">
                             {% if form.age.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.age.errors|join:", " }}</p>
                             {% endif %}
