@@ -173,20 +173,48 @@ if not DEBUG:
     # Tell Django to copy static files into the staticfiles directory
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Cloudinary
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-    'SECURE': True,
-    'MEDIA_TAG': 'profile_pics',
-    'INVALIDATE': True,
-}
+# Media files configuration
+if IS_PRODUCTION:
+    # Use Cloudinary for production
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+        'SECURE': True,
+        'MEDIA_TAG': 'profile_pics',
+        'INVALIDATE': True,
+    }
+
+    # Base URL for media files
+    MEDIA_URL = '/media/'
+else:
+    # Local development
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+
+# Handle missing files
+def get_media_url(file_field):
+    """Safe method to get media URL that handles missing files"""
+    if not file_field:
+        return None
+
+    try:
+        if IS_PRODUCTION and hasattr(file_field.storage, 'url'):
+            return file_field.storage.url(file_field.name)
+        else:
+            # Check if file exists locally
+            if os.path.exists(file_field.path):
+                return file_field.url
+            else:
+                return None
+    except (ValueError, AttributeError, OSError):
+        return None
+
 
 # Authentication
 AUTH_USER_MODEL = 'accounts.CustomUser'
