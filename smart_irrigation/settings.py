@@ -142,10 +142,6 @@ else:
         }
     }
 
-"""# Ensure proper thread handling
-DATABASE_ROUTERS = []
-if not IS_PRODUCTION:
-    DATABASES['default']['OPTIONS']['isolation_level'] = None"""
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -173,8 +169,9 @@ if not DEBUG:
     # Tell Django to copy static files into the staticfiles directory
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Media files configuration.
+MEDIA_URL = '/media/'
 
-# Media files configuration
 if IS_PRODUCTION:
     # Use Cloudinary for production
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -188,11 +185,10 @@ if IS_PRODUCTION:
         'INVALIDATE': True,
     }
 
-    # Base URL for media files
-    MEDIA_URL = '/media/'
+    # For production, MEDIA_ROOT might not be used but define it anyway
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
     # Local development
-    MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
@@ -419,5 +415,6 @@ MQTT_USER = os.getenv('MQTT_USER', 'django_server')
 MQTT_PASS = os.getenv('MQTT_PASS', 'serverpass')
 
 # Ensure directories exist
-os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)
+if IS_DEVELOPMENT:
+    os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)
 os.makedirs(STATIC_ROOT, exist_ok=True)
