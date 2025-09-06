@@ -357,3 +357,34 @@ def chatbot_view(request):
             'error': 'Internal server error',
             'message': 'An unexpected error occurred while processing your request'
         }, status=500)
+
+
+def manifest_view(request):
+    manifest_data = {
+        "name": "Intelligent Irrigation System",
+        "short_name": "IrrigationSystem",
+        "description": "Smart irrigation management system",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#10b981",
+        "icons": [
+            {
+                "src": "/static/icon-192x192.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "/static/icon-512x512.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }
+
+    response = HttpResponse(
+        json.dumps(manifest_data),
+        content_type='application/manifest+json'
+    )
+    return response
+

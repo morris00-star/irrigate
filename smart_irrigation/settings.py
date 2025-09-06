@@ -165,9 +165,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'accounts', 'static'),
 ]
 
-if not DEBUG:
-    # Tell Django to copy static files into the staticfiles directory
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Tell Django to copy static files into the staticfiles directory
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files configuration.
 MEDIA_URL = '/media/'
