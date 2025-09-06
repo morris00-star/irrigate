@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 from pathlib import Path
 import dj_database_url
 
-# Environment Detection
-IS_PRODUCTION = os.getenv('RENDER', 'False').lower() == 'true' or os.getenv('ENVIRONMENT') == 'production'
-
 # Load environment variables before any other settings
 load_dotenv()
+
+# Environment Detection
+IS_PRODUCTION = os.getenv('RENDER', 'False').lower() == 'true' or os.getenv('ENVIRONMENT') == 'production'
 
 # Add MIME type for JavaScript files
 mimetypes.add_type("application/javascript", ".js", True)
@@ -40,7 +40,12 @@ if not SECRET_KEY:
     else:
         raise ValueError("SECRET_KEY must be set in production")
 
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' if not IS_PRODUCTION else False
+# DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' if not IS_PRODUCTION else False
+if IS_PRODUCTION:
+    DEBUG = False
+else:
+    debug_env = os.getenv('DEBUG', 'False')
+    DEBUG = debug_env.lower() == 'true'
 
 ALLOWED_HOSTS = [
     'irrigation-intelligent.onrender.com',
@@ -163,7 +168,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'irrigation', 'static'),
     os.path.join(BASE_DIR, 'accounts', 'static'),
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+if not DEBUG:
+    # Tell Django to copy static files into the staticfiles directory
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -195,6 +203,39 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 SITE_ID = 1
 
 SITE_NAME = "Irrigation Intelligent"
+
+IS_WINDOWS = sys.platform.startswith('win')
+
+# Custom irrigation settings - MAKE SURE THIS IS DEFINED
+IRRIGATION_SYSTEM = {
+    'DEFAULT_SOIL_MOISTURE_THRESHOLD': 50,
+    'DEFAULT_WATERING_DURATION': 10,
+    'MAX_SENSOR_DATA_AGE': 3600,
+    'SENSOR_DATA_INTERVAL': 300,
+    'WEBSOCKETS_ENABLED': not IS_WINDOWS  # Disable WebSockets on Windows
+}
+
+# Daphne/ASGI settings
+ASGI_APPLICATION = 'smart_irrigation.asgi.application'
+
+# Windows-specific settings
+if sys.platform.startswith('win'):
+    # Disable Channels on Windows to avoid non-blocking I/O issues
+    INSTALLED_APPS = [app for app in INSTALLED_APPS if app != 'channels']
+
+    # Use different middleware for Windows
+    MIDDLEWARE = [mw for mw in MIDDLEWARE if mw not in [
+        'irrigation.connection_middleware.ConnectionMiddleware',
+        'irrigation.db_middleware.DBConnectionMiddleware'
+    ]]
+
+    # Add Windows-compatible middleware
+    MIDDLEWARE.insert(0, 'django.middleware.security.SecurityMiddleware')
+
+    # Disable WebSockets on Windows
+    IRRIGATION_SYSTEM['WEBSOCKETS_ENABLED'] = False
+else:
+    IRRIGATION_SYSTEM['WEBSOCKETS_ENABLED'] = True
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -259,14 +300,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://192.168.43.101:8000",
 ]
 CORS_ORIGIN_ALLOW_ALL = DEBUG  # Only allow all in development
-
-# Custom irrigation settings
-IRRIGATION_SYSTEM = {
-    'DEFAULT_SOIL_MOISTURE_THRESHOLD': 50,
-    'DEFAULT_WATERING_DURATION': 10,
-    'MAX_SENSOR_DATA_AGE': 3600,
-    'SENSOR_DATA_INTERVAL': 300,
-}
 
 EGOSMS_CONFIG = {
     'USERNAME': os.getenv('EGOSMS_USERNAME'),

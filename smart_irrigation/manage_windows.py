@@ -1,4 +1,4 @@
-"""Django's command-line utility for administrative tasks."""
+"""Django's command-line utility for administrative tasks (Windows version)."""
 import os
 import sys
 import warnings
@@ -7,13 +7,13 @@ import warnings
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smart_irrigation.settings')
-    
+
     # Windows-specific fixes
     if sys.platform.startswith('win'):
         os.environ.setdefault('DJANGO_ALLOW_ASYNC_UNSAFE', 'true')
-        warnings.filterwarnings("ignore", 
-                              message=".*set_nonblocking.*", 
-                              category=RuntimeWarning)
+        warnings.filterwarnings("ignore",
+                                message=".*set_nonblocking.*",
+                                category=RuntimeWarning)
 
     try:
         from django.core.management import execute_from_command_line
@@ -23,7 +23,7 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    
+
     execute_from_command_line(sys.argv)
 
 

@@ -98,7 +98,7 @@
                                    id="{{ form.first_name.id_for_label }}"
                                    name="{{ form.first_name.html_name }}"
                                    value="{{ form.first_name.value|default:'' }}"
-                                   class="mt-1text-gray-700 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-700 focus:ring-gray-700">
+                                   class="mt-1 text-gray-700 block w-full rounded-md border-gray-700 shadow-sm focus:border-green-700 focus:ring-gray-700">
                             {% if form.first_name.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.first_name.errors|join:", " }}</p>
                             {% endif %}
@@ -302,7 +302,6 @@
 
     // Handle profile picture upload
     const profilePictureInput = document.getElementById('profile-picture-input');
-    const profilePictureContainer = document.getElementById('profile-picture-container');
 
     profilePictureInput.addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
@@ -315,63 +314,40 @@
             }
 
             // Validate file type
-            if (!file.type.startsWith('images/')) {
-                showToast('Please select an image file.', 'error');
+            const validExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+            if (!validExtensions.includes(ext)) {
+                showToast('Please select a valid image file (JPG, PNG, GIF).', 'error');
                 return;
             }
 
+            // Create preview
             const reader = new FileReader();
-
             reader.onload = function(e) {
-                // Create form data
-                const formData = new FormData(document.getElementById('profile-update-form'));
+                // Update preview immediately
+                updateProfilePicturePreview(e.target.result);
 
-                // Send AJAX request
-                fetch(window.location.href, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': document.querySelector('#profile-update-form [name=csrfmiddlewaretoken]').value
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Update profile picture
-                        updateProfilePicture(data.profile_picture_url || e.target.result);
-                        showToast('Profile picture updated successfully', 'success');
-                    } else {
-                        throw new Error(data.message || 'Error updating profile picture');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast(error.message || 'Error updating profile picture', 'error');
-                });
+                // Submit the form
+                submitProfilePicture(file);
             };
-
             reader.readAsDataURL(file);
         }
     });
 
-    function updateProfilePicture(imageUrl) {
+    function updateProfilePicturePreview(imageUrl) {
+        const container = document.getElementById('profile-picture-container');
+
         // Remove existing content
-        while (profilePictureContainer.firstChild) {
-            profilePictureContainer.removeChild(profilePictureContainer.firstChild);
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
         }
 
         // Create and add new image
         const img = document.createElement('img');
         img.src = imageUrl;
-        img.alt = 'Profile picture';
-        img.className = 'profile-picture w-full h-full object-cover';
-        profilePictureContainer.appendChild(img);
+        img.alt = 'Profile picture preview';
+        img.className = 'w-full h-full object-cover';
+        container.appendChild(img);
 
         // Add hover overlay
         const overlay = document.createElement('div');
@@ -382,18 +358,57 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
         `;
-        profilePictureContainer.appendChild(overlay);
+        container.appendChild(overlay);
     }
 
-    // Reegenerate form submit handler Token:
-    document.querySelector('a[href="{% url 'confirm_token_regeneration' %}"]').addEventListener('click', function(e) {
-        e.preventDefault();
-        window.location.href = this.href;
-    });
+    function submitProfilePicture(file) {
+        const formData = new FormData();
+        formData.append('profile_picture', file);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        formData.append('form_type', 'profile_picture_only');
 
-    // Handle profile update form submission
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || 'Network response was not ok');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('Profile picture updated successfully', 'success');
+                if (data.profile_picture_url) {
+                    // Update with the actual URL from server
+                    updateProfilePicturePreview(data.profile_picture_url);
+                }
+            } else {
+                throw new Error(data.message || 'Error updating profile picture');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'Error updating profile picture', 'error');
+            // Reload the page to get the original state
+            location.reload();
+        });
+    }
+
+    // Handle profile update form submission (for other fields)
     document.getElementById('profile-update-form').addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // Don't submit if it's just a profile picture change
+        if (document.querySelector('input[name="form_type"]').value === 'profile_picture_only') {
+            return;
+        }
 
         const formData = new FormData(this);
 
@@ -401,20 +416,20 @@
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': document.querySelector('#profile-update-form [name=csrfmiddlewaretoken]').value
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || 'Network response was not ok');
+                });
             }
             return response.json();
         })
         .then(data => {
             if (data.status === 'success') {
                 showToast('Profile updated successfully', 'success');
-                // Update phone number display if it was changed
                 if (data.phone_number) {
                     const phoneDisplay = document.getElementById('phone-display');
                     if (phoneDisplay) {
@@ -425,10 +440,6 @@
                             ${data.phone_number}
                         `;
                     }
-                }
-                // Update profile picture if changed
-                if (data.profile_picture_url) {
-                    updateProfilePicture(data.profile_picture_url);
                 }
             } else {
                 throw new Error(data.message || 'Error updating profile');

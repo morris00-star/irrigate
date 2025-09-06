@@ -61,6 +61,10 @@ def user_login(request):
 @login_required
 def profile(request):
     if request.method == 'POST':
+        # Check if this is a profile picture only upload
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and 'profile_picture' in request.FILES:
+            return handle_profile_picture_upload(request)
+
         form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             try:
@@ -83,7 +87,8 @@ def profile(request):
                     return JsonResponse({
                         'status': 'success',
                         'message': 'Profile updated successfully',
-                        'profile_picture_url': user.profile_picture.url if user.profile_picture else None
+                        'profile_picture_url': user.profile_picture.url if user.profile_picture else None,
+                        'phone_number': user.phone_number
                     })
 
                 messages.success(request, 'Profile updated successfully.')
@@ -100,7 +105,7 @@ def profile(request):
                 return JsonResponse({
                     'status': 'error',
                     'message': 'Form validation failed',
-                    'errors': form.errors
+                    'errors': form.errors.get_json_data()
                 }, status=400)
             messages.error(request, 'Please correct the errors below.')
 
@@ -108,6 +113,53 @@ def profile(request):
         form = CustomUserChangeForm(instance=request.user)
 
     return render(request, 'accounts/profile.html', {'form': form})
+
+
+def handle_profile_picture_upload(request):
+    """Handle AJAX profile picture uploads separately"""
+    try:
+        profile_picture = request.FILES['profile_picture']
+
+        # Validate file size (10MB max)
+        if profile_picture.size > 10 * 1024 * 1024:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Image file too large ( > 10MB )'
+            }, status=400)
+
+        # Validate file type
+        valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+        ext = os.path.splitext(profile_picture.name)[1].lower()
+        if ext not in valid_extensions:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Unsupported file extension. Please use .jpg, .jpeg, .png, or .gif'
+            }, status=400)
+
+        # Delete old profile picture if it exists
+        if request.user.profile_picture:
+            try:
+                old_file_path = request.user.profile_picture.path
+                if os.path.exists(old_file_path):
+                    default_storage.delete(old_file_path)
+            except Exception as e:
+                print(f"Error deleting old profile picture: {e}")
+
+        # Save new profile picture
+        request.user.profile_picture = profile_picture
+        request.user.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Profile picture updated successfully',
+            'profile_picture_url': request.user.profile_picture.url
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
 
 
 def user_logout(request):
