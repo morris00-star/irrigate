@@ -68,26 +68,15 @@ def profile(request):
         form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             try:
-                # Handle profile picture update
-                if 'profile_picture' in request.FILES:
-                    # Delete old profile picture if it exists
-                    if request.user.profile_picture:
-                        try:
-                            old_file_path = request.user.profile_picture.path
-                            if os.path.exists(old_file_path):
-                                default_storage.delete(old_file_path)
-                        except Exception as e:
-                            print(f"Error deleting old profile picture: {e}")
-
-                # Save the form
                 user = form.save()
 
                 # Return appropriate response based on request type
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    profile_picture_url = user.get_profile_picture_url()
                     return JsonResponse({
                         'status': 'success',
                         'message': 'Profile updated successfully',
-                        'profile_picture_url': user.profile_picture.url if user.profile_picture else None,
+                        'profile_picture_url': profile_picture_url,
                         'phone_number': user.phone_number
                     })
 
@@ -112,7 +101,14 @@ def profile(request):
     else:
         form = CustomUserChangeForm(instance=request.user)
 
-    return render(request, 'accounts/profile.html', {'form': form})
+    # Get profile picture URL safely
+    profile_picture_url = request.user.get_profile_picture_url()
+
+    return render(request, 'accounts/profile.html', {
+        'form': form,
+        'user': request.user,
+        'profile_picture_url': profile_picture_url
+    })
 
 
 def handle_profile_picture_upload(request):
@@ -136,23 +132,16 @@ def handle_profile_picture_upload(request):
                 'message': 'Unsupported file extension. Please use .jpg, .jpeg, .png, or .gif'
             }, status=400)
 
-        # Delete old profile picture if it exists
-        if request.user.profile_picture:
-            try:
-                old_file_path = request.user.profile_picture.path
-                if os.path.exists(old_file_path):
-                    default_storage.delete(old_file_path)
-            except Exception as e:
-                print(f"Error deleting old profile picture: {e}")
-
         # Save new profile picture
         request.user.profile_picture = profile_picture
         request.user.save()
 
+        profile_picture_url = request.user.get_profile_picture_url()
+
         return JsonResponse({
             'status': 'success',
             'message': 'Profile picture updated successfully',
-            'profile_picture_url': request.user.profile_picture.url
+            'profile_picture_url': profile_picture_url
         })
 
     except Exception as e:
@@ -268,4 +257,23 @@ def regenerate_api_key(request):
     # If confirmation was 'no'
     messages.info(request, 'Token regeneration cancelled. Your current token remains active.')
     return redirect('profile')
+
+
+@require_POST
+@csrf_protect
+@login_required
+def cleanup_broken_image(request):
+    """Clean up reference to broken profile picture"""
+    if request.user.is_authenticated and request.user.profile_picture:
+        try:
+            # Verify the image is actually broken by trying to access it
+            request.user.profile_picture.url
+            return JsonResponse({'status': 'info', 'message': 'Image exists'})
+        except Exception as e:
+            # Image is broken - remove the reference
+            request.user.profile_picture = None
+            request.user.save()
+            return JsonResponse({'status': 'success', 'message': 'Broken image reference removed'})
+
+    return JsonResponse({'status': 'info', 'message': 'No image to clean up'})
 

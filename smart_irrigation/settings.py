@@ -417,12 +417,13 @@ MQTT_PORT = int(os.getenv('MQTT_PORT', 1883))
 MQTT_USER = os.getenv('MQTT_USER', 'django_server')
 MQTT_PASS = os.getenv('MQTT_PASS', 'serverpass')
 
-# Ensure directories exist
 
-os.makedirs(os.path.join(BASE_DIR, 'irrigation', 'static', 'irrigation', 'images'), exist_ok=True)
-os.makedirs(os.path.join(BASE_DIR, 'accounts', 'static'), exist_ok=True)
-
+# Ensure directories exist - only in development
 if IS_DEVELOPMENT:
-    os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)
-
-os.makedirs(STATIC_ROOT, exist_ok=True)
+    try:
+        os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)
+        os.makedirs(STATIC_ROOT, exist_ok=True)
+        os.makedirs(os.path.join(BASE_DIR, 'irrigation', 'static', 'irrigation', 'images'), exist_ok=True)
+        os.makedirs(os.path.join(BASE_DIR, 'accounts', 'static'), exist_ok=True)
+    except OSError as e:
+        print(f"Warning: Could not create directories: {e}")
