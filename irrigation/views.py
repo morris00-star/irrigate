@@ -13,7 +13,7 @@ from django.http import FileResponse
 from django.views import View
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 
 from accounts.models import CustomUser
 from .models import SensorData, SystemConfiguration
@@ -360,9 +360,10 @@ def chatbot_view(request):
         }, status=500)
 
 
-@cache_control(max_age=3600)  # Cache for 1 hour
+@require_GET
+@cache_control(max_age=86400)
 def manifest_view(request):
-    """Serve the web app manifest dynamically"""
+    """Serve the web app manifest with proper icon paths"""
     manifest_data = {
         "name": "Intelligent Irrigation System",
         "short_name": "IrrigationSystem",
@@ -373,30 +374,47 @@ def manifest_view(request):
         "theme_color": "#10b981",
         "icons": [
             {
+                "src": "/static/irrigation/images/icon-72x72.png",
+                "sizes": "72x72",
+                "type": "image/png"
+            },
+            {
+                "src": "/static/irrigation/images/icon-96x96.png",
+                "sizes": "96x96",
+                "type": "image/png"
+            },
+            {
+                "src": "/static/irrigation/images/icon-144x144.png",
+                "sizes": "144x144",
+                "type": "image/png"
+            },
+            {
                 "src": "/static/irrigation/images/icon-192x192.png",
                 "sizes": "192x192",
-                "type": "image/png",
-                "purpose": "any maskable"
+                "type": "image/png"
             },
             {
                 "src": "/static/irrigation/images/icon-512x512.png",
                 "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "any maskable"
+                "type": "image/png"
             }
-        ],
-        "categories": ["productivity", "utilities"],
-        "lang": "en-US",
-        "orientation": "portrait-primary"
+        ]
     }
 
     response = HttpResponse(
         json.dumps(manifest_data, indent=2),
         content_type='application/manifest+json'
     )
-
-    # Add CORS headers if needed
-    response['Access-Control-Allow-Origin'] = '*'
-
     return response
+
+
+@cache_control(max_age=86400)
+def favicon_view(request):
+    """Serve a simple favicon"""
+    # A simple 1x1 transparent pixel as favicon
+    ico_data = (b'\x00\x00\x01\x00\x01\x00\x01\x01\x00\x00\x01\x00\x18\x00(\x00\x00\x00\x16\x00\x00\x00('
+                b'\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x18\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+                b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+
+    return HttpResponse(ico_data, content_type='image/x-icon')
 

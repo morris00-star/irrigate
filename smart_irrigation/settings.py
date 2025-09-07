@@ -164,7 +164,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
     os.path.join(BASE_DIR, 'irrigation', 'static'),
     os.path.join(BASE_DIR, 'accounts', 'static'),
 ]
@@ -419,6 +418,11 @@ MQTT_USER = os.getenv('MQTT_USER', 'django_server')
 MQTT_PASS = os.getenv('MQTT_PASS', 'serverpass')
 
 # Ensure directories exist
+
+os.makedirs(os.path.join(BASE_DIR, 'irrigation', 'static', 'irrigation', 'images'), exist_ok=True)
+os.makedirs(os.path.join(BASE_DIR, 'accounts', 'static'), exist_ok=True)
+
 if IS_DEVELOPMENT:
     os.makedirs(os.path.join(MEDIA_ROOT, 'profile_pics'), exist_ok=True)
+
 os.makedirs(STATIC_ROOT, exist_ok=True)

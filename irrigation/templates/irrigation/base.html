@@ -6,6 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="manifest" href="{% url 'manifest' %}">
+    <!-- Favicon -->
+    <link rel="icon" href="{% url 'favicon' %}" type="image/x-icon">
+    <link rel="shortcut icon" href="{% url 'favicon' %}" type="image/x-icon">
+
+    <!-- SVG icon for modern browsers -->
+    <link rel="icon" href="{% static 'irrigation/images/icon.svg' %}" type="image/svg+xml">
+
     <meta name="description" content="Intelligent Irrigation System for smart water management">
     <meta name="theme-color" content="#059669">
 

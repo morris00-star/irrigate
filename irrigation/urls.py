@@ -16,5 +16,6 @@ urlpatterns = [
     path('chatbot/', views.chatbot_view, name='chatbot'),
     path('ask-chatbot/', views.ask_bot, name='ask_chatbot'),
     path('manifest.webmanifest', views.manifest_view, name='manifest'),
+    path('favicon.ico', views.favicon_view, name='favicon'),
 
 ]
