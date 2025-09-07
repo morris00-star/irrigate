@@ -5,9 +5,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <link rel="manifest" href="{% static 'irrigation/manifest.webmanifest' %}">
+    <link rel="manifest" href="{% url 'manifest' %}">
     <meta name="description" content="Intelligent Irrigation System for smart water management">
     <meta name="theme-color" content="#059669">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="IrrigationSystem">
+    <link rel="apple-touch-icon" href="{% static 'irrigation/images/icon-192x192.png' %}">
+
+    <meta name="msapplication-TileImage" content="{% static 'irrigation/images/icon-192x192.png' %}">
+    <meta name="msapplication-TileColor" content="#10b981">
 
     <title>{% block title %}Intelligent Irrigation System{% endblock %}</title>
 
@@ -24,7 +32,7 @@
     <link rel="icon" href="/static/favicon.ico" sizes="any">
     <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-    <link rel="manifest" href="/irrigation/manifest.webmanifest">
+    <link rel="manifest" href="{% url 'manifest' %}">
 
     <style>
         :root {

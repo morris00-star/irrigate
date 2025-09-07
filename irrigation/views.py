@@ -11,6 +11,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 from django.views import View
+from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -359,7 +360,9 @@ def chatbot_view(request):
         }, status=500)
 
 
+@cache_control(max_age=3600)  # Cache for 1 hour
 def manifest_view(request):
+    """Serve the web app manifest dynamically"""
     manifest_data = {
         "name": "Intelligent Irrigation System",
         "short_name": "IrrigationSystem",
@@ -370,21 +373,30 @@ def manifest_view(request):
         "theme_color": "#10b981",
         "icons": [
             {
-                "src": "/static/icon-192x192.png",
+                "src": "/static/irrigation/images/icon-192x192.png",
                 "sizes": "192x192",
-                "type": "image/png"
+                "type": "image/png",
+                "purpose": "any maskable"
             },
             {
-                "src": "/static/icon-512x512.png",
+                "src": "/static/irrigation/images/icon-512x512.png",
                 "sizes": "512x512",
-                "type": "image/png"
+                "type": "image/png",
+                "purpose": "any maskable"
             }
-        ]
+        ],
+        "categories": ["productivity", "utilities"],
+        "lang": "en-US",
+        "orientation": "portrait-primary"
     }
 
     response = HttpResponse(
-        json.dumps(manifest_data),
+        json.dumps(manifest_data, indent=2),
         content_type='application/manifest+json'
     )
+
+    # Add CORS headers if needed
+    response['Access-Control-Allow-Origin'] = '*'
+
     return response
 
