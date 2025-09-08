@@ -93,6 +93,7 @@ MIDDLEWARE = [
     'irrigation.connection_middleware.ConnectionMiddleware',
     'irrigation.db_middleware.DBConnectionMiddleware',
     'irrigation.middleware.ThrottleHeaderMiddleware',
+    'irrigation.middleware.BlockMediaRequestsInProduction',
 ]
 
 ROOT_URLCONF = 'smart_irrigation.urls'
@@ -186,6 +187,8 @@ if IS_PRODUCTION:
         'SECURE': True,
         'MEDIA_TAG': 'profile_pics',
         'INVALIDATE': True,
+        'STATICFILES_MANIFEST_ROOT': os.path.join(BASE_DIR, 'manifest'),
+        'EXCLUDE_DELETE_ORPHANED_MEDIA_PATHS': (),
     }
 
     # For production, MEDIA_ROOT might not be used but define it anyway

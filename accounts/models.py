@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-from django.conf import settings
+from smart_irrigation import settings
 
 
 def user_profile_path(instance, filename):
@@ -97,11 +97,35 @@ class CustomUser(AbstractUser):
         return reverse('profile')
 
     def get_profile_picture_url(self):
-        """Safely get profile picture URL"""
+        """Safely get profile picture URL with Cloudinary support"""
         if not self.profile_picture:
             return None
 
         try:
-            return self.profile_picture.url
-        except (ValueError, AttributeError):
+            if settings.IS_PRODUCTION:
+                # For Cloudinary, use the storage's url method
+                from django.core.files.storage import default_storage
+                return default_storage.url(self.profile_picture.name)
+            else:
+                # For local development, check if file exists
+                if os.path.exists(self.profile_picture.path):
+                    return self.profile_picture.url
+                else:
+                    return None
+        except (ValueError, AttributeError, OSError):
             return None
+
+    def save(self, *args, **kwargs):
+        # Handle Cloudinary file management
+        if self.pk and settings.IS_PRODUCTION:
+            try:
+                old_user = CustomUser.objects.get(pk=self.pk)
+                if (old_user.profile_picture and
+                        self.profile_picture and
+                        old_user.profile_picture != self.profile_picture):
+                    # In production, Cloudinary handles file replacement automatically
+                    pass
+            except CustomUser.DoesNotExist:
+                pass
+
+        super().save(*args, **kwargs)

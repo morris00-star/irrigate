@@ -6,4 +6,3 @@ __pycache__/
 .platform.app.yaml
 .platform/
 render.yaml
-eventlet_patch.py
