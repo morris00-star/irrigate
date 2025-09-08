@@ -1,7 +1,6 @@
 live_env/
 __pycache__/
 *.sqlite3
-/media/
 .env
 .platform.app.yaml
 .platform/

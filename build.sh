@@ -7,5 +7,9 @@ pip install -r requirements.txt
 pip install -r requirements_remote.txt
 python manage.py collectstatic --noinput
 python manage.py migrate_media
+python manage.py migrate_media_to_cloudinary
+python manage.py cleanup_media
+python manage.py cleanup_broken_media
+python manage.py send_periodic_notifications
 python manage.py migrate
 mkdir -p media/profile_pics
