@@ -1,5 +1,6 @@
 import os
 import phonenumbers
+from django.core.files.storage import default_storage
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -49,23 +50,19 @@ class CustomUser(AbstractUser):
     receive_sms_alerts = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
-        # Check if this is a new user or profile picture is being updated
-        if self.pk:
-            try:
-                old_user = CustomUser.objects.get(pk=self.pk)
-                if (old_user.profile_picture and
-                        self.profile_picture and
-                        old_user.profile_picture != self.profile_picture):
-                    # Profile picture is being changed
-                    self._delete_old_profile_picture(old_user.profile_picture)
-            except CustomUser.DoesNotExist:
-                pass
+        # Check if profile picture field is set but file doesn't exist
+        if (self.profile_picture and
+                hasattr(self.profile_picture, 'name') and
+                not default_storage.exists(self.profile_picture.name)):
+            # Clear the reference if file doesn't exist
+            self.profile_picture = None
 
         super().save(*args, **kwargs)
 
         # Create a token for the user when they're created
         if not hasattr(self, 'auth_token'):
             Token.objects.create(user=self)
+
 
     def _delete_old_profile_picture(self, old_picture):
         """Safely delete old profile picture"""
@@ -102,17 +99,24 @@ class CustomUser(AbstractUser):
             return None
 
         try:
+            # Check if file exists in storage
+            if not default_storage.exists(self.profile_picture.name):
+                # File doesn't exist, clear the reference
+                self.profile_picture = None
+                self.save(update_fields=['profile_picture'])
+                return None
+
             if settings.IS_PRODUCTION:
                 # For Cloudinary, use the storage's url method
-                from django.core.files.storage import default_storage
                 return default_storage.url(self.profile_picture.name)
             else:
-                # For local development, check if file exists
-                if os.path.exists(self.profile_picture.path):
-                    return self.profile_picture.url
-                else:
-                    return None
+                # For local development
+                return self.profile_picture.url
+
         except (ValueError, AttributeError, OSError):
+            # Clear invalid reference
+            self.profile_picture = None
+            self.save(update_fields=['profile_picture'])
             return None
 
     def save(self, *args, **kwargs):
