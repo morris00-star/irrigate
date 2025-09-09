@@ -3,5 +3,6 @@ __pycache__/
 *.sqlite3
 .env
 .platform.app.yaml
+/media/
 .platform/
 render.yaml

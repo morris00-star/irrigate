@@ -16,6 +16,8 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_protect
+
+from smart_irrigation import settings
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser
 from .utils import send_brevo_transactional_email
@@ -276,4 +278,27 @@ def cleanup_broken_image(request):
             return JsonResponse({'status': 'success', 'message': 'Broken image reference removed'})
 
     return JsonResponse({'status': 'info', 'message': 'No image to clean up'})
+
+
+def default_avatar(request):
+    """Serve a default avatar image"""
+    if settings.IS_PRODUCTION:
+        # Return a Cloudinary URL for default avatar
+        cloud_name = settings.CLOUDINARY_STORAGE.get('CLOUD_NAME')
+        return redirect(f"https://res.cloudinary.com/{cloud_name}/image/upload/v1/default_avatar")
+    else:
+        # Serve local default avatar
+        default_avatar_path = os.path.join(settings.BASE_DIR, 'accounts', 'static', 'default_avatar.png')
+        if os.path.exists(default_avatar_path):
+            with open(default_avatar_path, 'rb') as f:
+                return HttpResponse(f.read(), content_type='image/png')
+        else:
+            # Return a simple SVG as fallback
+            svg_avatar = '''
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="40" r="20" fill="#ccc"/>
+                <circle cx="50" cy="100" r="40" fill="#ccc"/>
+            </svg>
+            '''
+            return HttpResponse(svg_avatar, content_type='image/svg+xml')
 

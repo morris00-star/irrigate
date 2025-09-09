@@ -185,17 +185,17 @@ if IS_PRODUCTION:
         'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
         'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
         'SECURE': True,
-        'MEDIA_TAG': 'profile_pics',
+        'MEDIA_TAG': 'media',
         'INVALIDATE': True,
-        'STATICFILES_MANIFEST_ROOT': os.path.join(BASE_DIR, 'manifest'),
-        'EXCLUDE_DELETE_ORPHANED_MEDIA_PATHS': (),
     }
 
-    # For production, MEDIA_ROOT might not be used but define it anyway
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    # For production, media URLs should point to Cloudinary
+    MEDIA_URL = f'https://res.cloudinary.com/{os.getenv("CLOUDINARY_CLOUD_NAME")}/image/upload/'
+
 else:
     # Local development
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 

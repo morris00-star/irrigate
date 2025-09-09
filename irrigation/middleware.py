@@ -18,8 +18,8 @@ class BlockMediaRequestsInProduction:
     def __call__(self, request):
         # Check if this is a media request in production
         if (settings.IS_PRODUCTION and
-                request.path.startswith(settings.MEDIA_URL) and
-                not request.path.startswith(f"{settings.MEDIA_URL}profile_pics/")):
+                request.path.startswith('/media/') and
+                not request.path.startswith('/media/profile_pics/')):
             return HttpResponseNotFound("Media files are served through Cloudinary")
 
         response = self.get_response(request)
