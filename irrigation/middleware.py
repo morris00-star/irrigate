@@ -11,16 +11,14 @@ class ThrottleHeaderMiddleware(MiddlewareMixin):
         return response
 
 
-class BlockMediaRequestsInProduction:
-    class BlockMediaRequestsInProduction:
-        def __init__(self, get_response):
-            self.get_response = get_response
+def block_media_requests_in_production(get_response):
+    def middleware(request):
+        # Check if this is a media request in production
+        if settings.IS_PRODUCTION and request.path.startswith(settings.MEDIA_URL):
+            return HttpResponseNotFound("Media files are served through Cloudinary")
 
-        def __call__(self, request):
-            # Check if this is a media request in production
-            if settings.IS_PRODUCTION and request.path.startswith(settings.MEDIA_URL):
-                return HttpResponseNotFound("Media files are served through Cloudinary")
+        response = get_response(request)
+        return response
 
-            response = self.get_response(request)
-            return response
+    return middleware
 

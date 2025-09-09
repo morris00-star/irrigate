@@ -93,7 +93,7 @@ MIDDLEWARE = [
     'irrigation.connection_middleware.ConnectionMiddleware',
     'irrigation.db_middleware.DBConnectionMiddleware',
     'irrigation.middleware.ThrottleHeaderMiddleware',
-    'irrigation.middleware.BlockMediaRequestsInProduction',
+    'irrigation.middleware.block_media_requests_in_production',
 ]
 
 ROOT_URLCONF = 'smart_irrigation.urls'
