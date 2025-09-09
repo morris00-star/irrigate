@@ -1,7 +1,9 @@
 from sib_api_v3_sdk import ApiClient, Configuration, TransactionalEmailsApi
 from sib_api_v3_sdk.models import SendSmtpEmail, SendSmtpEmailSender, SendSmtpEmailTo
-from django.conf import settings
+
 import logging
+
+from smart_irrigation import settings
 
 logger = logging.getLogger(__name__)
 
@@ -36,3 +38,17 @@ def send_brevo_transactional_email(to_email, subject, html_content):
     except Exception as e:
         logger.error(f"Failed to send email to {to_email}: {str(e)}")
         return False
+
+
+def get_cloudinary_url(public_id, resource_type="image"):
+    """Safely get a Cloudinary URL with fallback"""
+    if not settings.IS_PRODUCTION:
+        return None
+
+    try:
+        from cloudinary import CloudinaryImage
+        img = CloudinaryImage(public_id)
+        return img.build_url()
+    except Exception:
+        return None
+

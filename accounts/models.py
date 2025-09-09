@@ -100,25 +100,13 @@ class CustomUser(AbstractUser):
 
         try:
             if settings.IS_PRODUCTION:
-                # For Cloudinary, generate the proper URL format
-                cloud_name = settings.CLOUDINARY_STORAGE.get('CLOUD_NAME')
-                if cloud_name:
-                    # Extract the public_id from the file path
-                    public_id = self.profile_picture.name
-                    if public_id.startswith('profile_pics/'):
-                        public_id = public_id[len('profile_pics/'):]
-
-                    # Remove file extension for Cloudinary public_id
-                    if '.' in public_id:
-                        public_id = public_id.rsplit('.', 1)[0]
-
-                    return f"https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}"
-                else:
-                    # Fallback to storage URL
-                    return default_storage.url(self.profile_picture.name)
+                # Let Cloudinary storage handle the URL generation
+                return default_storage.url(self.profile_picture.name)
             else:
                 # For local development
-                return self.profile_picture.url
+                if hasattr(self.profile_picture, 'url'):
+                    return self.profile_picture.url
+                return None
 
         except (ValueError, AttributeError, OSError):
             return None

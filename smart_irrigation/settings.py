@@ -187,10 +187,11 @@ if IS_PRODUCTION:
         'SECURE': True,
         'MEDIA_TAG': 'media',
         'INVALIDATE': True,
+        'STATICFILES_MANIFEST_ROOT': os.path.join(BASE_DIR, 'manifest'),
     }
 
-    # For production, media URLs should point to Cloudinary
-    MEDIA_URL = f'https://res.cloudinary.com/{os.getenv("CLOUDINARY_CLOUD_NAME")}/image/upload/'
+    # For production.
+    MEDIA_URL = '/media/'
 
 else:
     # Local development

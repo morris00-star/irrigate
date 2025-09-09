@@ -280,25 +280,26 @@ def cleanup_broken_image(request):
     return JsonResponse({'status': 'info', 'message': 'No image to clean up'})
 
 
-def default_avatar(request):
+def default_avatar(request, cloudinary_url=None):
     """Serve a default avatar image"""
+    # Try to use Cloudinary first
     if settings.IS_PRODUCTION:
-        # Return a Cloudinary URL for default avatar
-        cloud_name = settings.CLOUDINARY_STORAGE.get('CLOUD_NAME')
-        return redirect(f"https://res.cloudinary.com/{cloud_name}/image/upload/v1/default_avatar")
-    else:
-        # Serve local default avatar
-        default_avatar_path = os.path.join(settings.BASE_DIR, 'accounts', 'static', 'default_avatar.png')
-        if os.path.exists(default_avatar_path):
-            with open(default_avatar_path, 'rb') as f:
-                return HttpResponse(f.read(), content_type='image/png')
-        else:
-            # Return a simple SVG as fallback
-            svg_avatar = '''
-            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-                <circle cx="50" cy="40" r="20" fill="#ccc"/>
-                <circle cx="50" cy="100" r="40" fill="#ccc"/>
-            </svg>
-            '''
-            return HttpResponse(svg_avatar, content_type='image/svg+xml')
+        try:
+            from cloudinary import CloudinaryImage
+            cloudinary_img = CloudinaryImage("media/default_avatar")
+            # Redirect to Cloudinary URL
+            from django.shortcuts import redirect
+            return redirect(cloudinary_url.build_url())
+        except:
+            # Fall back to local avatar
+            pass
+
+    # Serve local default avatar (SVG)
+    svg_avatar = '''<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+        <circle cx="75" cy="60" r="30" fill="#cccccc" stroke="#999999" stroke-width="3"/>
+        <circle cx="75" cy="150" r="50" fill="#cccccc" stroke="#999999" stroke-width="3"/>
+        <text x="75" y="85" text-anchor="middle" fill="#999999" font-family="Arial, sans-serif" font-size="14">Avatar</text>
+    </svg>'''
+
+    return HttpResponse(svg_avatar, content_type='image/svg+xml')
 

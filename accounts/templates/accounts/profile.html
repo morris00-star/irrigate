@@ -15,19 +15,18 @@
                     <div id="profile-picture-container"
                          class="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white cursor-pointer group"
                          onclick="showOptions()">
-                                <!-- Profile picture -->
+                        <!-- Profile picture -->
                         {% if user.profile_picture %}
-                            {% with profile_picture_url=user.get_profile_picture_url %}
-                                <img src="{{ profile_picture_url|default:'/accounts/default-avatar/' }}"
-                                     alt="Profile picture"
-                                     class="profile-picture w-full h-full object-cover"
-                                     onerror="this.onerror=null; this.src='{% url 'default_avatar' %}';">
-                            {% endwith %}
+                            <img src="{{ user.get_profile_picture_url }}"
+                                 alt="Profile picture"
+                                 class="profile-picture w-full h-full object-cover"
+                                 onerror="this.onerror=null; this.src='{% url 'default_avatar' %}';">
                         {% else %}
                             <img src="{% url 'default_avatar' %}"
                                  alt="Default avatar"
                                  class="w-full h-full object-cover">
                         {% endif %}
+
                         <!-- Hover Overlay -->
                         <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
