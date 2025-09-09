@@ -3,15 +3,12 @@ from django.http import HttpResponseNotFound
 from django.conf import settings
 
 
-def process_response(request, response):
-    if response.status_code == 429 and hasattr(request, 'throttled'):
-        if hasattr(request.throttled, 'wait'):
-            response['Retry-After'] = int(request.throttled.wait)
-    return response
-
-
 class ThrottleHeaderMiddleware(MiddlewareMixin):
-    pass
+    def process_response(self, request, response):
+        if response.status_code == 429 and hasattr(request, 'throttled'):
+            if hasattr(request.throttled, 'wait'):
+                response['Retry-After'] = int(request.throttled.wait)
+        return response
 
 
 class BlockMediaRequestsInProduction:
@@ -26,3 +23,4 @@ class BlockMediaRequestsInProduction:
 
             response = self.get_response(request)
             return response
+
