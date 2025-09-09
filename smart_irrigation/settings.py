@@ -199,6 +199,12 @@ else:
     MEDIA_URL = '/media/'
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
+# Debug output for Cloudinary
+if IS_PRODUCTION:
+    print(f"DEBUG: Cloudinary Cloud Name: {os.getenv('CLOUDINARY_CLOUD_NAME')}")
+    print(f"DEBUG: Cloudinary API Key: {os.getenv('CLOUDINARY_API_KEY')}")
+    print(f"DEBUG: Cloudinary API Secret: {'Set' if os.getenv('CLOUDINARY_API_SECRET') else 'Not Set'}")
+
 
 # Handle missing files
 def get_media_url(file_field):

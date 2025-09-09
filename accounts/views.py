@@ -138,7 +138,13 @@ def handle_profile_picture_upload(request):
         request.user.profile_picture = profile_picture
         request.user.save()
 
-        profile_picture_url = request.user.get_profile_picture_url()
+        # Force a refresh from database to get the updated instance
+        from django.db import transaction
+        with transaction.atomic():
+            updated_user = CustomUser.objects.get(pk=request.user.pk)
+            profile_picture_url = updated_user.get_profile_picture_url()
+
+        print(f"DEBUG: Saved profile picture for {request.user.username}, URL: {profile_picture_url}")
 
         return JsonResponse({
             'status': 'success',
@@ -147,6 +153,7 @@ def handle_profile_picture_upload(request):
         })
 
     except Exception as e:
+        print(f"DEBUG: Error in profile picture upload: {str(e)}")
         return JsonResponse({
             'status': 'error',
             'message': str(e)
@@ -302,4 +309,16 @@ def default_avatar(request, cloudinary_url=None):
     </svg>'''
 
     return HttpResponse(svg_avatar, content_type='image/svg+xml')
+
+
+@login_required
+def check_profile_picture(request):
+    """Check the status of the current user's profile picture"""
+    profile_picture_url = request.user.get_profile_picture_url()
+
+    return JsonResponse({
+        'has_profile_picture': bool(profile_picture_url),
+        'profile_picture_url': profile_picture_url,
+        'profile_picture_name': request.user.profile_picture.name if request.user.profile_picture else None
+    })
 

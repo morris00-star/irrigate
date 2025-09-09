@@ -49,6 +49,7 @@ class CustomUser(AbstractUser):
     )
     receive_sms_alerts = models.BooleanField(default=True)
 
+
     def save(self, *args, **kwargs):
         # Check if this is a new user or profile picture is being updated
         is_new_user = self.pk is None
@@ -68,14 +69,6 @@ class CustomUser(AbstractUser):
                 not default_storage.exists(self.profile_picture.name)):
             # Clear the reference if file doesn't exist
             self.profile_picture = None
-
-        # Handle Cloudinary file management in production
-        if not is_new_user and settings.IS_PRODUCTION and old_profile_picture:
-            if (self.profile_picture and
-                    old_profile_picture and
-                    self.profile_picture != old_profile_picture):
-                # In production, Cloudinary handles file replacement automatically
-                pass
 
         # Call the parent save method
         super().save(*args, **kwargs)
@@ -114,15 +107,18 @@ class CustomUser(AbstractUser):
     def get_absolute_url(self):
         return reverse('profile')
 
+
     def get_profile_picture_url(self):
         """Safely get profile picture URL with proper Cloudinary support"""
         if not self.profile_picture:
+            print(f"DEBUG: No profile picture set for user {self.username}")
             return None
 
         try:
-            # Let the storage backend handle the URL generation
-            # This will work for both local filesystem and Cloudinary
-            return default_storage.url(self.profile_picture.name)
-
-        except (ValueError, AttributeError, OSError):
+            url = default_storage.url(self.profile_picture.name)
+            print(f"DEBUG: Generated URL for {self.username}: {url}")
+            print(f"DEBUG: Profile picture name: {self.profile_picture.name}")
+            return url
+        except (ValueError, AttributeError, OSError) as e:
+            print(f"DEBUG: Error getting URL for {self.username}: {str(e)}")
             return None
