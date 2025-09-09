@@ -6,14 +6,24 @@ from django.core.files.storage import default_storage
 import os
 
 
+
 @receiver(pre_save, sender=CustomUser)
 def check_profile_picture_exists(sender, instance, **kwargs):
-    """Check if profile picture exists before saving"""
-    if instance.profile_picture:
-        # Check if the file actually exists in storage
-        if not default_storage.exists(instance.profile_picture.name):
-            print(f"DEBUG: Profile picture does not exist: {instance.profile_picture.name}")
-            instance.profile_picture = None
+    """Check if profile picture exists before saving - only for existing files"""
+    if instance.profile_picture and instance.pk:
+        # Only check for existing users, not new uploads
+        try:
+            # Get the current state from database
+            current_user = CustomUser.objects.get(pk=instance.pk)
+
+            # Only validate if the profile picture hasn't changed
+            if current_user.profile_picture == instance.profile_picture:
+                # Check if the file actually exists in storage
+                if not default_storage.exists(instance.profile_picture.name):
+                    print(f"DEBUG: Profile picture does not exist: {instance.profile_picture.name}")
+                    instance.profile_picture = None
+        except CustomUser.DoesNotExist:
+            pass
 
 
 @receiver(post_save, sender=CustomUser)
@@ -39,4 +49,3 @@ def handle_profile_picture_changes(sender, instance, created, **kwargs):
                         pass
         except CustomUser.DoesNotExist:
             pass
-
