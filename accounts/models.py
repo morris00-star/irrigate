@@ -51,10 +51,10 @@ class CustomUser(AbstractUser):
 
 
     def save(self, *args, **kwargs):
-        # Check if this is a new user or profile picture is being updated
+        # Check if this is a new user
         is_new_user = self.pk is None
 
-        # Store old profile picture if user exists
+        # Store the old profile picture if user exists
         old_profile_picture = None
         if not is_new_user:
             try:
@@ -63,14 +63,7 @@ class CustomUser(AbstractUser):
             except CustomUser.DoesNotExist:
                 pass
 
-        # Check if profile picture field is set but file doesn't exist
-        if (self.profile_picture and
-                hasattr(self.profile_picture, 'name') and
-                not default_storage.exists(self.profile_picture.name)):
-            # Clear the reference if file doesn't exist
-            self.profile_picture = None
-
-        # Call the parent save method
+        # Call the parent save method first
         super().save(*args, **kwargs)
 
         # Create a token for the user when they're created

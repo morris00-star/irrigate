@@ -34,7 +34,7 @@ class CustomUserCreationForm(UserCreationForm):
                 img = Image.open(profile_picture)
                 img.verify()
 
-                # Check file size (limit to 5MB)
+                # Check file size (limit to 10MB)
                 if profile_picture.size > 10 * 1024 * 1024:
                     raise forms.ValidationError("Image file too large ( > 10MB )")
 

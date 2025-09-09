@@ -116,10 +116,14 @@ def profile(request):
 def handle_profile_picture_upload(request):
     """Handle AJAX profile picture uploads separately"""
     try:
+        print(f"DEBUG: Starting profile picture upload for user {request.user.username}")
+
         profile_picture = request.FILES['profile_picture']
+        print(f"DEBUG: Received file: {profile_picture.name}, size: {profile_picture.size}")
 
         # Validate file size (10MB max)
         if profile_picture.size > 10 * 1024 * 1024:
+            print("DEBUG: File too large")
             return JsonResponse({
                 'status': 'error',
                 'message': 'Image file too large ( > 10MB )'
@@ -129,22 +133,27 @@ def handle_profile_picture_upload(request):
         valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
         ext = os.path.splitext(profile_picture.name)[1].lower()
         if ext not in valid_extensions:
+            print(f"DEBUG: Invalid file extension: {ext}")
             return JsonResponse({
                 'status': 'error',
                 'message': 'Unsupported file extension. Please use .jpg, .jpeg, .png, or .gif'
             }, status=400)
 
         # Save new profile picture
+        print(f"DEBUG: Setting profile picture for user {request.user.username}")
         request.user.profile_picture = profile_picture
-        request.user.save()
 
-        # Force a refresh from database to get the updated instance
+        # Save the user instance
+        request.user.save()
+        print(f"DEBUG: User saved with profile picture: {request.user.profile_picture}")
+
+        # Refresh from database to ensure we have the latest data
         from django.db import transaction
         with transaction.atomic():
             updated_user = CustomUser.objects.get(pk=request.user.pk)
             profile_picture_url = updated_user.get_profile_picture_url()
-
-        print(f"DEBUG: Saved profile picture for {request.user.username}, URL: {profile_picture_url}")
+            print(f"DEBUG: After refresh - Profile picture: {updated_user.profile_picture}")
+            print(f"DEBUG: After refresh - Profile picture URL: {profile_picture_url}")
 
         return JsonResponse({
             'status': 'success',
@@ -154,6 +163,8 @@ def handle_profile_picture_upload(request):
 
     except Exception as e:
         print(f"DEBUG: Error in profile picture upload: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({
             'status': 'error',
             'message': str(e)
