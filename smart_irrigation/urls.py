@@ -35,3 +35,7 @@ urlpatterns = [
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+
+# Only serve media files in development, not in production
+if settings.DEBUG and not settings.IS_PRODUCTION:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

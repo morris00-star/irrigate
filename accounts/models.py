@@ -31,9 +31,9 @@ def validate_phone_number(value):
     try:
         phone_number = phonenumbers.parse(value, None)
         if not phonenumbers.is_valid_number(phone_number):
-            raise ValidationError("Invalid phone number")
+            raise ValidationError("Invalid phone number: start with +[country code][number]")
     except phonenumbers.phonenumberutil.NumberParseException:
-        raise ValidationError("Invalid phone number format")
+        raise ValidationError("Invalid phone number: start with +[country code][number]")
 
 
 class CustomUser(AbstractUser):
@@ -50,6 +50,18 @@ class CustomUser(AbstractUser):
     receive_sms_alerts = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
+        # Check if this is a new user or profile picture is being updated
+        is_new_user = self.pk is None
+
+        # Store old profile picture if user exists
+        old_profile_picture = None
+        if not is_new_user:
+            try:
+                old_user = CustomUser.objects.get(pk=self.pk)
+                old_profile_picture = old_user.profile_picture
+            except CustomUser.DoesNotExist:
+                pass
+
         # Check if profile picture field is set but file doesn't exist
         if (self.profile_picture and
                 hasattr(self.profile_picture, 'name') and
@@ -57,24 +69,33 @@ class CustomUser(AbstractUser):
             # Clear the reference if file doesn't exist
             self.profile_picture = None
 
+        # Handle Cloudinary file management in production
+        if not is_new_user and settings.IS_PRODUCTION and old_profile_picture:
+            if (self.profile_picture and
+                    old_profile_picture and
+                    self.profile_picture != old_profile_picture):
+                # In production, Cloudinary handles file replacement automatically
+                pass
+
+        # Call the parent save method
         super().save(*args, **kwargs)
 
         # Create a token for the user when they're created
-        if not hasattr(self, 'auth_token'):
+        if is_new_user and not hasattr(self, 'auth_token'):
             Token.objects.create(user=self)
 
+        # Handle old file deletion for local development
+        if (not is_new_user and old_profile_picture and
+                self.profile_picture != old_profile_picture and
+                not settings.IS_PRODUCTION):
+            self._delete_old_profile_picture(old_profile_picture)
 
     def _delete_old_profile_picture(self, old_picture):
         """Safely delete old profile picture"""
         try:
-            if not settings.IS_PRODUCTION:
-                # Local development - delete file from filesystem
-                if old_picture and os.path.isfile(old_picture.path):
-                    os.remove(old_picture.path)
-            else:
-                # Production - Cloudinary handles file management automatically
-                # Old files are automatically replaced when new ones are uploaded
-                pass
+            # Local development - delete file from filesystem
+            if old_picture and os.path.isfile(old_picture.path):
+                os.remove(old_picture.path)
         except (ValueError, AttributeError, OSError):
             # Ignore errors during file deletion
             pass
@@ -99,29 +120,9 @@ class CustomUser(AbstractUser):
             return None
 
         try:
-            if settings.IS_PRODUCTION:
-                # Let Cloudinary storage handle the URL generation
-                return default_storage.url(self.profile_picture.name)
-            else:
-                # For local development
-                if hasattr(self.profile_picture, 'url'):
-                    return self.profile_picture.url
-                return None
+            # Let the storage backend handle the URL generation
+            # This will work for both local filesystem and Cloudinary
+            return default_storage.url(self.profile_picture.name)
 
         except (ValueError, AttributeError, OSError):
             return None
-
-    def save(self, *args, **kwargs):
-        # Handle Cloudinary file management
-        if self.pk and settings.IS_PRODUCTION:
-            try:
-                old_user = CustomUser.objects.get(pk=self.pk)
-                if (old_user.profile_picture and
-                        self.profile_picture and
-                        old_user.profile_picture != self.profile_picture):
-                    # In production, Cloudinary handles file replacement automatically
-                    pass
-            except CustomUser.DoesNotExist:
-                pass
-
-        super().save(*args, **kwargs)
