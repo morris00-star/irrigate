@@ -145,20 +145,22 @@ def handle_profile_picture_upload(request):
 
         # Save the user instance
         request.user.save()
-        print(f"DEBUG: User saved with profile picture: {request.user.profile_picture}")
+        print(f"DEBUG: User saved with profile picture name: {request.user.profile_picture.name}")
+        print(f"DEBUG: Profile picture path: {request.user.profile_picture.path if hasattr(request.user.profile_picture, 'path') else 'No path'}")
 
         # Refresh from database to ensure we have the latest data
         from django.db import transaction
         with transaction.atomic():
             updated_user = CustomUser.objects.get(pk=request.user.pk)
             profile_picture_url = updated_user.get_profile_picture_url()
-            print(f"DEBUG: After refresh - Profile picture: {updated_user.profile_picture}")
+            print(f"DEBUG: After refresh - Profile picture name: {updated_user.profile_picture.name}")
             print(f"DEBUG: After refresh - Profile picture URL: {profile_picture_url}")
 
         return JsonResponse({
             'status': 'success',
             'message': 'Profile picture updated successfully',
-            'profile_picture_url': profile_picture_url
+            'profile_picture_url': profile_picture_url,
+            'profile_picture_name': updated_user.profile_picture.name
         })
 
     except Exception as e:

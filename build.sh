@@ -15,5 +15,6 @@ python manage.py cleanup_broken_media
 python manage.py upload_default_avatar
 python manage.py debug_profile_pictures
 python manage.py test_cloudinary
+python manage.py test_cloudinary_upload
 python manage.py migrate
 

@@ -205,6 +205,8 @@ if IS_PRODUCTION:
         # Add these settings for better performance
         'QUALITY': 'auto:good',
         'FETCH_FORMAT': 'auto',
+        'MEDIA_TAG': 'media',
+        'INVALIDATE': True,
     }
 
     # For production.

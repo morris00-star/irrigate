@@ -51,16 +51,30 @@ def get_cloudinary_url(file_field):
 
             # Extract public_id from file path
             public_id = file_field.name
-            if public_id.startswith('media/'):
-                public_id = public_id[6:]  # Remove 'media/' prefix
 
-            # Remove file extension
+            # Remove 'media/' prefix if present
+            if public_id.startswith('media/'):
+                public_id = public_id[6:]
+
+            # Remove file extension for Cloudinary public_id
             if '.' in public_id:
                 public_id = public_id.rsplit('.', 1)[0]
 
-            # Generate Cloudinary URL
+            print(f"DEBUG: Generating Cloudinary URL for public_id: {public_id}")
+
+            # Generate Cloudinary URL with proper format and version
             img = CloudinaryImage(public_id)
-            return img.build_url()
+
+            # Build URL with proper format and optimization
+            url = img.build_url(
+                format='jpg',  # Force format
+                quality='auto',
+                fetch_format='auto',
+                secure=True
+            )
+
+            print(f"DEBUG: Generated Cloudinary URL: {url}")
+            return url
         else:
             # Local development
             return file_field.url
