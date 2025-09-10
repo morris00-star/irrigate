@@ -16,5 +16,7 @@ python manage.py upload_default_avatar
 python manage.py debug_profile_pictures
 python manage.py test_cloudinary
 python manage.py test_cloudinary_upload
+python manage.py debug_cloudinary_storage
+python manage.py test_storage_urls
 python manage.py migrate
 
