@@ -178,7 +178,6 @@ MEDIA_URL = '/media/'
 
 if IS_PRODUCTION:
     print("DEBUG: Using Cloudinary for media storage")
-    print(f"DEBUG: Cloudinary Cloud Name: {os.getenv('CLOUDINARY_CLOUD_NAME')}")
 
     import cloudinary
     import cloudinary.uploader
@@ -202,11 +201,11 @@ if IS_PRODUCTION:
         'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
         'SECURE': True,
         'STATICFILES_MANIFEST_ROOT': os.path.join(BASE_DIR, 'manifest'),
-        # Add these settings for better performance
-        'QUALITY': 'auto:good',
-        'FETCH_FORMAT': 'auto',
+        # Make sure these settings are correct
         'MEDIA_TAG': 'media',
         'INVALIDATE': True,
+        # Add these to ensure proper URL generation
+        'PREFIX': 'media/',
     }
 
     # For production.

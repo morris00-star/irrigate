@@ -119,8 +119,10 @@ class CustomUser(AbstractUser):
             return None
 
         try:
-            url = get_cloudinary_url(self.profile_picture)
-            print(f"DEBUG: Generated URL: {url}")
+            # Use Django's storage backend to generate the URL
+            # This should work for both local filesystem and Cloudinary
+            url = self.profile_picture.url
+            print(f"DEBUG: Storage URL: {url}")
             return url
         except (ValueError, AttributeError, OSError) as e:
             print(f"DEBUG: Error getting URL: {str(e)}")

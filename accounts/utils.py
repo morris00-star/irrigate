@@ -49,25 +49,21 @@ def get_cloudinary_url(file_field):
         if settings.IS_PRODUCTION:
             from cloudinary import CloudinaryImage
 
-            # Extract public_id from file path
+            # Extract public_id from file path - KEEP THE FILE EXTENSION
             public_id = file_field.name
 
             # Remove 'media/' prefix if present
             if public_id.startswith('media/'):
                 public_id = public_id[6:]
 
-            # Remove file extension for Cloudinary public_id
-            if '.' in public_id:
-                public_id = public_id.rsplit('.', 1)[0]
-
             print(f"DEBUG: Generating Cloudinary URL for public_id: {public_id}")
 
-            # Generate Cloudinary URL with proper format and version
+            # Generate Cloudinary URL with the original file extension
             img = CloudinaryImage(public_id)
 
-            # Build URL with proper format and optimization
+            # Build URL with proper format - use the original file extension
             url = img.build_url(
-                format='jpg',  # Force format
+                # Don't force format, let Cloudinary use the original
                 quality='auto',
                 fetch_format='auto',
                 secure=True
@@ -81,4 +77,3 @@ def get_cloudinary_url(file_field):
     except Exception as e:
         print(f"Error generating Cloudinary URL: {e}")
         return None
-

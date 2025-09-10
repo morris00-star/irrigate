@@ -396,7 +396,7 @@
         checkProfilePictureStatus();
     });
 
-    // In your profile.html JavaScript
+
     function submitProfilePicture(file) {
         const formData = new FormData();
         formData.append('profile_picture', file);
@@ -425,19 +425,22 @@
                 if (data.profile_picture_url) {
                     console.log('Received URL from server:', data.profile_picture_url);
 
-                    // Create a new image element to test the URL
-                    const testImg = new Image();
-                    testImg.onload = function() {
-                        // URL works, update the preview
-                        updateProfilePicturePreview(data.profile_picture_url);
-                    };
-                    testImg.onerror = function() {
-                        // URL failed, try with added extension
-                        console.log('URL failed, trying with .jpg extension');
-                        const urlWithExtension = data.profile_picture_url + '.jpg';
-                        updateProfilePicturePreview(urlWithExtension);
-                    };
-                    testImg.src = data.profile_picture_url;
+                    // Test the URL first
+                    testImageUrl(data.profile_picture_url, function(success) {
+                        if (success) {
+                            updateProfilePicturePreview(data.profile_picture_url);
+                        } else {
+                            // If URL fails, try different variations
+                            const variations = [
+                                data.profile_picture_url + '.jpg',
+                                data.profile_picture_url + '.png',
+                                data.profile_picture_url.replace('/v1/', '/') + '.jpg',
+                                data.profile_picture_url.replace('/image/upload/v1/', '/image/upload/') + '.jpg'
+                            ];
+
+                            testImageVariations(variations, 0);
+                        }
+                    });
                 }
             } else {
                 throw new Error(data.message || 'Error updating profile picture');
@@ -446,6 +449,28 @@
         .catch(error => {
             console.error('Error:', error);
             showToast(error.message || 'Error updating profile picture', 'error');
+        });
+    }
+
+    function testImageUrl(url, callback) {
+        const testImg = new Image();
+        testImg.onload = function() { callback(true); };
+        testImg.onerror = function() { callback(false); };
+        testImg.src = url;
+    }
+
+    function testImageVariations(variations, index) {
+        if (index >= variations.length) {
+            console.log('All URL variations failed');
+            return;
+        }
+
+        testImageUrl(variations[index], function(success) {
+            if (success) {
+                updateProfilePicturePreview(variations[index]);
+            } else {
+                testImageVariations(variations, index + 1);
+            }
         });
     }
 
