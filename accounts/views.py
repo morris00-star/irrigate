@@ -343,3 +343,59 @@ def check_profile_picture(request):
         'profile_picture_name': request.user.profile_picture.name if request.user.profile_picture else None
     })
 
+
+@login_required
+def regenerate_profile_picture_url(request):
+    """Regenerate profile picture URL to fix double extensions"""
+    if request.user.profile_picture:
+        # Get the current filename
+        current_filename = request.user.profile_picture.name
+
+        # Fix double extensions
+        if has_double_extension(current_filename):
+            fixed_filename = fix_filename(current_filename)
+
+            # Update the user
+            request.user.profile_picture.name = fixed_filename
+            request.user.save()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Profile picture URL fixed',
+                'new_url': request.user.get_profile_picture_url()
+            })
+
+    return JsonResponse({
+        'status': 'info',
+        'message': 'No fix needed'
+    })
+
+
+def has_double_extension(filename):
+    """Check if filename has double extensions"""
+    import os
+    basename = os.path.basename(filename)
+    name_parts = basename.split('.')
+
+    if len(name_parts) > 2:
+        extensions = ['jpg', 'jpeg', 'png', 'gif']
+        if name_parts[-1].lower() in extensions and name_parts[-2].lower() in extensions:
+            return True
+    return False
+
+
+def fix_filename(filename):
+    """Fix double extensions in filename"""
+    import os
+    basename = os.path.basename(filename)
+    dirname = os.path.dirname(filename)
+
+    name_parts = basename.split('.')
+
+    if len(name_parts) > 2:
+        # Keep the first part and the last extension
+        fixed_basename = f"{'.'.join(name_parts[:-2])}.{name_parts[-1]}"
+        return os.path.join(dirname, fixed_basename)
+
+    return filename
+

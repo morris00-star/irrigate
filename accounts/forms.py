@@ -75,25 +75,32 @@ class CustomUserChangeForm(UserChangeForm):
                 raise forms.ValidationError("Invalid phone number, start with country code:")
         return phone_number
 
+
     def clean_profile_picture(self):
         profile_picture = self.cleaned_data.get('profile_picture')
         if profile_picture:
             try:
-                # Open the image to verify it's valid
-                img = Image.open(profile_picture)
-                img.verify()
+                # Check for double extensions
+                filename = profile_picture.name
+                if self.has_double_extension(filename):
+                    raise forms.ValidationError(
+                        "Filename contains double extensions. Please upload a file with a valid name.")
 
-                # Check file size (limit to 5MB)
-                if profile_picture.size > 10 * 1024 * 1024:
-                    raise forms.ValidationError("Image file too large ( > 10MB )")
 
-                # Check file extension
-                ext = os.path.splitext(profile_picture.name)[1]
-                valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
-                if not ext.lower() in valid_extensions:
-                    raise forms.ValidationError("Unsupported file extension. Please use .jpg, .jpeg, .png, or .gif")
-
-                return profile_picture
             except Exception as e:
                 raise forms.ValidationError("Invalid image file")
         return profile_picture
+
+
+    def has_double_extension(self, filename):
+        """Check if filename has double extensions"""
+        import os
+        basename = os.path.basename(filename)
+        name_parts = basename.split('.')
+
+        # If there are more than 2 parts and the last parts are image extensions
+        if len(name_parts) > 2:
+            extensions = ['jpg', 'jpeg', 'png', 'gif']
+            if name_parts[-1].lower() in extensions and name_parts[-2].lower() in extensions:
+                return True
+        return False

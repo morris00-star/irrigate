@@ -12,8 +12,15 @@ from .utils import get_cloudinary_url
 
 def user_profile_path(instance, filename):
     """Generate path for user profile pictures"""
-    ext = filename.split('.')[-1]
-    filename = f'profile_pics/user_{instance.id}.{ext}'
+    # Get the file extension
+    ext = os.path.splitext(filename)[1].lower()
+
+    # Remove any existing extensions from the filename
+    base_filename = os.path.splitext(filename)[0]
+    base_filename = f'user_{instance.id}'
+
+    # Create the new filename
+    filename = f'profile_pics/{base_filename}{ext}'
 
     # Only try to delete old file if it exists locally (development)
     if instance.profile_picture and not settings.IS_PRODUCTION:

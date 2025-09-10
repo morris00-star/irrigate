@@ -383,12 +383,40 @@
         .then(data => {
             console.log('Profile picture status:', data);
             if (data.has_profile_picture && data.profile_picture_url) {
-                updateProfilePicturePreview(data.profile_picture_url);
+                // Check if the URL has double extensions
+                if (hasDoubleExtension(data.profile_picture_url)) {
+                    console.log('Double extension detected, fixing URL');
+                    const fixedUrl = fixDoubleExtension(data.profile_picture_url);
+                    updateProfilePicturePreview(fixedUrl);
+                } else {
+                    updateProfilePicturePreview(data.profile_picture_url);
+                }
             }
         })
         .catch(error => {
             console.error('Error checking profile picture status:', error);
         });
+    }
+
+    function hasDoubleExtension(url) {
+        // Check for patterns like .jpg.jpg, .png.png, etc.
+        const doubleExtensionPattern = /\.(jpg|jpeg|png|gif)\.(jpg|jpeg|png|gif)$/i;
+        return doubleExtensionPattern.test(url);
+    }
+
+    function fixDoubleExtension(url) {
+        // Fix double extensions by removing the duplicate
+        const urlObj = new URL(url);
+        const pathname = urlObj.pathname;
+
+        // Remove duplicate extensions
+        const fixedPathname = pathname.replace(
+            /\.(jpg|jpeg|png|gif)\.(jpg|jpeg|png|gif)$/i,
+            '.$2' // Keep only the last extension
+        );
+
+        urlObj.pathname = fixedPathname;
+        return urlObj.toString();
     }
 
     // Check status on page load
