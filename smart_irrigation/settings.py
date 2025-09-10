@@ -177,6 +177,22 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 
 if IS_PRODUCTION:
+    print("DEBUG: Using Cloudinary for media storage")
+    print(f"DEBUG: Cloudinary Cloud Name: {os.getenv('CLOUDINARY_CLOUD_NAME')}")
+
+    import cloudinary
+    import cloudinary.uploader
+    import cloudinary.api
+    import cloudinary_storage
+
+    # Configure Cloudinary
+    cloudinary.config(
+        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+        api_key=os.getenv('CLOUDINARY_API_KEY'),
+        api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+        secure=True
+    )
+
     # Use Cloudinary for production
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
@@ -185,9 +201,10 @@ if IS_PRODUCTION:
         'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
         'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
         'SECURE': True,
-        'MEDIA_TAG': 'media',
-        'INVALIDATE': True,
         'STATICFILES_MANIFEST_ROOT': os.path.join(BASE_DIR, 'manifest'),
+        # Add these settings for better performance
+        'QUALITY': 'auto:good',
+        'FETCH_FORMAT': 'auto',
     }
 
     # For production.

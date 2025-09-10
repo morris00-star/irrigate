@@ -14,7 +14,9 @@ class ThrottleHeaderMiddleware(MiddlewareMixin):
 def block_media_requests_in_production(get_response):
     def middleware(request):
         # Check if this is a media request in production
-        if settings.IS_PRODUCTION and request.path.startswith(settings.MEDIA_URL):
+        if (settings.IS_PRODUCTION and
+                request.path.startswith(settings.MEDIA_URL) and
+                not request.path.endswith(('.jpg', '.jpeg', '.png', '.gif'))):  # Don't block image requests
             return HttpResponseNotFound("Media files are served through Cloudinary")
 
         response = get_response(request)

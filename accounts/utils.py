@@ -40,15 +40,31 @@ def send_brevo_transactional_email(to_email, subject, html_content):
         return False
 
 
-def get_cloudinary_url(public_id, resource_type="image"):
-    """Safely get a Cloudinary URL with fallback"""
-    if not settings.IS_PRODUCTION:
+def get_cloudinary_url(file_field):
+    """Get Cloudinary URL for a file field"""
+    if not file_field:
         return None
 
     try:
-        from cloudinary import CloudinaryImage
-        img = CloudinaryImage(public_id)
-        return img.build_url()
-    except Exception:
+        if settings.IS_PRODUCTION:
+            from cloudinary import CloudinaryImage
+
+            # Extract public_id from file path
+            public_id = file_field.name
+            if public_id.startswith('media/'):
+                public_id = public_id[6:]  # Remove 'media/' prefix
+
+            # Remove file extension
+            if '.' in public_id:
+                public_id = public_id.rsplit('.', 1)[0]
+
+            # Generate Cloudinary URL
+            img = CloudinaryImage(public_id)
+            return img.build_url()
+        else:
+            # Local development
+            return file_field.url
+    except Exception as e:
+        print(f"Error generating Cloudinary URL: {e}")
         return None
 

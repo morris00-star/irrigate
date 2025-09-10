@@ -7,6 +7,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from smart_irrigation import settings
+from .utils import get_cloudinary_url
 
 
 def user_profile_path(instance, filename):
@@ -110,6 +111,7 @@ class CustomUser(AbstractUser):
     def get_absolute_url(self):
         return reverse('profile')
 
+
     def get_profile_picture_url(self):
         """Safely get profile picture URL with proper Cloudinary support"""
         if not self.profile_picture:
@@ -117,19 +119,9 @@ class CustomUser(AbstractUser):
             return None
 
         try:
-            if settings.IS_PRODUCTION:
-                print(f"DEBUG: Getting Cloudinary URL for: {self.profile_picture.name}")
-                # For Cloudinary, let the storage backend handle URL generation
-                url = default_storage.url(self.profile_picture.name)
-                print(f"DEBUG: Cloudinary URL generated: {url}")
-                return url
-            else:
-                # For local development
-                if hasattr(self.profile_picture, 'url'):
-                    url = self.profile_picture.url
-                    print(f"DEBUG: Local URL: {url}")
-                    return url
-                return None
+            url = get_cloudinary_url(self.profile_picture)
+            print(f"DEBUG: Generated URL: {url}")
+            return url
         except (ValueError, AttributeError, OSError) as e:
             print(f"DEBUG: Error getting URL: {str(e)}")
             return None
