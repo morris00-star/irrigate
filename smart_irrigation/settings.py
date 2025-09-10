@@ -173,24 +173,9 @@ STATICFILES_DIRS = [
 # Tell Django to copy static files into the staticfiles directory
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files configuration.
-MEDIA_URL = '/media/'
-
+# settings.py - Cloudinary configuration
 if IS_PRODUCTION:
     print("DEBUG: Using Cloudinary for media storage")
-
-    import cloudinary
-    import cloudinary.uploader
-    import cloudinary.api
-    import cloudinary_storage
-
-    # Configure Cloudinary
-    cloudinary.config(
-        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-        api_key=os.getenv('CLOUDINARY_API_KEY'),
-        api_secret=os.getenv('CLOUDINARY_API_SECRET'),
-        secure=True
-    )
 
     # Use Cloudinary for production
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -204,26 +189,17 @@ if IS_PRODUCTION:
         # Make sure these settings are correct
         'MEDIA_TAG': 'media',
         'INVALIDATE': True,
-        # Add these to ensure proper URL generation
-        'PREFIX': 'media/',
     }
 
-    # For production.
-    MEDIA_URL = '/media/'
+    # For production, media URLs should point to Cloudinary
+    MEDIA_URL = '/media/'  # This will be handled by Cloudinary storage
 
 else:
+    print("DEBUG: Using local filesystem for media storage")
     # Local development
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     MEDIA_URL = '/media/'
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-
-# Debug output for Cloudinary
-if IS_PRODUCTION:
-    print(f"DEBUG: Cloudinary Cloud Name: {os.getenv('CLOUDINARY_CLOUD_NAME')}")
-    print(f"DEBUG: Cloudinary API Key: {os.getenv('CLOUDINARY_API_KEY')}")
-    print(f"DEBUG: Cloudinary API Secret: {'Set' if os.getenv('CLOUDINARY_API_SECRET') else 'Not Set'}")
-    print(f"DEBUG: RENDER: {os.getenv('RENDER')}")
-    print(f"DEBUG: DEBUG: {os.getenv('DEBUG')}")
 
 
 # Handle missing files

@@ -122,7 +122,7 @@ class CustomUser(AbstractUser):
 
         try:
             # Use Django's storage backend to generate the URL
-            # This should work for both local filesystem and Cloudinary
+            # This should automatically handle Cloudinary vs local storage
             url = self.profile_picture.url
             print(f"DEBUG: Storage URL: {url}")
             return url
