@@ -64,14 +64,16 @@ class CustomUser(AbstractUser):
             except CustomUser.DoesNotExist:
                 pass
 
-        # Check if profile picture field is set but file doesn't exist (development only)
+        # Don't check file existence during upload - Cloudinary handles this
+        # Only check in development and only if we're not uploading a new file
         if (self.profile_picture and
                 hasattr(self.profile_picture, 'name') and
-                not settings.IS_PRODUCTION and  # Only check in development
-                not default_storage.exists(self.profile_picture.name)):
-            # Clear the reference if file doesn't exist
-            print(f"DEBUG: Clearing missing profile picture in development: {self.profile_picture.name}")
-            self.profile_picture = None
+                not settings.IS_PRODUCTION and
+                not getattr(self, '_uploading_profile_picture', False)):  # Add a flag to track uploads
+            # Check if the file actually exists in local storage
+            if not default_storage.exists(self.profile_picture.name):
+                print(f"DEBUG: Clearing missing profile picture in development: {self.profile_picture.name}")
+                self.profile_picture = None
 
         # Call the parent save method
         super().save(*args, **kwargs)

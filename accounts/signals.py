@@ -12,9 +12,13 @@ def check_profile_picture_exists(sender, instance, **kwargs):
     # Only check file existence in development, not in production with Cloudinary
     if instance.profile_picture and not settings.IS_PRODUCTION:
         # Check if the file actually exists in storage (local development only)
-        if not default_storage.exists(instance.profile_picture.name):
+        # But don't clear it if we're in the process of uploading a new file
+        if (hasattr(instance.profile_picture, 'name') and
+                not default_storage.exists(instance.profile_picture.name)):
             print(f"DEBUG: Profile picture does not exist locally: {instance.profile_picture.name}")
-            instance.profile_picture = None
+            # Don't clear it during upload - only clear if it's an existing reference
+            if not instance._state.adding:  # Only for existing instances, not new ones
+                instance.profile_picture = None
 
 
 @receiver(post_save, sender=CustomUser)

@@ -121,6 +121,9 @@ def handle_profile_picture_upload(request):
         profile_picture = request.FILES['profile_picture']
         print(f"DEBUG: Received file: {profile_picture.name}, size: {profile_picture.size}")
 
+        # Flag For Uploading a profile picture
+        request.user._uploading_profile_picture = True
+
         # Validate file size (10MB max)
         if profile_picture.size > 10 * 1024 * 1024:
             print("DEBUG: File too large")
@@ -145,22 +148,27 @@ def handle_profile_picture_upload(request):
 
         # Save the user instance
         request.user.save()
-        print(f"DEBUG: User saved with profile picture name: {request.user.profile_picture.name}")
-        print(f"DEBUG: Profile picture path: {request.user.profile_picture.path if hasattr(request.user.profile_picture, 'path') else 'No path'}")
+        print(f"DEBUG: User saved with profile picture name: {request.user.profile_picture.name if request.user.profile_picture else 'None'}")
+
+        # Safe debug for path - handle case where profile_picture is None
+        if request.user.profile_picture and hasattr(request.user.profile_picture, 'path'):
+            print(f"DEBUG: Profile picture path: {request.user.profile_picture.path}")
+        else:
+            print("DEBUG: Profile picture path: No path available")
 
         # Refresh from database to ensure we have the latest data
         from django.db import transaction
         with transaction.atomic():
             updated_user = CustomUser.objects.get(pk=request.user.pk)
             profile_picture_url = updated_user.get_profile_picture_url()
-            print(f"DEBUG: After refresh - Profile picture name: {updated_user.profile_picture.name}")
+            print(f"DEBUG: After refresh - Profile picture name: {updated_user.profile_picture.name if updated_user.profile_picture else 'None'}")
             print(f"DEBUG: After refresh - Profile picture URL: {profile_picture_url}")
 
         return JsonResponse({
             'status': 'success',
             'message': 'Profile picture updated successfully',
             'profile_picture_url': profile_picture_url,
-            'profile_picture_name': updated_user.profile_picture.name
+            'profile_picture_name': updated_user.profile_picture.name if updated_user.profile_picture else None
         })
 
     except Exception as e:
