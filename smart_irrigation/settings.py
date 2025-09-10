@@ -223,6 +223,8 @@ if IS_PRODUCTION:
     print(f"DEBUG: Cloudinary Cloud Name: {os.getenv('CLOUDINARY_CLOUD_NAME')}")
     print(f"DEBUG: Cloudinary API Key: {os.getenv('CLOUDINARY_API_KEY')}")
     print(f"DEBUG: Cloudinary API Secret: {'Set' if os.getenv('CLOUDINARY_API_SECRET') else 'Not Set'}")
+    print(f"DEBUG: RENDER: {os.getenv('RENDER')}")
+    print(f"DEBUG: DEBUG: {os.getenv('DEBUG')}")
 
 
 # Handle missing files
