@@ -63,18 +63,28 @@ class CustomUser(AbstractUser):
             except CustomUser.DoesNotExist:
                 pass
 
-        # Call the parent save method first
+        # Check if profile picture field is set but file doesn't exist (development only)
+        if (self.profile_picture and
+                hasattr(self.profile_picture, 'name') and
+                not settings.IS_PRODUCTION and  # Only check in development
+                not default_storage.exists(self.profile_picture.name)):
+            # Clear the reference if file doesn't exist
+            print(f"DEBUG: Clearing missing profile picture in development: {self.profile_picture.name}")
+            self.profile_picture = None
+
+        # Call the parent save method
         super().save(*args, **kwargs)
 
         # Create a token for the user when they're created
         if is_new_user and not hasattr(self, 'auth_token'):
             Token.objects.create(user=self)
 
-        # Handle old file deletion for local development
+        # Handle old file deletion for local development only
         if (not is_new_user and old_profile_picture and
                 self.profile_picture != old_profile_picture and
-                not settings.IS_PRODUCTION):
+                not settings.IS_PRODUCTION):  # Only in development
             self._delete_old_profile_picture(old_profile_picture)
+
 
     def _delete_old_profile_picture(self, old_picture):
         """Safely delete old profile picture"""
@@ -100,7 +110,6 @@ class CustomUser(AbstractUser):
     def get_absolute_url(self):
         return reverse('profile')
 
-
     def get_profile_picture_url(self):
         """Safely get profile picture URL with proper Cloudinary support"""
         if not self.profile_picture:
@@ -108,10 +117,19 @@ class CustomUser(AbstractUser):
             return None
 
         try:
-            url = default_storage.url(self.profile_picture.name)
-            print(f"DEBUG: Generated URL for {self.username}: {url}")
-            print(f"DEBUG: Profile picture name: {self.profile_picture.name}")
-            return url
+            if settings.IS_PRODUCTION:
+                print(f"DEBUG: Getting Cloudinary URL for: {self.profile_picture.name}")
+                # For Cloudinary, let the storage backend handle URL generation
+                url = default_storage.url(self.profile_picture.name)
+                print(f"DEBUG: Cloudinary URL generated: {url}")
+                return url
+            else:
+                # For local development
+                if hasattr(self.profile_picture, 'url'):
+                    url = self.profile_picture.url
+                    print(f"DEBUG: Local URL: {url}")
+                    return url
+                return None
         except (ValueError, AttributeError, OSError) as e:
-            print(f"DEBUG: Error getting URL for {self.username}: {str(e)}")
+            print(f"DEBUG: Error getting URL: {str(e)}")
             return None

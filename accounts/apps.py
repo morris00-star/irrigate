@@ -1,3 +1,4 @@
+# accounts/apps.py
 from django.apps import AppConfig
 
 
@@ -6,5 +7,6 @@ class AccountsConfig(AppConfig):
     name = 'accounts'
 
     def ready(self):
-        import accounts.signals
-
+        # Comment out or remove the signals for now
+        # import accounts.signals
+        pass

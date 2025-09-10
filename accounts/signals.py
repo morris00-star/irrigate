@@ -1,3 +1,4 @@
+# accounts/signals.py
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from smart_irrigation import settings
@@ -6,24 +7,15 @@ from django.core.files.storage import default_storage
 import os
 
 
-
 @receiver(pre_save, sender=CustomUser)
 def check_profile_picture_exists(sender, instance, **kwargs):
-    """Check if profile picture exists before saving - only for existing files"""
-    if instance.profile_picture and instance.pk:
-        # Only check for existing users, not new uploads
-        try:
-            # Get the current state from database
-            current_user = CustomUser.objects.get(pk=instance.pk)
-
-            # Only validate if the profile picture hasn't changed
-            if current_user.profile_picture == instance.profile_picture:
-                # Check if the file actually exists in storage
-                if not default_storage.exists(instance.profile_picture.name):
-                    print(f"DEBUG: Profile picture does not exist: {instance.profile_picture.name}")
-                    instance.profile_picture = None
-        except CustomUser.DoesNotExist:
-            pass
+    """Check if profile picture exists before saving - ONLY in development"""
+    # Only check file existence in development, not in production with Cloudinary
+    if instance.profile_picture and not settings.IS_PRODUCTION:
+        # Check if the file actually exists in storage (local development only)
+        if not default_storage.exists(instance.profile_picture.name):
+            print(f"DEBUG: Profile picture does not exist locally: {instance.profile_picture.name}")
+            instance.profile_picture = None
 
 
 @receiver(post_save, sender=CustomUser)
@@ -38,9 +30,9 @@ def handle_profile_picture_changes(sender, instance, created, **kwargs):
             if old_user.profile_picture != instance.profile_picture:
                 print(f"DEBUG: Profile picture changed for user {instance.username}")
 
-                # Handle old file deletion for local development
+                # Handle old file deletion for local development only
                 if (old_user.profile_picture and
-                        not settings.IS_PRODUCTION):
+                        not settings.IS_PRODUCTION):  # Only in development
                     try:
                         if os.path.isfile(old_user.profile_picture.path):
                             os.remove(old_user.profile_picture.path)
