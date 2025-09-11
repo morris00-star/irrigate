@@ -399,3 +399,17 @@ def fix_filename(filename):
 
     return filename
 
+
+def environment_check(request):
+    """Check environment settings"""
+    return JsonResponse({
+        'is_production': settings.IS_PRODUCTION,
+        'debug': settings.DEBUG,
+        'render_env': os.getenv('RENDER'),
+        'environment_env': os.getenv('ENVIRONMENT'),
+        'default_file_storage': settings.DEFAULT_FILE_STORAGE,
+        'cloudinary_cloud_name_set': bool(os.getenv('CLOUDINARY_CLOUD_NAME')),
+        'cloudinary_api_key_set': bool(os.getenv('CLOUDINARY_API_KEY')),
+        'cloudinary_api_secret_set': bool(os.getenv('CLOUDINARY_API_SECRET')),
+    })
+

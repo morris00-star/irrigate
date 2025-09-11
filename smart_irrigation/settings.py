@@ -10,7 +10,8 @@ import dj_database_url
 load_dotenv()
 
 # Environment Detection
-IS_PRODUCTION = os.getenv('RENDER', 'False').lower() == 'true' or os.getenv('ENVIRONMENT') == 'production'
+IS_PRODUCTION = os.getenv('RENDER', 'false').lower() == 'true' or os.getenv('ENVIRONMENT') == 'production'
+IS_DEVELOPMENT = not IS_PRODUCTION
 
 # Add MIME type for JavaScript files
 mimetypes.add_type("application/javascript", ".js", True)
@@ -30,7 +31,6 @@ class CorrectMimeTypeMiddleware:
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-IS_DEVELOPMENT = not IS_PRODUCTION
 
 # Security Settings
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -57,14 +57,16 @@ ALLOWED_HOSTS = [
 
 # Application definition
 INSTALLED_APPS = [
+    # Cloudinary apps
+    'cloudinary',
+    'cloudinary_storage',
+
     # Third-party apps
     'channels',
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
     'django_extensions',
-    'cloudinary',
-    'cloudinary_storage',
 
     # Local apps
     'accounts.apps.AccountsConfig',
@@ -92,6 +94,7 @@ MIDDLEWARE = [
     'smart_irrigation.settings.CorrectMimeTypeMiddleware',
     'irrigation.connection_middleware.ConnectionMiddleware',
     'irrigation.db_middleware.DBConnectionMiddleware',
+    'irrigation.db_middleware.VerifyStorageMiddleware',
     'irrigation.middleware.ThrottleHeaderMiddleware',
     'irrigation.middleware.block_media_requests_in_production',
 ]
@@ -173,33 +176,53 @@ STATICFILES_DIRS = [
 # Tell Django to copy static files into the staticfiles directory
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# settings.py - Cloudinary configuration
+# Configure DEFAULT_FILE_STORAGE early
 if IS_PRODUCTION:
-    print("DEBUG: Using Cloudinary for media storage")
+    # Check Cloudinary credentials first
+    CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME')
+    CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
+    CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET')
 
-    # Use Cloudinary for production
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-        'SECURE': True,
-        'STATICFILES_MANIFEST_ROOT': os.path.join(BASE_DIR, 'manifest'),
-        # Make sure these settings are correct
-        'MEDIA_TAG': 'media',
-        'INVALIDATE': True,
-    }
-
-    # For production, media URLs should point to Cloudinary
-    MEDIA_URL = '/media/'  # This will be handled by Cloudinary storage
-
+    if all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET]):
+        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+        print("DEBUG: Using Cloudinary storage backend")
+    else:
+        DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+        print("DEBUG: Cloudinary not configured, using local storage")
 else:
-    print("DEBUG: Using local filesystem for media storage")
-    # Local development
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     MEDIA_URL = '/media/'
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    print("DEBUG: Using local storage backend")
+
+# Now import and configure Cloudinary
+if IS_PRODUCTION and DEFAULT_FILE_STORAGE == 'cloudinary_storage.storage.MediaCloudinaryStorage':
+    try:
+        import cloudinary
+        import cloudinary.uploader
+        import cloudinary.api
+
+        cloudinary.config(
+            cloud_name=CLOUDINARY_CLOUD_NAME,
+            api_key=CLOUDINARY_API_KEY,
+            api_secret=CLOUDINARY_API_SECRET,
+            secure=True
+        )
+
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+            'API_KEY': CLOUDINARY_API_KEY,
+            'API_SECRET': CLOUDINARY_API_SECRET,
+            'SECURE': True,
+            'STATICFILES_MANIFEST_ROOT': os.path.join(BASE_DIR, 'manifest'),
+            'MEDIA_TAG': 'media',
+            'INVALIDATE': True,
+        }
+        print("DEBUG: Cloudinary configured successfully")
+
+    except ImportError:
+        print("DEBUG: Cloudinary not installed, falling back to local storage")
+        DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 
 # Handle missing files
@@ -433,3 +456,24 @@ if IS_DEVELOPMENT:
         os.makedirs(os.path.join(BASE_DIR, 'accounts', 'static'), exist_ok=True)
     except OSError as e:
         print(f"Warning: Could not create directories: {e}")
+
+# Force storage initialization
+try:
+    from django.core.files.storage import default_storage
+    from django.conf import settings
+
+    # Re-initialize storage if needed
+    if (settings.IS_PRODUCTION and
+            settings.DEFAULT_FILE_STORAGE == 'cloudinary_storage.storage.MediaCloudinaryStorage' and
+            'cloudinary' not in str(default_storage.__class__).lower()):
+        print("DEBUG: Re-initializing storage backend")
+        from cloudinary_storage.storage import MediaCloudinaryStorage
+        from django.core.files.storage import get_storage_class
+
+        # Force re-initialization
+        storage_class = get_storage_class(settings.DEFAULT_FILE_STORAGE)
+        default_storage = storage_class()
+
+except Exception as e:
+    print(f"DEBUG: Error re-initializing storage: {e}")
+

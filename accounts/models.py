@@ -120,19 +120,30 @@ class CustomUser(AbstractUser):
     def get_absolute_url(self):
         return reverse('profile')
 
-
     def get_profile_picture_url(self):
         """Safely get profile picture URL with proper Cloudinary support"""
         if not self.profile_picture:
-            print(f"DEBUG: No profile picture set for user {self.username}")
             return None
 
         try:
-            # Use Django's storage backend to generate the URL
-            # This should automatically handle Cloudinary vs local storage
+            # First try the storage URL
             url = self.profile_picture.url
             print(f"DEBUG: Storage URL: {url}")
+
+            # If we're in production but got a local URL, fix it
+            if settings.IS_PRODUCTION and url.startswith('/media/'):
+                cloud_name = getattr(settings, 'CLOUDINARY_CLOUD_NAME', None)
+                if cloud_name:
+                    # Convert to Cloudinary URL
+                    filename = self.profile_picture.name
+                    if filename.startswith('media/'):
+                        filename = filename[6:]
+                    cloudinary_url = f'https://res.cloudinary.com/{cloud_name}/image/upload/{filename}'
+                    print(f"DEBUG: Converted to Cloudinary URL: {cloudinary_url}")
+                    return cloudinary_url
+
             return url
+
         except (ValueError, AttributeError, OSError) as e:
             print(f"DEBUG: Error getting URL: {str(e)}")
             return None

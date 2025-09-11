@@ -18,6 +18,7 @@ python manage.py test_cloudinary
 python manage.py test_cloudinary_upload
 python manage.py debug_cloudinary_storage
 python manage.py test_storage_urls
+python manage.py test_cloudinary_direct
 python manage.py cleanup_cloudinary
 python manage.py migrate
 
