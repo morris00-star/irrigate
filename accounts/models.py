@@ -6,6 +6,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.urls import reverse
+
+from irrigation.url_utils import get_media_url
 from smart_irrigation import settings
 from .utils import get_cloudinary_url
 
@@ -121,29 +123,9 @@ class CustomUser(AbstractUser):
         return reverse('profile')
 
     def get_profile_picture_url(self):
-        """Safely get profile picture URL with proper Cloudinary support"""
+        """Safely get profile picture URL"""
         if not self.profile_picture:
+            print("DEBUG: No profile picture set")
             return None
 
-        try:
-            # First try the storage URL
-            url = self.profile_picture.url
-            print(f"DEBUG: Storage URL: {url}")
-
-            # If we're in production but got a local URL, fix it
-            if settings.IS_PRODUCTION and url.startswith('/media/'):
-                cloud_name = getattr(settings, 'CLOUDINARY_CLOUD_NAME', None)
-                if cloud_name:
-                    # Convert to Cloudinary URL
-                    filename = self.profile_picture.name
-                    if filename.startswith('media/'):
-                        filename = filename[6:]
-                    cloudinary_url = f'https://res.cloudinary.com/{cloud_name}/image/upload/{filename}'
-                    print(f"DEBUG: Converted to Cloudinary URL: {cloudinary_url}")
-                    return cloudinary_url
-
-            return url
-
-        except (ValueError, AttributeError, OSError) as e:
-            print(f"DEBUG: Error getting URL: {str(e)}")
-            return None
+        return get_media_url(self.profile_picture)

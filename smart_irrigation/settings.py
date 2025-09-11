@@ -94,7 +94,7 @@ MIDDLEWARE = [
     'smart_irrigation.settings.CorrectMimeTypeMiddleware',
     'irrigation.connection_middleware.ConnectionMiddleware',
     'irrigation.db_middleware.DBConnectionMiddleware',
-    'irrigation.db_middleware.VerifyStorageMiddleware',
+    # 'irrigation.db_middleware.VerifyStorageMiddleware',
     'irrigation.middleware.ThrottleHeaderMiddleware',
     'irrigation.middleware.block_media_requests_in_production',
 ]

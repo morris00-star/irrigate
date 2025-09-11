@@ -16,7 +16,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_protect
-
+from irrigation.url_utils import get_media_url
 from smart_irrigation import settings
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser
@@ -413,3 +413,14 @@ def environment_check(request):
         'cloudinary_api_secret_set': bool(os.getenv('CLOUDINARY_API_SECRET')),
     })
 
+
+@login_required
+def check_profile_picture(request):
+    """Check the status of the current user's profile picture"""
+    profile_picture_url = get_media_url(request.user.profile_picture)
+
+    return JsonResponse({
+        'has_profile_picture': bool(request.user.profile_picture),
+        'profile_picture_url': profile_picture_url,
+        'profile_picture_name': request.user.profile_picture.name if request.user.profile_picture else None
+    })
