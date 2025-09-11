@@ -6,8 +6,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-
-from irrigation.url_utils import get_media_url
 from smart_irrigation import settings
 from .utils import get_cloudinary_url
 
@@ -122,10 +120,19 @@ class CustomUser(AbstractUser):
     def get_absolute_url(self):
         return reverse('profile')
 
+
     def get_profile_picture_url(self):
-        """Safely get profile picture URL"""
+        """Safely get profile picture URL with proper Cloudinary support"""
         if not self.profile_picture:
-            print("DEBUG: No profile picture set")
+            print(f"DEBUG: No profile picture set for user {self.username}")
             return None
 
-        return get_media_url(self.profile_picture)
+        try:
+            # Use Django's storage backend to generate the URL
+            # This should automatically handle Cloudinary vs local storage
+            url = self.profile_picture.url
+            print(f"DEBUG: Storage URL: {url}")
+            return url
+        except (ValueError, AttributeError, OSError) as e:
+            print(f"DEBUG: Error getting URL: {str(e)}")
+            return None

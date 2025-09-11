@@ -36,6 +36,5 @@ urlpatterns = [
          name='password_reset_complete'),
     path('default-avatar/', views.default_avatar, name='default_avatar'),
     path('check-profile-picture/', views.check_profile_picture, name='check_profile_picture'),
-    path('environment-check/', views.environment_check, name='environment_check'),
 ]
 
