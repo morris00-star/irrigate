@@ -158,6 +158,7 @@ class CustomUser(AbstractUser):
                 pass
         super().delete(*args, **kwargs)
 
+
     def get_absolute_url(self):
         return reverse('profile')
 
