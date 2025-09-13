@@ -1,6 +1,7 @@
 import os
 import phonenumbers
 from django.core.files.storage import default_storage
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -55,7 +56,53 @@ class CustomUser(AbstractUser):
         validators=[validate_phone_number],
         help_text="Format: +[country code][number]"
     )
-    receive_sms_alerts = models.BooleanField(default=True)
+
+    sms_alert_frequency = models.CharField(
+        max_length=10,
+        choices=[('immediate', 'Immediate'), ('hourly', 'Hourly'), ('daily', 'Daily')],
+        default='immediate'
+    )
+
+    sms_alert_threshold = models.PositiveIntegerField(
+        default=30,
+        help_text="Moisture level threshold for sending alerts (%)"
+    )
+    quiet_hours_start = models.TimeField(
+        default='22:00',  # 10 PM
+        help_text="Start time for quiet hours (no alerts)"
+    )
+    quiet_hours_end = models.TimeField(
+        default='06:00',  # 6 AM
+        help_text="End time for quiet hours (no alerts)"
+    )
+
+    # SMS notification frequency
+    SMS_NOTIFICATION_CHOICES = [
+        (5, '5 seconds'),
+        (10, '10 seconds'),
+        (15, '15 seconds'),
+        (30, '30 seconds'),
+        (45, '45 seconds'),
+        (60, '60 seconds'),
+    ]
+
+    sms_notification_frequency = models.IntegerField(
+        choices=SMS_NOTIFICATION_CHOICES,
+        default=15,
+        help_text="Frequency for SMS notifications in seconds"
+    )
+
+    last_notification_sent = models.DateTimeField(null=True, blank=True)
+
+    last_sms_alert = models.DateTimeField(null=True, blank=True)
+
+    receive_sms_alerts = models.BooleanField(default=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['receive_sms_alerts', 'last_sms_alert']),
+            models.Index(fields=['phone_number']),
+        ]
 
 
     def save(self, *args, **kwargs):
@@ -136,3 +183,34 @@ class CustomUser(AbstractUser):
         except (ValueError, AttributeError, OSError) as e:
             print(f"DEBUG: Error getting URL: {str(e)}")
             return None
+
+    def can_receive_alert_now(self):
+        """Check if user can receive alerts based on preferences and quiet hours"""
+        if not self.receive_sms_alerts or not self.phone_number:
+            return False
+
+        # Check quiet hours
+        now = timezone.now().time()
+        if self.quiet_hours_start <= self.quiet_hours_end:
+            # Quiet hours don't cross midnight
+            if self.quiet_hours_start <= now <= self.quiet_hours_end:
+                return False
+        else:
+            # Quiet hours cross midnight
+            if now >= self.quiet_hours_start or now <= self.quiet_hours_end:
+                return False
+
+        # Check frequency limits
+        if self.last_sms_alert:
+            time_since_last_alert = timezone.now() - self.last_sms_alert
+            if self.sms_alert_frequency == 'hourly' and time_since_last_alert.total_seconds() < 3600:
+                return False
+            elif self.sms_alert_frequency == 'daily' and time_since_last_alert.total_seconds() < 86400:
+                return False
+
+        return True
+
+    def update_last_alert_time(self):
+        """Update the last alert timestamp"""
+        self.last_sms_alert = timezone.now()
+        self.save(update_fields=['last_sms_alert'])

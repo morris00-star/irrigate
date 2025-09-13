@@ -1,19 +1,13 @@
 import requests
 from urllib.parse import quote
 from django.conf import settings
-from django.utils import timezone
 import logging
-import re
-from typing import Optional, Tuple, Dict
-from requests.exceptions import RequestException
 
 logger = logging.getLogger(__name__)
 
 
 class SMSServiceError(Exception):
-    """Enhanced exception for SMS failures"""
-
-    def __init__(self, message: str, phone_number: str = None, details: str = None):
+    def __init__(self, message, phone_number=None, details=None):
         self.phone_number = phone_number
         self.details = details
         super().__init__(f"SMS Error: {message}")
@@ -21,139 +15,186 @@ class SMSServiceError(Exception):
 
 class SMSService:
     @staticmethod
-    def clean_ugandan_number(phone: str) -> Optional[str]:
-        """Strict validation for Ugandan numbers with improved regex"""
+    def clean_phone_number(phone):
+        """Clean and validate phone number"""
         if not phone:
             return None
 
-        # Remove all non-digit characters except +
-        cleaned = re.sub(r'[^\d+]', '', phone)
+        try:
+            # Remove any non-digit characters except +
+            cleaned = ''.join(c for c in phone if c.isdigit() or c == '+')
 
-        # Validate formats: +256..., 256..., 07..., 7...
-        if re.match(r'^\+?256\d{9}$', cleaned):
-            return cleaned.lstrip('+')
-        if re.match(r'^0?[7|7]\d{8}$', cleaned):  # Accepts 07... or 7...
-            return '256' + cleaned[-9:]
-        return None
+            # Ensure it starts with country code
+            if cleaned.startswith('+256'):
+                return cleaned[1:]  # Remove + for EgoSMS
+            elif cleaned.startswith('256'):
+                return cleaned
+            elif cleaned.startswith('0'):
+                return '256' + cleaned[1:]  # Convert 07... to 2567...
+            else:
+                return None
 
-    @classmethod
-    def validate_sensor_data(cls, sensor_data) -> bool:
-        """Validate sensor data before sending"""
-        if not sensor_data:
-            raise SMSServiceError("No sensor data provided")
-
-        required_fields = ['moisture', 'threshold', 'temperature',
-                           'pump_status', 'valve_status', 'timestamp']
-        for field in required_fields:
-            if not hasattr(sensor_data, field):
-                raise SMSServiceError(f"Missing sensor data field: {field}")
-        return True
+        except Exception:
+            return None
 
     @classmethod
-    def send_alert(cls, user, sensor_data) -> Tuple[bool, str]:
-        """Send irrigation alert with comprehensive error handling"""
+    def send_alert(cls, user, sensor_data):
+        """Send irrigation alert"""
         if not user or not user.phone_number:
             return False, "Invalid user or missing phone number"
 
+        # Double-check that user wants notifications
+        if not user.receive_sms_alerts:
+            return False, "User has disabled SMS notifications"
+
         try:
-            cls.validate_sensor_data(sensor_data)
+            # Build message
+            message = cls._build_alert_message(sensor_data, user)
 
-            alert_time = timezone.localtime(sensor_data.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+            success, result_message = cls._send_sms(user.phone_number, message)
 
-            message = cls._build_alert_message(sensor_data, alert_time)
-            return cls._send_sms(user.phone_number, message)
+            return success, result_message
 
-        except SMSServiceError as e:
-            logger.error(f"Validation failed for {user.username}: {str(e)}")
-            return False, str(e)
         except Exception as e:
-            logger.error(f"Unexpected error for {user.username}: {str(e)}")
+            logger.error(f"Error for {user.username}: {str(e)}")
             return False, "Failed to send alert"
 
     @classmethod
-    def _build_alert_message(cls, sensor_data, alert_time: str) -> str:
-        """Construct the alert message with emojis"""
+    def _build_alert_message(cls, sensor_data, user):
+        """Construct the alert message with proper None handling"""
+        # Get values with proper None handling
+        threshold = getattr(user, 'sms_alert_threshold', None)
+        if threshold is None:
+            threshold = getattr(sensor_data, 'threshold', 'N/A')
+
+        moisture = getattr(sensor_data, 'moisture', 'N/A')
+
+        # Handle None values for comparison
+        if moisture is not None and threshold is not None and isinstance(moisture, (int, float)) and isinstance(
+                threshold, (int, float)):
+            status = "ACTIVE" if moisture < threshold else "IDLE"
+        else:
+            status = "UNKNOWN"
+
+        # Get other values with None handling
+        temperature = getattr(sensor_data, 'temperature', 'N/A')
+        humidity = getattr(sensor_data, 'humidity', 'N/A')
+        pump_status = getattr(sensor_data, 'pump_status', False)
+        valve_status = getattr(sensor_data, 'valve_status', False)
+        timestamp = getattr(sensor_data, 'timestamp')
+        user = getattr(sensor_data, 'user')
+
         return (
-            u"🕒 {time}\n"
-            u"🌱 Status: {status}\n"
-            u"💧 Moisture: {moisture}%\n"
-            u"📊 Threshold: {threshold}%\n"
-            u"🌡️ Temp: {temp}°C\n"
-            u"🔧 Pump: {pump}\n"
-            u"🚪 Valve: {valve}"
-        ).format(
-            time=alert_time,
-            status="ACTIVE" if sensor_data.moisture < sensor_data.threshold else "IDLE",
-            moisture=getattr(sensor_data, 'moisture', 'N/A'),
-            threshold=getattr(sensor_data, 'threshold', 'N/A'),
-            temp=getattr(sensor_data, 'temperature', 'N/A'),
-            pump="ON" if getattr(sensor_data, 'pump_status', False) else "OFF",
-            valve="OPEN" if getattr(sensor_data, 'valve_status', False) else "CLOSED"
+            f"Hello, {user}\n!, Your farm's update;"
+            f"At Time:  {timestamp}\n"
+            f"Irrigation:  {status}\n"
+            f"Moisture: {moisture if moisture is not None else 'N/A'}%\n"
+            f"Threshold: {threshold if threshold is not None else 'N/A'}%\n"
+            f"Temp: {temperature if temperature is not None else 'N/A'}°C\n"
+            f"humidity: {humidity if humidity is not None else 'N/A'}%\n"
+            f"Pump: {'ON' if pump_status else 'OFF'}\n"
+            f"Valve: {'OPEN' if valve_status else 'CLOSED'}"
         )
 
     @classmethod
-    def _send_sms(cls, phone: str, message: str) -> Tuple[bool, str]:
-        """Core SMS sending logic with improved error handling"""
+    def _send_sms(cls, phone, message):
+        """Core SMS sending logic"""
         if settings.EGOSMS_CONFIG.get('TEST_MODE', True):
             logger.info(f"TEST MODE: SMS to {phone}: {message[:50]}...")
             return True, "Test mode - no SMS sent"
 
-        clean_num = cls.clean_ugandan_number(phone)
+        clean_num = cls.clean_phone_number(phone)
         if not clean_num:
             return False, "Invalid phone number format"
 
         try:
-            response = cls._make_egosms_request(clean_num, message)
-            return cls._handle_egosms_response(response, phone)
+            params = {
+                'username': settings.EGOSMS_CONFIG['USERNAME'],
+                'password': settings.EGOSMS_CONFIG['PASSWORD'],
+                'number': clean_num,
+                'message': quote(message),
+                'sender': settings.EGOSMS_CONFIG['SENDER_ID'],
+                'priority': 0
+            }
 
-        except RequestException as e:
-            raise SMSServiceError("Network error", phone, str(e))
+            query_string = '&'.join(f"{k}={v}" for k, v in params.items())
+            url = f"{settings.EGOSMS_CONFIG['API_URL']}?{query_string}"
+
+            response = requests.get(url, timeout=15)
+
+            if response.text.strip() == "Ok":
+                logger.info(f"SMS successfully sent to {phone}")
+                return True, "SMS sent successfully"
+            else:
+                return False, f"EgoSMS error: {response.text}"
+
         except Exception as e:
-            raise SMSServiceError("SMS sending failed", phone, str(e))
+            return False, f"Network error: {str(e)}"
 
     @classmethod
-    def _make_egosms_request(cls, number: str, message: str) -> requests.Response:
-        """Make the actual API request to EgoSMS"""
-        params = {
-            'username': settings.EGOSMS_CONFIG['USERNAME'],
-            'password': settings.EGOSMS_CONFIG['PASSWORD'],
-            'number': number,
-            'message': quote(message),
-            'sender': settings.EGOSMS_CONFIG['SENDER_ID'],
-            'priority': 0
-        }
-        return requests.get(
-            settings.EGOSMS_CONFIG['API_URL'],
-            params=params,
-            timeout=15  # Increased timeout
-        )
+    def check_balance(cls):
+        """Check EgoSMS account balance"""
+        if settings.EGOSMS_CONFIG.get('TEST_MODE', True):
+            return True, "Test mode - balance check skipped"
+
+        try:
+            params = {
+                'username': settings.EGOSMS_CONFIG['USERNAME'],
+                'password': settings.EGOSMS_CONFIG['PASSWORD'],
+                'action': 'balance'
+            }
+
+            query_string = '&'.join(f"{k}={v}" for k, v in params.items())
+            url = f"{settings.EGOSMS_CONFIG['API_URL']}?{query_string}"
+
+            response = requests.get(url, timeout=10)
+
+            if response.status_code == 200:
+                balance_text = response.text.strip()
+                return True, f"Balance: {balance_text} credits"
+            else:
+                return False, f"HTTP error: {response.status_code}"
+
+        except Exception as e:
+            return False, f"Error: {str(e)}"
 
     @classmethod
-    def _handle_egosms_response(cls, response: requests.Response, phone: str) -> Tuple[bool, str]:
-        """Process the response from EgoSMS"""
-        if response.status_code != 200:
-            raise SMSServiceError(f"HTTP {response.status_code}", phone)
+    def send_direct_sms(cls, phone_number, message):
+        """Direct SMS sending"""
+        if settings.EGOSMS_CONFIG.get('TEST_MODE', True):
+            logger.info(f"TEST MODE: Direct SMS to {phone_number}: {message[:50]}...")
+            return True, "Test mode - no SMS sent"
 
-        response_text = response.text.strip()
+        clean_num = cls.clean_phone_number(phone_number)
+        if not clean_num:
+            return False, "Invalid phone number format"
 
-        if response_text == "Ok":
-            return True, "SMS sent successfully"
+        try:
+            params = {
+                'username': settings.EGOSMS_CONFIG['USERNAME'],
+                'password': settings.EGOSMS_CONFIG['PASSWORD'],
+                'number': clean_num,
+                'message': quote(message),
+                'sender': settings.EGOSMS_CONFIG['SENDER_ID'],
+                'priority': 0
+            }
 
-        error_map = {
-            "100": "Invalid credentials",
-            "101": "Insufficient balance",
-            "102": "Invalid sender ID",
-            "103": "Invalid phone number",
-            "104": "Message too long",
-            "105": "Invalid priority",
-            "106": "Service unavailable"
-        }
+            query_string = '&'.join(f"{k}={v}" for k, v in params.items())
+            url = f"{settings.EGOSMS_CONFIG['API_URL']}?{query_string}"
 
-        error_msg = error_map.get(response_text, f"Unknown error: {response_text}")
-        raise SMSServiceError(error_msg, phone)
+            response = requests.get(url, timeout=15)
+
+            if response.text.strip() == "Ok":
+                logger.info(f"Direct SMS successfully sent to {phone_number}")
+                return True, "SMS sent successfully"
+            else:
+                return False, f"EgoSMS error: {response.text}"
+
+        except Exception as e:
+            return False, f"Network error: {str(e)}"
 
 
+# Required function for compatibility
 def send_irrigation_alert(user, sensor_data):
     """Legacy interface maintained for compatibility"""
     return SMSService.send_alert(user, sensor_data)
-

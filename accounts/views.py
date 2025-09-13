@@ -17,8 +17,10 @@ from django.views.decorators.http import require_POST
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_protect
 
+from irrigation.models import SensorData
+from irrigation.sms import SMSService
 from smart_irrigation import settings
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm, NotificationPreferencesForm
 from .models import CustomUser
 from .utils import send_brevo_transactional_email
 from django.db import transaction
@@ -398,4 +400,53 @@ def fix_filename(filename):
         return os.path.join(dirname, fixed_basename)
 
     return filename
+
+
+@login_required
+def notification_settings(request):
+    if request.method == 'POST':
+        form = NotificationPreferencesForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+
+            # Send test SMS if user just enabled notifications
+            if form.cleaned_data.get('receive_sms_alerts'):
+                try:
+                    # Get latest sensor data for test message
+                    latest_data = SensorData.objects.latest('timestamp')
+                    success, message = SMSService.send_alert(request.user, latest_data)
+
+                    if success:
+                        messages.success(request, 'Notification preferences saved! Test SMS sent successfully.')
+                    else:
+                        messages.warning(request, f'Preferences saved, but test SMS failed: {message}')
+                except Exception as e:
+                    messages.info(request, 'Preferences saved. Test SMS will be sent with the next sensor reading.')
+            else:
+                messages.success(request, 'Notification preferences saved! SMS alerts disabled.')
+
+            return redirect('notification_settings')
+    else:
+        form = NotificationPreferencesForm(instance=request.user)
+
+    return render(request, 'accounts/notification_settings.html', {'form': form})
+
+
+@login_required
+def send_test_sms(request):
+    """Send a test SMS immediately"""
+    if request.method == 'POST':
+        try:
+            # Get latest sensor data
+            latest_data = SensorData.objects.latest('timestamp')
+            success, message = SMSService.send_alert(request.user, latest_data)
+
+            if success:
+                messages.success(request, 'Test SMS sent successfully!')
+            else:
+                messages.error(request, f'Failed to send test SMS: {message}')
+        except Exception as e:
+            messages.error(request, f'Error sending test SMS: {str(e)}')
+
+    return redirect('notification_settings')
 

@@ -104,3 +104,20 @@ class CustomUserChangeForm(UserChangeForm):
             if name_parts[-1].lower() in extensions and name_parts[-2].lower() in extensions:
                 return True
         return False
+
+
+class NotificationPreferencesForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['sms_notification_frequency', 'receive_sms_alerts']
+        widgets = {
+            'sms_notification_frequency': forms.Select(choices=CustomUser.SMS_NOTIFICATION_CHOICES),
+            'receive_sms_alerts': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ensure the checkbox is unchecked by default for new users
+        if not self.instance.pk:  # New user
+            self.initial['receive_sms_alerts'] = False
+

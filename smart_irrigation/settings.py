@@ -387,9 +387,9 @@ CELERY_TASK_ROUTES = {
 CELERY_BEAT_SCHEDULE = {
     'send-sms-alerts': {
         'task': 'irrigation.tasks.send_periodic_sms_alerts',
-        'schedule': 300.0,
+        'schedule': 5.0,  # Check every 5 seconds
         'options': {
-            'expires': 290,  # Prevent duplicate runs
+            'expires': 4,  # Prevent duplicate runs
             'queue': 'sms_alerts'
         }
     }

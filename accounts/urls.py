@@ -36,5 +36,7 @@ urlpatterns = [
          name='password_reset_complete'),
     path('default-avatar/', views.default_avatar, name='default_avatar'),
     path('check-profile-picture/', views.check_profile_picture, name='check_profile_picture'),
+    path('notifications/', views.notification_settings, name='notification_settings'),
+    path('notifications/test-sms/', views.send_test_sms, name='send_test_sms'),
 ]
 
