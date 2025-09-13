@@ -194,12 +194,11 @@ class CustomUser(AbstractUser):
             if now >= self.quiet_hours_start or now <= self.quiet_hours_end:
                 return False
 
-        # Check frequency limits
+        # Check frequency limits using the new field
         if self.last_sms_alert:
             time_since_last_alert = timezone.now() - self.last_sms_alert
-            if self.sms_alert_frequency == 'hourly' and time_since_last_alert.total_seconds() < 3600:
-                return False
-            elif self.sms_alert_frequency == 'daily' and time_since_last_alert.total_seconds() < 86400:
+            # Convert seconds to appropriate time units for comparison
+            if time_since_last_alert.total_seconds() < self.sms_notification_frequency:
                 return False
 
         return True
