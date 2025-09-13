@@ -57,12 +57,6 @@ class CustomUser(AbstractUser):
         help_text="Format: +[country code][number]"
     )
 
-    sms_alert_frequency = models.CharField(
-        max_length=10,
-        choices=[('immediate', 'Immediate'), ('hourly', 'Hourly'), ('daily', 'Daily')],
-        default='immediate'
-    )
-
     sms_alert_threshold = models.PositiveIntegerField(
         default=30,
         help_text="Moisture level threshold for sending alerts (%)"
