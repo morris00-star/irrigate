@@ -8,6 +8,6 @@ pip install -r requirements_remote.txt
 mkdir -p media/profile_pics
 mkdir -p accounts/static/
 python manage.py collectstatic --noinput
-python manage.py makemigrations
+python manage.py makemigrations --noinput
 python manage.py migrate
 
