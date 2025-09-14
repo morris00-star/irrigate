@@ -116,7 +116,7 @@ TEMPLATES = [
 
 # Database configuration
 if IS_PRODUCTION:
-    # Recommended Render PostgreSQL configuration
+    # Render PostgreSQL configuration
     DATABASES = {
         'default': dj_database_url.config(
             default=os.getenv('DATABASE_URL'),
