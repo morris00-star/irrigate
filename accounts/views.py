@@ -1,30 +1,32 @@
 import os
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.files.storage import default_storage
+from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
-from django.core.mail import send_mail
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.shortcuts import redirect
-from django.contrib import messages
 from django.views.decorators.http import require_POST
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_protect
-
 from irrigation.models import SensorData
 from irrigation.sms import SMSService
 from smart_irrigation import settings
 from .forms import CustomUserCreationForm, CustomUserChangeForm, NotificationPreferencesForm
-from .models import CustomUser
+from .helper_code import generate_verification_code
+from .models import CustomUser, validate_phone_number
 from .utils import send_brevo_transactional_email
 from django.db import transaction
 from irrigation.db_utils import acquire_connection
+from datetime import timedelta
+from django.utils import timezone
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .forms import SMSVerificationForm, PhoneNumberForm
+from .sms_service import send_verification_sms
 
 
 def home(request):
@@ -221,34 +223,23 @@ def password_reset_request(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             associated_users = CustomUser.objects.filter(email=email)
+
             if associated_users.exists():
-                current_site = get_current_site(request)
-                for user in associated_users:
-                    subject = "Password Reset Request"
-                    email_template = "accounts/password_reset_email.html"
+                user = associated_users.first()
 
-                    context = {
-                        'email': user.email,
-                        'domain': current_site.domain,
-                        'site_name': current_site.name,
-                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                        'user': user,
-                        'token': default_token_generator.make_token(user),
-                        'protocol': 'https' if request.is_secure() else 'http',
-                    }
+                # Store email in session for later use
+                request.session['reset_email'] = email
 
-                    email_content = render_to_string(email_template, context)
-
-                    # Use Brevo API to send email
-                    if send_brevo_transactional_email(user.email, subject, email_content):
-                        return redirect("password_reset_done")
-                    else:
-                        messages.error(request, "Failed to send password reset email. Please try again later.")
-                        return redirect("password_reset")
+                # Check if user has a phone number
+                if user.phone_number:
+                    # Redirect to phone number confirmation
+                    return redirect('password_reset_confirm_phone')
+                else:
+                    # Fall back to email
+                    return send_password_reset_email(request, user)
 
             # Always return success to prevent email enumeration
             return redirect("password_reset_done")
-
     else:
         form = PasswordResetForm()
 
@@ -258,6 +249,147 @@ def password_reset_request(request):
 @login_required
 def confirm_token_regeneration(request):
     return render(request, 'accounts/confirm_token_regeneration.html')
+
+
+def password_reset_sms_choice(request):
+    email = request.session.get('reset_email')
+    if not email:
+        return redirect('password_reset')
+
+    try:
+        user = CustomUser.objects.get(email=email)
+    except CustomUser.DoesNotExist:
+        return redirect('password_reset')
+
+    if request.method == 'POST':
+        if 'use_sms' in request.POST and user.phone_number:
+            # Generate and send SMS code
+            code = generate_verification_code()
+            user.sms_verification_code = code
+            user.sms_verification_sent_at = timezone.now()
+            user.sms_verification_attempts = 0
+            user.save()
+
+            # Send SMS
+            success = send_verification_sms(user.phone_number, code)
+
+            if success:
+                request.session['sms_verification_user_id'] = user.id
+                return redirect('password_reset_sms_verify')
+            else:
+                messages.error(request, "Failed to send SMS. Please try email instead.")
+                return send_password_reset_email(request, user)
+
+        elif 'use_email' in request.POST:
+            return send_password_reset_email(request, user)
+
+    return render(request, 'accounts/password_reset_choice.html', {
+        'user': user,
+        'phone_number': user.phone_number[-4:] if user.phone_number else None
+    })
+
+
+def password_reset_sms_verify(request):
+    """Page where user enters the 6-digit verification code"""
+    user_id = request.session.get('sms_verification_user_id')
+    print(f"DEBUG: In verification page, user_id from session: {user_id}")
+
+    if not user_id:
+        messages.error(request, "Session expired. Please start over.")
+        return redirect('password_reset_sms_quick')
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+        print(f"DEBUG: Found user for verification: {user.username}")
+    except CustomUser.DoesNotExist:
+        messages.error(request, "Invalid session. Please start over.")
+        return redirect('password_reset_sms_quick')
+
+    # Check if code is expired (10 minutes)
+    if (user.sms_verification_sent_at and
+            (timezone.now() - user.sms_verification_sent_at) > timedelta(minutes=10)):
+        messages.error(request, "Verification code has expired.")
+        return redirect('password_reset_sms_quick')
+
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip()
+        print(f"DEBUG: User entered code: {code}")
+
+        # Check attempts
+        if user.sms_verification_attempts >= 3:
+            messages.error(request, "Too many attempts. Please request a new code.")
+            return redirect('password_reset_sms_quick')
+
+        if len(code) != 6 or not code.isdigit():
+            messages.error(request, "Please enter a valid 6-digit code.")
+        elif user.sms_verification_code == code:
+            # Code is correct - allow password reset
+            print("DEBUG: Code is correct!")
+            request.session['verified_user_id'] = user.id
+            user.sms_verification_code = None
+            user.sms_verification_attempts = 0
+            user.save()
+            return redirect('password_reset_confirm_sms')
+        else:
+            # Wrong code
+            user.sms_verification_attempts += 1
+            user.save()
+            messages.error(request, f"Invalid code. {3 - user.sms_verification_attempts} attempts remaining.")
+
+    return render(request, 'accounts/password_reset_sms_verify.html', {
+        'user': user,
+        'phone_number': user.phone_number[-4:] if user.phone_number else '****'
+    })
+
+
+def password_reset_confirm_sms(request):
+    user_id = request.session.get('verified_user_id')
+    if not user_id:
+        return redirect('password_reset')
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return redirect('password_reset')
+
+    if request.method == 'POST':
+        form = SetPasswordForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            # Clear session
+            request.session.pop('verified_user_id', None)
+            messages.success(request, "Your password has been reset successfully.")
+            # AFTER PASSWORD RESET, REDIRECT TO LOGIN
+            return redirect('password_reset_complete')
+    else:
+        form = SetPasswordForm(user)
+
+    return render(request, 'accounts/password_reset_confirm_sms.html', {'form': form})
+
+
+def send_password_reset_email(request, user):
+    # Your existing email sending logic
+    current_site = get_current_site(request)
+    subject = "Password Reset Request"
+    email_template = "accounts/password_reset_email.html"
+
+    context = {
+        'email': user.email,
+        'domain': current_site.domain,
+        'site_name': current_site.name,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'user': user,
+        'token': default_token_generator.make_token(user),
+        'protocol': 'https' if request.is_secure() else 'http',
+    }
+
+    email_content = render_to_string(email_template, context)
+
+    if send_brevo_transactional_email(user.email, subject, email_content):
+        return redirect("password_reset_done")
+    else:
+        messages.error(request, "Failed to send password reset email. Please try again later.")
+        return redirect("password_reset")
 
 
 @require_POST
@@ -426,10 +558,10 @@ def notification_settings(request):
                 messages.success(request, 'Notification preferences saved! SMS alerts disabled.')
 
             return redirect('notification_settings')
+        return None
     else:
         form = NotificationPreferencesForm(instance=request.user)
-
-    return render(request, 'accounts/notification_settings.html', {'form': form})
+        return None
 
 
 @login_required
@@ -450,3 +582,216 @@ def send_test_sms(request):
 
     return redirect('notification_settings')
 
+
+def password_reset_sms_resend(request):
+    user_id = request.session.get('sms_verification_user_id')
+    if not user_id:
+        return redirect('password_reset')
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+
+        # Generate new code
+        code = generate_verification_code()
+        user.sms_verification_code = code
+        user.sms_verification_sent_at = timezone.now()
+        user.sms_verification_attempts = 0
+        user.save()
+
+        # Send new SMS
+        success = send_verification_sms(user.phone_number, code)
+
+        if success:
+            messages.success(request, "New verification code sent!")
+        else:
+            messages.error(request, "Failed to send SMS. Please try email instead.")
+            return send_password_reset_email(request, user)
+
+    except CustomUser.DoesNotExist:
+        messages.error(request, "Session expired. Please start over.")
+
+    return redirect('password_reset_sms_verify')
+
+
+def password_reset_sms_quick(request):
+    """Quick SMS password reset from login page with better phone number handling"""
+    print(f"DEBUG: password_reset_sms_quick called, method: {request.method}")
+
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number', '').strip()
+        print(f"DEBUG: Raw phone number input: '{phone_number}'")
+
+        if phone_number:
+            # Clean and normalize the input phone number
+            from irrigation.sms import SMSService
+            clean_phone = SMSService.clean_phone_number(phone_number)
+            print(f"DEBUG: Cleaned phone number: '{clean_phone}'")
+
+            if clean_phone:
+                # Find user by phone number - try multiple formats
+                users = find_users_by_phone(clean_phone)
+                print(f"DEBUG: Found {users.count()} users with matching phone number")
+
+                if users.exists():
+                    user = users.first()
+                    print(f"DEBUG: User found: {user.username}, ID: {user.id}, DB phone: '{user.phone_number}'")
+
+                    # Generate verification code
+                    code = generate_verification_code()
+                    print(f"DEBUG: Generated code: {code}")
+
+                    # Update user with verification code
+                    user.sms_verification_code = code
+                    user.sms_verification_sent_at = timezone.now()
+                    user.sms_verification_attempts = 0
+                    user.save()
+
+                    # Send SMS
+                    success, message = SMSService.send_direct_sms(clean_phone, f"Your verification code: {code}")
+                    print(f"DEBUG: SMS sent - Success: {success}, Response: {message}")
+
+                    # Handle EgoSMS response
+                    if success or (isinstance(message, str) and message.strip().upper() == "OK"):
+                        print("DEBUG: SMS sent successfully")
+                        request.session['sms_verification_user_id'] = user.id
+                        request.session.modified = True
+                        print(f"DEBUG: Redirecting to verification page with user_id: {user.id}")
+                        return redirect('password_reset_sms_verify')
+                    else:
+                        messages.error(request, f"SMS sending failed: {message}")
+                else:
+                    # Show helpful error with phone number formats tried
+                    show_phone_lookup_help(request, phone_number, clean_phone)
+            else:
+                messages.error(request, "Invalid phone number format. Please use format: +256712345678")
+        else:
+            messages.error(request, "Please enter a phone number.")
+
+    # Show the form
+    return render(request, 'accounts/password_reset_quick.html')
+
+
+def find_users_by_phone(phone_number):
+    """Find users by phone number using multiple formatting approaches"""
+    from irrigation.sms import SMSService
+
+    # Try different phone number formats
+    possible_formats = [
+        phone_number,  # Original cleaned format
+        phone_number.replace('+', ''),  # Without +
+        phone_number.replace('+', '0'),  # Replace + with 0
+        '0' + phone_number[3:] if phone_number.startswith('+256') else None,  # +2567... -> 07...
+    ]
+
+    # Remove None values and duplicates
+    possible_formats = list(set([fmt for fmt in possible_formats if fmt]))
+
+    print(f"DEBUG: Searching phone formats: {possible_formats}")
+
+    # Query for users with any of these phone numbers
+    users = CustomUser.objects.filter(phone_number__in=possible_formats)
+
+    # If still no users found, try partial matching
+    if not users.exists():
+        # Remove country code and search for local number
+        local_number = phone_number
+        if phone_number.startswith('+256'):
+            local_number = phone_number[4:]  # Remove +256
+        elif phone_number.startswith('256'):
+            local_number = phone_number[3:]  # Remove 256
+
+        if local_number != phone_number:
+            users = CustomUser.objects.filter(phone_number__endswith=local_number)
+
+    return users
+
+
+def show_phone_lookup_help(request, original_phone, cleaned_phone):
+    """Show helpful debug information about phone number lookup"""
+    print(f"DEBUG: PHONE LOOKUP FAILED")
+    print(f"DEBUG: Original input: '{original_phone}'")
+    print(f"DEBUG: Cleaned format: '{cleaned_phone}'")
+
+    # Show all users with phone numbers for debugging
+    users_with_phones = CustomUser.objects.exclude(phone_number__isnull=True).exclude(phone_number='')
+    print("DEBUG: All users with phone numbers in database:")
+    for user in users_with_phones:
+        print(f"DEBUG: - {user.username}: '{user.phone_number}'")
+
+    messages.error(request,
+                   f"No account found with phone number: {original_phone}. "
+                   f"Registered numbers: {', '.join([user.phone_number for user in users_with_phones[:3]])}"
+                   f"{'...' if users_with_phones.count() > 3 else ''}"
+                   )
+
+
+def password_reset_confirm_phone(request):
+    """Confirm or enter phone number for SMS reset"""
+    email = request.session.get('reset_email')
+    if not email:
+        return redirect('password_reset')
+
+    try:
+        user = CustomUser.objects.get(email=email)
+    except CustomUser.DoesNotExist:
+        return redirect('password_reset')
+
+    if request.method == 'POST':
+        # Get the phone number (either from form or user's saved number)
+        phone_number = request.POST.get('phone_number', user.phone_number)
+
+        if phone_number:
+            # Validate phone number
+            try:
+                validate_phone_number(phone_number)
+
+                # Update user's phone number if different
+                if user.phone_number != phone_number:
+                    user.phone_number = phone_number
+                    user.save()
+
+                # Generate and send SMS code
+                code = generate_verification_code()
+                user.sms_verification_code = code
+                user.sms_verification_sent_at = timezone.now()
+                user.sms_verification_attempts = 0
+                user.save()
+
+                # Send SMS using EgoSMS
+                success = send_verification_sms(user.phone_number, code)
+
+                if success:
+                    request.session['sms_verification_user_id'] = user.id
+                    messages.success(request, "Verification code sent to your phone!")
+                    return redirect('password_reset_sms_verify')
+                else:
+                    messages.error(request, "Failed to send SMS. Please try email instead.")
+                    return send_password_reset_email(request, user)
+
+            except ValidationError:
+                messages.error(request, "Please enter a valid phone number.")
+        else:
+            messages.error(request, "Phone number is required for SMS reset.")
+
+    return render(request, 'accounts/password_reset_confirm_phone.html', {
+        'user': user,
+        'has_existing_phone': bool(user.phone_number)
+    })
+
+
+def debug_sms_test(request):
+    """Test SMS sending directly"""
+    test_phone = "+256780443345"  # Test number
+    code = generate_verification_code()
+    success = send_verification_sms(test_phone, code)
+    return JsonResponse({'success': success, 'code': code})
+
+
+def debug_verify_test(request):
+    """Test that verification page works"""
+    # Create a test user session
+    test_user = CustomUser.objects.first()
+    if test_user:
+        request.session['sms_verification_user_id'] = test_user.id
+        return redirect('password_reset_sms_verify')
+    return HttpResponse("No test user found")

@@ -38,5 +38,13 @@ urlpatterns = [
     path('check-profile-picture/', views.check_profile_picture, name='check_profile_picture'),
     path('notifications/', views.notification_settings, name='notification_settings'),
     path('notifications/test-sms/', views.send_test_sms, name='send_test_sms'),
+    path('password-reset/sms-choice/', views.password_reset_sms_choice, name='password_reset_sms_choice'),
+    path('password-reset/sms-verify/', views.password_reset_sms_verify, name='password_reset_sms_verify'),
+    path('password-reset/sms-confirm/', views.password_reset_confirm_sms, name='password_reset_confirm_sms'),
+    path('password-reset/sms-resend/', views.password_reset_sms_resend, name='password_reset_sms_resend'),
+    path('password-reset/sms-quick/', views.password_reset_sms_quick, name='password_reset_sms_quick'),
+    path('password-reset/confirm-phone/', views.password_reset_confirm_phone, name='password_reset_confirm_phone'),
+    path('debug/sms-test/', views.debug_sms_test, name='debug_sms_test'),
+    path('debug/verify-test/', views.debug_verify_test, name='debug_verify_test'),
 ]
 

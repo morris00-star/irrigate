@@ -57,6 +57,10 @@ class CustomUser(AbstractUser):
         help_text="Format: +[country code][number]"
     )
 
+    sms_verification_code = models.CharField(max_length=6, blank=True, null=True)
+    sms_verification_sent_at = models.DateTimeField(blank=True, null=True)
+    sms_verification_attempts = models.PositiveIntegerField(default=0)
+
     sms_alert_threshold = models.PositiveIntegerField(
         default=30,
         help_text="Moisture level threshold for sending alerts (%)"
@@ -96,6 +100,7 @@ class CustomUser(AbstractUser):
         indexes = [
             models.Index(fields=['receive_sms_alerts', 'last_sms_alert']),
             models.Index(fields=['phone_number']),
+            models.Index(fields=['sms_verification_code', 'sms_verification_sent_at']),
         ]
 
 

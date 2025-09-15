@@ -1,7 +1,9 @@
+import pytz
 import requests
 from urllib.parse import quote
 from django.conf import settings
 import logging
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -61,75 +63,94 @@ class SMSService:
 
     @classmethod
     def _build_alert_message(cls, sensor_data, user):
-        """Construct the alert message with proper None handling"""
+        """Construct the alert message with connection status and EAT time"""
         # Get values with proper None handling
         threshold = getattr(user, 'sms_alert_threshold', None)
         if threshold is None:
             threshold = getattr(sensor_data, 'threshold', 'N/A')
 
         moisture = getattr(sensor_data, 'moisture', 'N/A')
-
-        # Handle None values for comparison
-        if moisture is not None and threshold is not None and isinstance(moisture, (int, float)) and isinstance(
-                threshold, (int, float)):
-            status = "ACTIVE" if moisture < threshold else "IDLE"
-        else:
-            status = "UNKNOWN"
-
-        # Get other values with None handling
         temperature = getattr(sensor_data, 'temperature', 'N/A')
         humidity = getattr(sensor_data, 'humidity', 'N/A')
         pump_status = getattr(sensor_data, 'pump_status', False)
         valve_status = getattr(sensor_data, 'valve_status', False)
-        timestamp = getattr(sensor_data, 'timestamp')
-        user = getattr(sensor_data, 'user')
+
+        # Handle None values for comparison
+        if moisture is not None and threshold is not None and isinstance(moisture, (int, float)) and isinstance(
+                threshold, (int, float)):
+            irrigation_status = "ACTIVE" if moisture < threshold else "IDLE"
+        else:
+            irrigation_status = "UNKNOWN"
+
+        # Convert timestamp to East African Time (EAT)
+        eat_timezone = pytz.timezone('Africa/Nairobi')
+        sensor_timestamp = getattr(sensor_data, 'timestamp', timezone.now())
+        eat_time = sensor_timestamp.astimezone(eat_timezone)
+
+        # Check connection status (online/offline)
+        time_diff = timezone.now() - sensor_timestamp
+        if time_diff.total_seconds() <= 300:  # 5 minutes threshold for online status
+            connection_status = "ONLINE"
+        else:
+            connection_status = "OFFLINE"
 
         return (
-            f"Hello, {user}\n!, Your farm's update;"
-            f"At Time:  {timestamp}\n"
-            f"Irrigation:  {status}\n"
+            f"Hello : {user.username}!\n"
+            f"Farm Update - {connection_status}\n"
+            f"Time: {eat_time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"Irrigation: {irrigation_status}\n"
             f"Moisture: {moisture if moisture is not None else 'N/A'}%\n"
             f"Threshold: {threshold if threshold is not None else 'N/A'}%\n"
             f"Temp: {temperature if temperature is not None else 'N/A'}°C\n"
-            f"humidity: {humidity if humidity is not None else 'N/A'}%\n"
-            f"Pump: {'ON' if pump_status else 'OFF'}\n"
-            f"Valve: {'OPEN' if valve_status else 'CLOSED'}"
+            f"Humidity: {humidity if humidity is not None else 'N/A'}%\n"
+            f" Pump: {'ON ' if pump_status else 'OFF '}\n"
+            f"Valve: {'OPEN ' if valve_status else 'CLOSED '}\n"
         )
 
-    @classmethod
-    def _send_sms(cls, phone, message):
-        """Core SMS sending logic"""
-        if settings.EGOSMS_CONFIG.get('TEST_MODE', True):
-            logger.info(f"TEST MODE: SMS to {phone}: {message[:50]}...")
-            return True, "Test mode - no SMS sent"
+    class SMSService:
+        @classmethod
+        def _send_sms(cls, phone, message):
+            """Core SMS sending logic"""
+            if settings.EGOSMS_CONFIG.get('TEST_MODE', True):
+                logger.info(f"TEST MODE: SMS to {phone}: {message[:50]}...")
+                return True, "Test mode - no SMS sent"
 
-        clean_num = cls.clean_phone_number(phone)
-        if not clean_num:
-            return False, "Invalid phone number format"
+            clean_num = cls.clean_phone_number(phone)
+            if not clean_num:
+                return False, "Invalid phone number format"
 
-        try:
-            params = {
-                'username': settings.EGOSMS_CONFIG['USERNAME'],
-                'password': settings.EGOSMS_CONFIG['PASSWORD'],
-                'number': clean_num,
-                'message': quote(message),
-                'sender': settings.EGOSMS_CONFIG['SENDER_ID'],
-                'priority': 0
-            }
+            try:
+                params = {
+                    'username': settings.EGOSMS_CONFIG['USERNAME'],
+                    'password': settings.EGOSMS_CONFIG['PASSWORD'],
+                    'number': clean_num,
+                    'message': quote(message),
+                    'sender': settings.EGOSMS_CONFIG['SENDER_ID'],
+                    'priority': 0
+                }
 
-            query_string = '&'.join(f"{k}={v}" for k, v in params.items())
-            url = f"{settings.EGOSMS_CONFIG['API_URL']}?{query_string}"
+                query_string = '&'.join(f"{k}={v}" for k, v in params.items())
+                url = f"{settings.EGOSMS_CONFIG['API_URL']}?{query_string}"
 
-            response = requests.get(url, timeout=15)
+                print(f"DEBUG: Sending SMS to EgoSMS URL: {url}")
+                response = requests.get(url, timeout=15)
+                response_text = response.text.strip()
 
-            if response.text.strip() == "Ok":
-                logger.info(f"SMS successfully sent to {phone}")
-                return True, "SMS sent successfully"
-            else:
-                return False, f"EgoSMS error: {response.text}"
+                print(f"DEBUG: EgoSMS response: '{response_text}'")
+                print(f"DEBUG: Response status code: {response.status_code}")
 
-        except Exception as e:
-            return False, f"Network error: {str(e)}"
+                # EgoSMS returns "OK" for success, anything else is failure
+                if response_text.upper() == "OK":
+                    logger.info(f"SMS successfully sent to {phone}")
+                    return True, "SMS sent successfully"
+                else:
+                    logger.error(f"EgoSMS error: {response_text}")
+                    return False, f"EgoSMS error: {response_text}"
+
+            except Exception as e:
+                logger.error(f"Network error: {str(e)}")
+                return False, f"Network error: {str(e)}"
+
 
     @classmethod
     def check_balance(cls):
@@ -184,7 +205,7 @@ class SMSService:
 
             response = requests.get(url, timeout=15)
 
-            if response.text.strip() == "Ok":
+            if response.text.strip() == "OK":
                 logger.info(f"Direct SMS successfully sent to {phone_number}")
                 return True, "SMS sent successfully"
             else:

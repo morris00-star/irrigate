@@ -2,8 +2,9 @@ import os
 from PIL import Image
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser
+from .models import CustomUser, validate_phone_number
 import phonenumbers
+from django.core.validators import RegexValidator
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -120,4 +121,29 @@ class NotificationPreferencesForm(forms.ModelForm):
         # Ensure the checkbox is unchecked by default for new users
         if not self.instance.pk:  # New user
             self.initial['receive_sms_alerts'] = False
+
+
+class SMSVerificationForm(forms.Form):
+    code = forms.CharField(
+        max_length=6,
+        min_length=6,
+        validators=[RegexValidator(r'^\d{6}$', 'Enter a valid 6-digit code.')],
+        widget=forms.TextInput(attrs={
+            'placeholder': '123456',
+            'class': 'form-control',
+            'inputmode': 'numeric',
+            'pattern': '[0-9]*'
+        })
+    )
+
+
+class PhoneNumberForm(forms.Form):
+    phone_number = forms.CharField(
+        max_length=20,
+        validators=[validate_phone_number],
+        widget=forms.TextInput(attrs={
+            'placeholder': '+256712345678',
+            'class': 'form-control'
+        })
+    )
 
