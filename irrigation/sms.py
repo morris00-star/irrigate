@@ -107,50 +107,48 @@ class SMSService:
             f"Valve: {'OPEN ' if valve_status else 'CLOSED '}\n"
         )
 
-    class SMSService:
-        @classmethod
-        def _send_sms(cls, phone, message):
-            """Core SMS sending logic"""
-            if settings.EGOSMS_CONFIG.get('TEST_MODE', True):
-                logger.info(f"TEST MODE: SMS to {phone}: {message[:50]}...")
-                return True, "Test mode - no SMS sent"
+    @classmethod
+    def _send_sms(cls, phone, message):
+        """Core SMS sending logic"""
+        if settings.EGOSMS_CONFIG.get('TEST_MODE', True):
+            logger.info(f"TEST MODE: SMS to {phone}: {message[:50]}...")
+            return True, "Test mode - no SMS sent"
 
-            clean_num = cls.clean_phone_number(phone)
-            if not clean_num:
-                return False, "Invalid phone number format"
+        clean_num = cls.clean_phone_number(phone)
+        if not clean_num:
+            return False, "Invalid phone number format"
 
-            try:
-                params = {
-                    'username': settings.EGOSMS_CONFIG['USERNAME'],
-                    'password': settings.EGOSMS_CONFIG['PASSWORD'],
-                    'number': clean_num,
-                    'message': quote(message),
-                    'sender': settings.EGOSMS_CONFIG['SENDER_ID'],
-                    'priority': 0
-                }
+        try:
+            params = {
+                'username': settings.EGOSMS_CONFIG['USERNAME'],
+                'password': settings.EGOSMS_CONFIG['PASSWORD'],
+                'number': clean_num,
+                'message': quote(message),
+                'sender': settings.EGOSMS_CONFIG['SENDER_ID'],
+                'priority': 0
+            }
 
-                query_string = '&'.join(f"{k}={v}" for k, v in params.items())
-                url = f"{settings.EGOSMS_CONFIG['API_URL']}?{query_string}"
+            query_string = '&'.join(f"{k}={v}" for k, v in params.items())
+            url = f"{settings.EGOSMS_CONFIG['API_URL']}?{query_string}"
 
-                print(f"DEBUG: Sending SMS to EgoSMS URL: {url}")
-                response = requests.get(url, timeout=15)
-                response_text = response.text.strip()
+            print(f"DEBUG: Sending SMS to EgoSMS URL: {url}")
+            response = requests.get(url, timeout=15)
+            response_text = response.text.strip()
 
-                print(f"DEBUG: EgoSMS response: '{response_text}'")
-                print(f"DEBUG: Response status code: {response.status_code}")
+            print(f"DEBUG: EgoSMS response: '{response_text}'")
+            print(f"DEBUG: Response status code: {response.status_code}")
 
-                # EgoSMS returns "OK" for success, anything else is failure
-                if response_text.upper() == "OK":
-                    logger.info(f"SMS successfully sent to {phone}")
-                    return True, "SMS sent successfully"
-                else:
-                    logger.error(f"EgoSMS error: {response_text}")
-                    return False, f"EgoSMS error: {response_text}"
+            # EgoSMS returns "OK" for success, anything else is failure
+            if response_text.upper() == "OK":
+                logger.info(f"SMS successfully sent to {phone}")
+                return True, "SMS sent successfully"
+            else:
+                logger.error(f"EgoSMS error: {response_text}")
+                return False, f"EgoSMS error: {response_text}"
 
-            except Exception as e:
-                logger.error(f"Network error: {str(e)}")
-                return False, f"Network error: {str(e)}"
-
+        except Exception as e:
+            logger.error(f"Network error: {str(e)}")
+            return False, f"Network error: {str(e)}"
 
     @classmethod
     def check_balance(cls):

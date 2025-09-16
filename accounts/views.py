@@ -543,25 +543,44 @@ def notification_settings(request):
 
             # Send test SMS if user just enabled notifications
             if form.cleaned_data.get('receive_sms_alerts'):
+                # Check if user has phone number
+                if not request.user.phone_number:
+                    messages.warning(request,
+                                     'SMS alerts enabled but no phone number configured. '
+                                     'Please add your phone number in profile settings.')
+                    return redirect('notification_settings')
+
                 try:
-                    # Get latest sensor data for test message
                     latest_data = SensorData.objects.latest('timestamp')
                     success, message = SMSService.send_alert(request.user, latest_data)
 
                     if success:
                         messages.success(request, 'Notification preferences saved! Test SMS sent successfully.')
                     else:
-                        messages.warning(request, f'Preferences saved, but test SMS failed: {message}')
+                        # Provide more specific error message
+                        if "Invalid phone number" in message:
+                            messages.warning(request,
+                                             'Preferences saved, but phone number format is invalid. '
+                                             'Please update your phone number in profile settings.')
+                        elif "Network error" in message:
+                            messages.warning(request,
+                                             'Preferences saved, but network error occurred. '
+                                             'Please check your internet connection.')
+                        else:
+                            messages.warning(request, f'Preferences saved, but test SMS failed: {message}')
+
+                except SensorData.DoesNotExist:
+                    messages.info(request, 'Preferences saved. No sensor data available for test message.')
                 except Exception as e:
-                    messages.info(request, 'Preferences saved. Test SMS will be sent with the next sensor reading.')
+                    messages.error(request, f'Error sending test SMS: {str(e)}')
             else:
                 messages.success(request, 'Notification preferences saved! SMS alerts disabled.')
 
             return redirect('notification_settings')
-        return None
     else:
         form = NotificationPreferencesForm(instance=request.user)
-        return None
+
+    return render(request, 'accounts/notification_settings.html', {'form': form})
 
 
 @login_required
