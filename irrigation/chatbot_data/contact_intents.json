@@ -1,0 +1,54 @@
+{
+  "intents": [
+    {
+      "tag": "contact_options",
+      "patterns": ["How can I contact you?", "What are your contact details?", "How to reach support?", "Contact information"],
+      "responses": ["You can contact us through multiple channels:", "- Phone: +256 780 443345", "- Email: nduwayomorris@gmail.com", "- Visit: Kyebando roundabout, Kampala City, Uganda", "- Social media: Facebook, X, LinkedIn, WhatsApp, Instagram, Telegram"]
+    },
+    {
+      "tag": "phone_support",
+      "patterns": ["What's your phone number?", "Call support", "Phone contact", "Emergency number"],
+      "responses": ["Our support phone number is +256 780 443345. Available Mon-Fri: 8:00 AM - 5:00 PM. <button onclick=\"copyPhoneNumber()\" class=\"mt-2 text-xs bg-purple-200 hover:bg-purple-200 px-2 py-1 rounded text-green-700\"><i class=\"far fa-copy mr-1\"></i> Copy Number</button>"]
+    },
+    {
+      "tag": "email_support",
+      "patterns": ["What's your email?", "Email support", "Send email", "Support email address"],
+      "responses": ["You can email us at: nduwayomorris@gmail.com. We typically respond within 24 hours."]
+    },
+    {
+      "tag": "visit_location",
+      "patterns": ["Where are you located?", "Physical address", "Visit office", "Come to your location"],
+      "responses": ["We're located at Kyebando roundabout, Kampala City, Uganda. <a href=\"https://maps.google.com?q=Kyebando+roundabout,Kampala+City,Uganda\" target=\"_blank\" class=\"inline-block mt-2 text-sm text-green-600 hover:text-green-800\"><i class=\"fas fa-directions mr-1\"></i> Get Directions</a>"]
+    },
+    {
+      "tag": "business_hours",
+      "patterns": ["When are you open?", "Operating hours", "Support hours", "When can I call?"],
+      "responses": ["Our support hours are Monday-Friday from 8:00 AM to 5:00 PM."]
+    },
+    {
+      "tag": "social_media",
+      "patterns": ["Are you on social media?", "Facebook page", "Twitter account", "Instagram profile", "LinkedIn"],
+      "responses": ["Yes! Connect with us on:", "- Facebook: <a href=\"https://www.facebook.com/magnus.morris.79\" target=\"_blank\">magnus.morris.79</a>", "- X (Twitter): <a href=\"https://x.com/NduwayoMorris\" target=\"_blank\">@NduwayoMorris</a>", "- LinkedIn: <a href=\"https://www.linkedin.com/in/nduwayo-morris\" target=\"_blank\">nduwayo-morris</a>", "- Instagram: <a href=\"https://www.instagram.com/morrisnduwayo/\" target=\"_blank\">@morrisnduwayo</a>", "- WhatsApp: <a href=\"https://wa.me/+256780443345\" target=\"_blank\">+256780443345</a>", "- Telegram: <a href=\"https://t.me/Ensolo_man\" target=\"_blank\">@Ensolo_man</a>"]
+    },
+    {
+      "tag": "directions",
+      "patterns": ["How to get to your office?", "Directions to your location", "Route to Kyebando", "Map to your office"],
+      "responses": ["From Kyebando Roundabout to our location:", "1. Head northwest", "2. Turn right", "3. Arrive at location: Bukoto Mulimira Zone", "<a href=\"https://maps.app.goo.gl/iDjPednYn7ms6G8PA?g_st=ac\" target=\"_blank\" class=\"inline-flex items-center mt-4 text-green-600 hover:text-green-800 font-medium\"><i class=\"fas fa-map-marked-alt mr-2\"></i> View Full Route on Google Maps</a>"]
+    },
+    {
+      "tag": "contact_form",
+      "patterns": ["I want to send a message", "Contact form", "Fill out form", "Send you a message"],
+      "responses": ["You can send us a message using the contact form on our website. It asks for your name, email, subject, and message. We'll respond as quickly as possible!"]
+    },
+    {
+      "tag": "urgent_support",
+      "patterns": ["I need help immediately", "Emergency contact", "Urgent issue", "Critical problem"],
+      "responses": ["For urgent issues, please call our support line directly at +256 780 443345 for immediate assistance."]
+    },
+    {
+      "tag": "whatsapp_contact",
+      "patterns": ["Can I WhatsApp you?", "Contact via WhatsApp", "WhatsApp support", "Message on WhatsApp"],
+      "responses": ["Yes! You can message us on WhatsApp at +256 780 443345. <a href=\"https://wa.me/+256780443345\" target=\"_blank\" class=\"inline-block mt-2 text-sm text-green-600 hover:text-green-800\">Click here to start a WhatsApp chat</a>"]
+    }
+  ]
+}

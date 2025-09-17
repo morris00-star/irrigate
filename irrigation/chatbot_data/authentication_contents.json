@@ -1,0 +1,257 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": [
+        "Hi", "Hello", "Hey", "Good morning", "Good afternoon", "Good evening",
+        "Hi there", "Hello there", "Hey there", "What's up", "Howdy",
+        "Is anyone there?", "Anyone there?", "Greetings"
+      ],
+      "responses": [
+        "Hello! Welcome to the Intelligent Irrigation System. How can I assist you today?",
+        "Hi there! I'm here to help you with our smart irrigation system. What can I help you with?",
+        "Greetings! I'm your guide to our intelligent irrigation technology. How can I support you today?"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "system_purpose",
+      "patterns": [
+        "What is this system?", "What does this system do?", "Tell me about this system",
+        "What is intelligent irrigation?", "What kind of system is this?",
+        "Explain this irrigation system", "What's this all about?",
+        "What are you offering?", "Describe your system"
+      ],
+      "responses": [
+        "Our Intelligent Irrigation System revolutionizes agriculture with smart technology that saves water, time, and resources while maximizing crop yield. We provide automated, data-driven irrigation solutions that respond to real-time environmental conditions."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "system_benefits",
+      "patterns": [
+        "What are the benefits?", "Why should I use this?", "What makes this system good?",
+        "How does this help me?", "What advantages does this offer?",
+        "Why choose your system?", "How will this benefit my farm?",
+        "What problems does this solve?", "How efficient is your system?"
+      ],
+      "responses": [
+        "Our system offers three key benefits: 1) **Water Efficiency:** Reduce water usage by up to 50% with our smart scheduling and monitoring. 2) **Real-Time Analytics:** Monitor soil conditions and weather patterns with our advanced dashboard. 3) **Remote Control:** Manage your irrigation system from anywhere using our mobile app."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "user_register",
+      "patterns": [
+        "How do I sign up?", "I need a new account", "How to register?",
+        "I'm new here", "I want to create an account", "Registration process",
+        "How do I get started?", "I want to use your system", "Set up an account",
+        "Create account", "Sign up process", "How to become a user?"
+      ],
+      "responses": [
+        "To register for our system: 1) Visit our registration page at [Link: {% url 'register' %}] 2) Fill out the form with your details 3) Submit the form to create your account. You'll need to provide basic information including a username, email, and password. Once registered, you can log in and access your personalized dashboard."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "registration_requirements",
+      "patterns": [
+        "What do I need to register?", "What information is required?",
+        "What details do you need for registration?", "Registration requirements",
+        "What should I prepare to sign up?", "What documents are needed?",
+        "What info do you collect during signup?"
+      ],
+      "responses": [
+        "To register, you'll need to provide: 1) A unique username 2) Your email address 3) A secure password 4) Basic personal information. No special documents are required for the initial registration. You may add more details like farm size and location later in your profile settings."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "user_login",
+      "patterns": [
+        "How do I log in?", "Where is the login page?", "I want to sign in",
+        "Access my account", "Login help", "I can't find the login",
+        "Where to log in?", "Sign in to my account", "Account access"
+      ],
+      "responses": [
+        "You can access your account through our login page: [Link: {% url 'login' %}]. Simply enter your username and password to access your dashboard. If you've forgotten your credentials, we have password recovery options available."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "password_reset",
+      "patterns": [
+        "I forgot my password", "Can't log in", "Reset my password",
+        "I lost my login", "Password recovery", "Can't remember password",
+        "How to reset password?", "Forgot credentials", "Locked out of account"
+      ],
+      "responses": [
+        "If you've forgotten your password: 1) Go to the login page [Link: {% url 'login' %}] 2) Click 'Forgot your password?' [Link: {% url 'password_reset' %}] 3) Enter your email address 4) Check your email for reset instructions. For immediate assistance via SMS, you can also use our quick reset option by providing your phone number starting with your country code (e.g., +256712345678)."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "sms_reset",
+      "patterns": [
+        "Reset via SMS", "Send code to my phone", "SMS password reset",
+        "Use my phone number", "Text me a code", "Reset with phone",
+        "Mobile reset", "Send SMS code", "Phone number recovery"
+      ],
+      "responses": [
+        "For SMS password reset, please provide your phone number in international format (starting with + followed by your country code, e.g., +256712345678). We'll send a verification code to your mobile device that you can use to reset your password quickly and securely."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "dashboard_info",
+      "patterns": [
+        "What is the dashboard?", "What's on the dashboard?", "Where do I control the system?",
+        "Dashboard features", "What can I see on dashboard?", "Explain the dashboard",
+        "Control panel", "System interface", "Main screen"
+      ],
+      "responses": [
+        "Your dashboard is the central control hub for our irrigation system. After logging in [Link: {% url 'login' %}], you'll access: 1) Real-time monitoring of soil conditions 2) Weather pattern data 3) Irrigation scheduling controls 4) Water usage statistics 5) System status alerts 6) Historical data analysis. Access it here: [Link: {% url 'dashboard' %}]"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "water_efficiency",
+      "patterns": [
+        "How much water can I save?", "Water savings", "Efficiency percentage",
+        "Reduce water usage", "Conservation benefits", "Water reduction",
+        "How efficient is it?", "Save water", "Water consumption"
+      ],
+      "responses": [
+        "Our intelligent irrigation system can reduce water usage by up to 50% compared to traditional methods. This is achieved through smart scheduling based on real-time soil moisture data, weather predictions, and crop-specific water requirements, eliminating wasteful over-watering."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "mobile_access",
+      "patterns": [
+        "Mobile app", "Control from phone", "Remote access",
+        "Smartphone control", "App features", "Mobile application",
+        "Control from anywhere", "Phone access", "App download"
+      ],
+      "responses": [
+        "Our mobile app allows you to monitor and control your irrigation system from anywhere. Features include: 1) Remote start/stop of irrigation 2) Real-time alerts and notifications 3) Water usage monitoring 4) Schedule adjustments 5) System health checks. The app is available for both iOS and Android devices."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "analytics_features",
+      "patterns": [
+        "What analytics do you provide?", "Data monitoring", "What can I track?",
+        "Reporting features", "What statistics are available?", "Monitoring capabilities",
+        "What data do you collect?", "Analysis tools", "Performance metrics"
+      ],
+      "responses": [
+        "Our system provides comprehensive analytics including: 1) Soil moisture levels across different zones 2) Historical water usage patterns 3) Weather condition tracking 4) Crop growth correlation data 5) Efficiency reports 6) Customizable alerts for abnormal conditions 7) Predictive watering recommendations."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "contact_support",
+      "patterns": [
+        "I need help", "Contact support", "Talk to a person",
+        "How to contact you?", "Customer service", "Technical support",
+        "Get help", "Support team", "Help desk", "Report a problem",
+        "System issue", "Need assistance"
+      ],
+      "responses": [
+        "For technical support or questions, please visit our contact page: [Link: {% url 'contact' %}]. Our support team is available to assist with system setup, troubleshooting, and any other inquiries you may have about our intelligent irrigation solutions."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "about_system",
+      "patterns": [
+        "Learn more", "How does it work?", "Tell me more about the technology",
+        "Technical details", "System specifications", "How it functions",
+        "Underlying technology", "How the system operates", "How it saves water"
+      ],
+      "responses": [
+        "Our intelligent irrigation system uses sensors, weather data, and smart algorithms to optimize watering. Key components include: 1) Soil moisture sensors 2) Weather forecasting integration 3) Automated valve control 4) Cloud-based data analysis 5) Mobile connectivity. Learn more on our About page: [Link: {% url 'about' %}]"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "getting_started",
+      "patterns": [
+        "How do I begin?", "First steps", "Implementation process",
+        "System setup", "Installation", "How to get started?",
+        "Initial setup", "Getting started guide", "Setup process",
+        "Implementation guide"
+      ],
+      "responses": [
+        "To get started with our system: 1) Register an account [Link: {% url 'register' %}] 2) Schedule a consultation for system installation 3) Our technicians will install sensors and controllers on your property 4) Access your dashboard [Link: {% url 'dashboard' %}] to configure settings 5) Download the mobile app for remote access. Contact us for installation details: [Link: {% url 'contact' %}]"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "cost_inquiry",
+      "patterns": [
+        "How much does it cost?", "Pricing", "What's the price?",
+        "Cost of system", "Payment options", "Is it expensive?",
+        "Subscription fees", "Purchase cost", "Pricing structure",
+        "How much to install?"
+      ],
+      "responses": [
+        "For detailed pricing information based on your specific needs and property size, please contact our team through our contact page: [Link: {% url 'contact' %}]. We offer different packages tailored to various farm sizes and requirements, with both purchase and subscription options available."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "compatibility",
+      "patterns": [
+        "What crops is this for?", "What farms can use this?", "System compatibility",
+        "What agriculture types?", "Crop compatibility", "Farm size requirements",
+        "What operations is this for?", "Does it work for [crop type]?",
+        "What growing environments?"
+      ],
+      "responses": [
+        "Our system is versatile and can be customized for various agricultural operations including: 1) Field crops (corn, wheat, soybeans) 2) Orchards and vineyards 3) Vegetable farming 4) Greenhouses 5) Nursery operations. We can tailor the system to different farm sizes from small plots to large commercial operations."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "maintenance",
+      "patterns": [
+        "System maintenance", "How to maintain?", "Upkeep requirements",
+        "Maintenance schedule", "Technical maintenance", "System servicing",
+        "Repairs", "How reliable is it?", "Durability", "Long-term use"
+      ],
+      "responses": [
+        "Our systems are designed for minimal maintenance: 1) Regular sensor calibration (recommended annually) 2) occasional software updates 3) Seasonal system checks. Most maintenance can be performed remotely, and we offer service packages for ongoing support. Contact us for maintenance plans: [Link: {% url 'contact' %}]"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "goodbye",
+      "patterns": [
+        "Bye", "Goodbye", "See you later", "Thanks, that's all",
+        "Exit", "Stop", "That's all", "I'm done", "Finished",
+        "Talk to you later", "Have to go", "Signing off"
+      ],
+      "responses": [
+        "Thank you for visiting the Intelligent Irrigation System! Happy farming!",
+        "Goodbye! Remember we're here to help whenever you need assistance with your irrigation system.",
+        "Have a great day! Don't hesitate to return if you have more questions about our smart irrigation technology."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "thanks",
+      "patterns": [
+        "Thanks", "Thank you", "Appreciate it", "That helps",
+        "Useful information", "Helpful", "Great, thanks", "Awesome, thank you"
+      ],
+      "responses": [
+        "You're welcome! Is there anything else I can help you with today?",
+        "Happy to help! Let me know if you need assistance with anything else.",
+        "Glad I could assist! Don't hesitate to ask if you have more questions."
+      ],
+      "context": [""]
+    }
+  ]
+}

@@ -1,0 +1,244 @@
+{
+  "intents": [
+    {
+      "tag": "control_panel_overview",
+      "patterns": [
+        "What is the control panel?", "Control panel overview", "System control center",
+        "What can I control?", "Control panel features", "Management dashboard",
+        "System controls", "What's in control panel?"
+      ],
+      "responses": [
+        "The Control Panel is your complete system monitoring and control center. It provides: 1) **System Status**: Real-time status of all components 2) **Crop & Soil Configuration**: Set up your agricultural profile 3) **Threshold Control**: Adjust moisture levels 4) **Manual Control**: Direct pump/valve control 5) **Scheduling**: Set irrigation times 6) **Activity Logs**: Track all system actions."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "system_status_check",
+      "patterns": [
+        "What's my system status?", "Check system status", "System health",
+        "Is system online?", "Connection status", "System operational status",
+        "Current status", "How's the system doing?"
+      ],
+      "responses": [
+        "System Status: 1) **Overall**: Online/Offline 2) **ESP32 Connection**: Connected/Disconnected 3) **Operation Mode**: Auto/Manual 4) **Emergency Status**: Active/Inactive 5) **Current Threshold**: {{ systemState.threshold }}% 6) **Last Updated**: Just now. Green indicators mean normal operation, red indicates issues."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "operation_mode_switch",
+      "patterns": [
+        "How to switch modes?", "Change auto/manual", "Toggle operation mode",
+        "Switch to manual/auto", "Mode switching", "Change control mode",
+        "Auto manual toggle", "Operation mode change"
+      ],
+      "responses": [
+        "To switch operation modes: 1) Click the 'Switch to Manual/Auto' button in System Status card 2) Confirm any prompts 3) System will change mode immediately. **Auto mode** uses smart algorithms, **Manual mode** gives you direct control. Current mode: {{ systemState.systemMode }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "crop_configuration",
+      "patterns": [
+        "How to set crop type?", "Configure crops", "Set plant type",
+        "Crop selection", "Choose crops", "Crop setup",
+        "Agricultural configuration", "Plant type selection"
+      ],
+      "responses": [
+        "Crop Configuration: 1) Select from available crops: Banana, Maize, Beans, Coffee, Cassava, Rice, Tomato, Potato, Sugarcane, Vegetables 2) Choose your specific crop type 3) Click 'Save Configuration' 4) System will adjust optimal settings automatically. Current crop: {{ elements.currentCropDisplay.textContent }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "soil_configuration",
+      "patterns": [
+        "How to set soil type?", "Configure soil", "Set ground type",
+        "Soil selection", "Choose soil type", "Soil setup",
+        "Earth configuration", "Ground type selection"
+      ],
+      "responses": [
+        "Soil Configuration: 1) Select soil type: Clay, Loamy, or Sandy 2) Clay retains water longer, Sandy drains faster 3) Choose your actual soil type 4) Click 'Save Configuration' 5) System adjusts watering patterns accordingly. Current soil: {{ elements.currentSoilDisplay.textContent }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "moisture_threshold_control",
+      "patterns": [
+        "How to set moisture threshold?", "Adjust threshold", "Set moisture level",
+        "Threshold control", "Moisture setting", "Water level adjustment",
+        "Set watering point", "Threshold configuration"
+      ],
+      "responses": [
+        "Threshold Control: 1) Use the slider (0-100%) 2) Click +/- buttons for 5% adjustments 3) Click 'Set Threshold' to apply 4) System will water when moisture drops below this level. Current threshold: {{ systemState.threshold }}%. Use 'Use Recommended Threshold' for optimal settings based on your crop/soil."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "manual_control_usage",
+      "patterns": [
+        "How to use manual control?", "Manual pump/valve control", "Direct control",
+        "Manual operation", "Override control", "Manual override",
+        "Direct pump control", "Manual valve operation"
+      ],
+      "responses": [
+        "Manual Control (available only in Manual mode): 1) Ensure system is in Manual mode 2) Use 'Turn ON/OFF' buttons for Pump and Valve 3) Pump controls water circulation 4) Valve controls water flow 5) Changes take effect immediately. Use for testing or emergency adjustments."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "irrigation_scheduling",
+      "patterns": [
+        "How to schedule irrigation?", "Set watering schedule", "Timed irrigation",
+        "Create schedule", "Plan watering", "Set irrigation times",
+        "Automation scheduling", "Timed watering"
+      ],
+      "responses": [
+        "Scheduling Irrigation: 1) Select date and time 2) Set duration (1-120 minutes) 3) Click 'Schedule Irrigation' 4) System will automatically water at scheduled time. Scheduling is only available in Manual mode when no emergency is active. You can view/edit/delete upcoming schedules."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "view_edit_schedules",
+      "patterns": [
+        "How to view schedules?", "See scheduled irrigations", "Check planned watering",
+        "View upcoming events", "See irrigation plans", "Check scheduled times",
+        "Review schedules", "Upcoming irrigation view"
+      ],
+      "responses": [
+        "Viewing/Editing Schedules: 1) Scheduled events appear below the scheduling form 2) Each shows date, time, and duration 3) Use edit (pencil) icon to modify 4) Use delete (trash) icon to remove 5) Past events show as completed. Schedules can only be modified in Manual mode without emergency."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "activity_logs_access",
+      "patterns": [
+        "How to view activity logs?", "See system logs", "Check activity history",
+        "View user actions", "System activity record", "Action history",
+        "Log review", "Activity tracking"
+      ],
+      "responses": [
+        "Activity Logs: 1) Shows all user actions and system events 2) Timestamped records 3) Color-coded by type (info, warning, error) 4) Auto-updates in real-time 5) Can be exported to CSV for analysis. Logs help track system usage and troubleshoot issues."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "export_logs",
+      "patterns": [
+        "How to export logs?", "Download activity logs", "Export history",
+        "Save logs to file", "Download activity data", "Export system records",
+        "Get log file", "Save activity history"
+      ],
+      "responses": [
+        "Exporting Logs: 1) Click 'Export Logs' button above activity log 2) Confirm export in the popup modal 3) File downloads as CSV format 4) Contains timestamp, type, and message for each entry 5) Useful for record-keeping or analysis."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "emergency_status",
+      "patterns": [
+        "What is emergency status?", "Emergency system state", "Emergency mode",
+        "System emergency", "Emergency condition", "Emergency status check",
+        "Is emergency active?", "Emergency state"
+      ],
+      "responses": [
+        "Emergency Status shows if the system is in emergency shutdown: 1) **Active**: All irrigation stopped, manual controls disabled 2) **Inactive**: Normal operation 3) Displayed in System Status card 4) Requires manual reset to clear. Current status: {{ systemState.emergency ? 'ACTIVE' : 'Inactive' }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "connection_status",
+      "patterns": [
+        "What is ESP32 connection?", "Device connection status", "Hardware connection",
+        "ESP32 status", "Device connectivity", "Hardware link status",
+        "Controller connection", "Device communication"
+      ],
+      "responses": [
+        "ESP32 Connection: 1) Shows connectivity to the physical irrigation controller 2) **Connected**: Communication established 3) **Disconnected**: No communication with hardware 4) Checks every 3 seconds 5) Essential for system operation. Current status: {{ systemState.esp32Connected ? 'Connected' : 'Disconnected' }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "recommended_settings",
+      "patterns": [
+        "What are recommended settings?", "Optimal configurations", "Best settings",
+        "Recommended thresholds", "Ideal configurations", "Optimal thresholds",
+        "Best practices settings", "Recommended values"
+      ],
+      "responses": [
+        "Recommended Settings: 1) Based on crop type and soil composition 2) Click 'Use Recommended Threshold' to apply 3) Automatically calculates optimal moisture levels 4) Varies by crop water needs and soil water retention 5) Displayed as suggestions in threshold control."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "real_time_monitoring",
+      "patterns": [
+        "How does real-time monitoring work?", "Live system monitoring", "Real-time updates",
+        "Live data display", "Real-time status", "Live monitoring",
+        "Current data display", "Real-time information"
+      ],
+      "responses": [
+        "Real-time Monitoring: 1) Data updates every 3 seconds 2) Moisture levels show current soil conditions 3) Pump/Valve status shows actual device states 4) Connection status updates continuously 5) All changes reflect immediately in the interface 6) Timestamps show last update time."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "manual_mode_requirements",
+      "patterns": [
+        "When can I use manual mode?", "Manual mode availability", "When manual control works",
+        "Manual mode requirements", "When to use manual", "Manual control conditions",
+        "Manual mode access", "When manual is available"
+      ],
+      "responses": [
+        "Manual Mode Requirements: 1) **Available**: When no emergency is active 2) **Switch to Manual**: Use mode toggle button 3) **Features enabled**: Direct pump/valve control, Scheduling 4) **Automatic features disabled**: Smart watering algorithms 5) **Use cases**: Testing, maintenance, specific watering needs."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "auto_mode_features",
+      "patterns": [
+        "What does auto mode do?", "Automatic mode features", "Smart mode operations",
+        "Auto mode functionality", "Automatic control", "Smart irrigation",
+        "Auto mode benefits", "Automatic watering"
+      ],
+      "responses": [
+        "Auto Mode Features: 1) **Smart watering**: Based on moisture thresholds 2) **Weather consideration**: Adjusts for environmental conditions 3) **Energy efficient**: Optimizes pump usage 4) **Handles all irrigation automatically** 5) **No scheduling required** 6) **Best for most farming operations**."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "troubleshooting_control",
+      "patterns": [
+        "Control panel not working?", "Troubleshoot control issues", "Fix control problems",
+        "Control panel errors", "System control issues", "Troubleshoot panel",
+        "Control problems", "Fix control panel"
+      ],
+      "responses": [
+        "Control Panel Troubleshooting: 1) **Check connection**: Ensure ESP32 is connected 2) **Refresh page**: Sometimes fixes display issues 3) **Check mode**: Some features only work in Manual mode 4) **Emergency status**: Manual controls disabled during emergency 5) **Log errors**: Check activity logs for error messages 6) **Export logs**: For technical support if issues persist."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "configuration_saving",
+      "patterns": [
+        "How to save configurations?", "Save settings", "Store configurations",
+        "Save crop/soil settings", "Store preferences", "Save system settings",
+        "Configuration storage", "Save changes"
+      ],
+      "responses": [
+        "Saving Configurations: 1) Always click 'Save Configuration' after changes 2) Settings are stored on the server 3) Persist between sessions 4) Apply to automatic watering calculations 5) Can be exported/backed up through system settings 6: Unsaved changes will be lost on page refresh."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "scheduling_limitations",
+      "patterns": [
+        "Scheduling not working?", "Why can't I schedule?", "Scheduling restrictions",
+        "Schedule not available", "Scheduling issues", "Why scheduling disabled?",
+        "Schedule limitations", "Scheduling problems"
+      ],
+      "responses": [
+        "Scheduling Limitations: 1) **Only available in Manual mode** 2) **Disabled during emergencies** 3) **Requires future date/time** 4) **Duration 1-120 minutes only** 5) **Maximum 10 scheduled events** 6) **System must be online at scheduled time**. Check mode and emergency status if scheduling is unavailable."
+      ],
+      "context": [""]
+    }
+  ]
+}

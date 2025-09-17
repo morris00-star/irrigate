@@ -1,0 +1,232 @@
+{
+  "intents": [
+    {
+      "tag": "dashboard_overview",
+      "patterns": [
+        "What is the dashboard?", "Dashboard overview", "Main control center",
+        "What can I see on dashboard?", "Dashboard features", "Home screen information",
+        "Main page overview", "What's on the dashboard?"
+      ],
+      "responses": [
+        "The Dashboard is your main control center showing real-time monitoring of your irrigation system. It displays: 1) **Quick Stats Cards**: Temperature, Humidity, Soil Moisture 2) **System Status**: Pump and Valve status 3) **Recent Sensor Data**: Historical readings table 4) **Quick Actions**: Links to Manual Control, Analytics, and Scheduling."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "temperature_reading",
+      "patterns": [
+        "What is the current temperature?", "Temperature reading", "How hot is it?",
+        "What's the temperature?", "Environmental temperature", "Air temperature",
+        "Temperature status", "Current temp"
+      ],
+      "responses": [
+        "Current Temperature: {% if sensor_data.0.temperature %}{{ sensor_data.0.temperature|floatformat:1 }}°C{% else %}No data available{% endif %}. This is measured from environmental sensors and updated in real-time. Last updated: {{ sensor_data.0.timestamp|date:\"M d, H:i\" }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "humidity_reading",
+      "patterns": [
+        "What is the humidity level?", "Humidity reading", "How humid is it?",
+        "Air humidity", "Humidity percentage", "Moisture in air",
+        "Current humidity", "Humidity status"
+      ],
+      "responses": [
+        "Current Humidity: {% if sensor_data.0.humidity %}{{ sensor_data.0.humidity|floatformat:1 }}%{% else %}No data available{% endif %}. This measures the amount of water vapor in the air. Last updated: {{ sensor_data.0.timestamp|date:\"M d, H:i\" }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "soil_moisture_reading",
+      "patterns": [
+        "What is the soil moisture?", "Moisture level", "How wet is the soil?",
+        "Soil moisture percentage", "Ground moisture", "Plant moisture",
+        "Current soil wetness", "Moisture status"
+      ],
+      "responses": [
+        "Current Soil Moisture: {% if sensor_data.0.moisture %}{{ sensor_data.0.moisture|floatformat:1 }}%{% else %}No data available{% endif %}. This measures how much water is in the soil. Ideal levels are typically between 20-40% for most crops. Last updated: {{ sensor_data.0.timestamp|date:\"M d, H:i\" }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "pump_status_check",
+      "patterns": [
+        "Is the pump running?", "Pump status", "Is pump on or off?",
+        "Water pump status", "Pump operation", "Is pump working?",
+        "Pump current state", "Pump activity"
+      ],
+      "responses": [
+        "Pump Status: {{ sensor_data.0.pump_status|yesno:\"ON,OFF\" }}. The pump is currently {% if sensor_data.0.pump_status %}running and actively moving water{% else %}stopped and not circulating water{% endif %}. Last updated: {{ sensor_data.0.timestamp|date:\"M d, H:i\" }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "valve_status_check",
+      "patterns": [
+        "Is the valve open?", "Valve status", "Water flow status",
+        "Is water flowing?", "Valve position", "Flow control status",
+        "Valve open or closed?", "Water valve state"
+      ],
+      "responses": [
+        "Valve Status: {{ sensor_data.0.valve_status|yesno:\"OPEN,CLOSED\" }}. Water flow is currently {% if sensor_data.0.valve_status %}active and allowed through the system{% else %}blocked and not passing through{% endif %}. Last updated: {{ sensor_data.0.timestamp|date:\"M d, H:i\" }}."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "sensor_data_history",
+      "patterns": [
+        "Show historical data", "Past sensor readings", "Data history",
+        "Previous measurements", "Historical records", "Past readings",
+        "Data archive", "Sensor data history"
+      ],
+      "responses": [
+        "The Recent Sensor Data table shows the last {{ sensor_data|length }} records with: Timestamp, Temperature (°C), Humidity (%), Moisture (%), Pump Status, and Valve Status. You can download this data in CSV or Excel format for further analysis."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "download_sensor_data",
+      "patterns": [
+        "How to download data?", "Export sensor data", "Download readings",
+        "Data export options", "Get data file", "Download CSV",
+        "Export to Excel", "Save sensor data"
+      ],
+      "responses": [
+        "To download sensor data: 1) Click either the 'CSV' or 'Excel' button above the sensor data table 2) Confirm the download in the popup modal 3) The file will download automatically. CSV is good for spreadsheets, Excel format includes formatting for easier analysis."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "manual_control_access",
+      "patterns": [
+        "How to manually control?", "Override system", "Manual settings",
+        "Take manual control", "Manual override", "Manual operation",
+        "Control system manually", "Manual settings access"
+      ],
+      "responses": [
+        "Access Manual Control through: 1) Click the 'Manual Control' quick action card on the dashboard 2) Or go to Control Panel [Link: {% url 'control-panel' %}] 3) From there you can override automatic settings and control pumps/valves directly. Use this for testing or emergency adjustments."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "analytics_access",
+      "patterns": [
+        "How to view analytics?", "See data charts", "Visualize data",
+        "View graphs", "Data visualization", "Analytics charts",
+        "See trends", "Data analysis"
+      ],
+      "responses": [
+        "Access Analytics through: 1) Click the 'View Analytics' quick action card on the dashboard 2) Or go to Analytics page [Link: {% url 'visualize-data' %}] 3) There you'll find detailed charts, graphs, and trends of your sensor data over time for better decision making."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "scheduling_access",
+      "patterns": [
+        "How to set schedules?", "Irrigation timing", "Set watering times",
+        "Create schedule", "Timing settings", "Program irrigation",
+        "Set automation schedule", "Scheduling system"
+      ],
+      "responses": [
+        "Access Scheduling through: 1) Click the 'Schedule' quick action card on the dashboard 2) Or go to Control Panel → Scheduling [Link: {% url 'control-panel' %}] 3) There you can set automatic watering times, durations, and conditions for your irrigation system."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "data_interpretation",
+      "patterns": [
+        "How to read the data?", "Data meaning", "Interpret sensor readings",
+        "Understanding measurements", "What do numbers mean?", "Reading values",
+        "Data explanation", "Understanding metrics"
+      ],
+      "responses": [
+        "Data Interpretation Guide: 1) **Temperature**: Ideal 18-27°C for most crops 2) **Humidity**: 40-60% optimal for plant health 3) **Soil Moisture**: 20-40% typically ideal (varies by crop) 4) **Pump Status**: ON=Water circulating, OFF=System idle 5) **Valve Status**: OPEN=Water flowing, CLOSED=Water blocked. Values outside normal ranges may need attention."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "sensor_data_frequency",
+      "patterns": [
+        "How often is data updated?", "Data refresh rate", "Update frequency",
+        "How frequently updated?", "Data collection timing", "Reading interval",
+        "Update interval", "Data sampling rate"
+      ],
+      "responses": [
+        "Sensor Data Update Frequency: 1) **Real-time readings**: Updated every 5-10 seconds 2) **Dashboard refresh**: Automatically updates every 30 seconds 3) **Historical data**: Records kept for 30 days minimum 4) **Data timestamp**: Each reading shows exact measurement time. You can manually refresh by reloading the page."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "no_data_issues",
+      "patterns": [
+        "Why no data showing?", "Data not available", "Missing readings",
+        "No sensor data", "Data unavailable", "Readings not showing",
+        "Blank measurements", "Why -- showing?"
+      ],
+      "responses": [
+        "If data shows '--' or is missing: 1) Check sensor connections 2) Verify system is online (green connection indicator) 3) Ensure sensors are properly installed 4) Check for error messages 5) Try refreshing the page. If persistent, check the Help section or contact support."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "ideal_values",
+      "patterns": [
+        "What are ideal values?", "Optimal readings", "Perfect conditions",
+        "Best values for crops", "Ideal temperature/humidity", "Optimal moisture",
+        "Perfect growing conditions", "Ideal sensor readings"
+      ],
+      "responses": [
+        "Ideal Values for Most Crops: 1) **Temperature**: 18-27°C (64-80°F) 2) **Humidity**: 40-60% relative humidity 3) **Soil Moisture**: 20-40% (varies by crop type) 4) **Pump Operation**: Run during cooler parts of day 5) **Valve Timing**: Water based on soil moisture needs. Specific crops may have different optimal ranges."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "quick_actions",
+      "patterns": [
+        "What are quick actions?", "Dashboard shortcuts", "Quick links",
+        "Action buttons", "Shortcut options", "Quick access features",
+        "Dashboard actions", "Quick controls"
+      ],
+      "responses": [
+        "Quick Actions provide one-click access to: 1) **Manual Control**: Override automatic settings [Link: {% url 'control-panel' %}] 2) **View Analytics**: Detailed charts and trends [Link: {% url 'visualize-data' %}] 3) **Schedule**: Set irrigation timing and automation. These are the most frequently used features for system management."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "data_retention",
+      "patterns": [
+        "How long is data kept?", "Data storage duration", "History retention",
+        "How long are records saved?", "Data archive period", "Storage timeframe",
+        "Historical data retention", "How far back can I see?"
+      ],
+      "responses": [
+        "Data Retention Policy: 1) **Real-time data**: 48 hours at high frequency 2) **Detailed history**: 30 days at 5-minute intervals 3) **Summary data**: 1 year at hourly intervals 4) **Export capability**: You can download data for permanent storage 5) **Auto-cleanup**: Older data is automatically archived or removed based on storage limits."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "dashboard_refresh",
+      "patterns": [
+        "How to refresh dashboard?", "Update readings", "Refresh data",
+        "Manual refresh", "Update display", "Reload data",
+        "Refresh measurements", "Update current values"
+      ],
+      "responses": [
+        "To refresh dashboard data: 1) **Automatic**: Data updates every 30 seconds 2) **Manual**: Refresh the browser page (F5 or reload button) 3) **Force update**: Click any navigation item and return to dashboard 4) **Check connection**: Ensure green online indicator is showing for live data."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "multiple_sensors",
+      "patterns": [
+        "Multiple sensor support?", "Multiple locations", "Several sensors",
+        "Multiple measurement points", "Various locations", "Different zones",
+        "Multiple area monitoring", "Several sensor inputs"
+      ],
+      "responses": [
+        "The system supports multiple sensors: 1) **Multiple zones**: Can monitor different field areas 2) **Sensor groups**: Organize by crop type or location 3) **Comparative data**: View different zones simultaneously 4) **Individual control**: Manage each zone separately. Contact support to set up additional sensors or zones beyond the default configuration."
+      ],
+      "context": [""]
+    }
+  ]
+}

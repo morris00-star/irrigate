@@ -1,0 +1,64 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": ["Hi", "Hello", "Hey", "Good morning", "Good afternoon"],
+      "responses": ["Hello! Welcome to the Irrigation System Help Center. How can I assist you today?", "Hi there! How can I help you with your irrigation system?"]
+    },
+    {
+      "tag": "goodbye",
+      "patterns": ["Bye", "Goodbye", "See you later", "Thanks for your help"],
+      "responses": ["You're welcome! Feel free to reach out if you have more questions.", "Happy to help! Have a great day!"]
+    },
+    {
+      "tag": "user_manual",
+      "patterns": ["How do I get the user manual?", "Where can I download the manual?", "I need the user guide", "Manual download"],
+      "responses": ["You can download the complete user manual here: <a href=\"{% url 'download_user_manual' %}\">Download User Manual</a>. It includes setup instructions, troubleshooting tips, and best practices."]
+    },
+    {
+      "tag": "watering_frequency",
+      "patterns": ["How often should I water my plants?", "What's the best watering schedule?", "How frequently should irrigation run?"],
+      "responses": ["Our system automatically adjusts watering schedules based on soil moisture levels, weather forecasts, and plant requirements. You can monitor the schedule in the Control Panel."]
+    },
+    {
+      "tag": "manual_override",
+      "patterns": ["Can I manually control the system?", "How do I override automatic watering?", "Manual mode instructions", "Turn off automatic watering"],
+      "responses": ["Yes, you can switch to manual mode in the Control Panel to activate or deactivate irrigation as needed. The system will return to automatic mode after 2 hours unless you specify otherwise."]
+    },
+    {
+      "tag": "sensor_data",
+      "patterns": ["How do I read the sensor data?", "What does the soil moisture percentage mean?", "How to interpret sensor readings?", "Understanding temperature and humidity data"],
+      "responses": ["The Visualize Data page provides interactive graphs showing soil moisture (optimal range 20-40%), temperature, and humidity. Green indicators mean values are in optimal range, while red indicates attention is needed."]
+    },
+    {
+      "tag": "emergency_procedure",
+      "patterns": ["What should I do in an emergency?", "How to stop irrigation immediately?", "Emergency stop", "System malfunction"],
+      "responses": ["Use the Emergency Stop button in the Control Panel to immediately halt all irrigation. Contact support if the issue persists."]
+    },
+    {
+      "tag": "contact_support",
+      "patterns": ["How can I contact support?", "I need to speak with someone", "Customer service", "Technical support"],
+      "responses": ["You can contact our support team by filling out the form on this page. For urgent issues, please call our support line at +256780443345 or visit our <a href=\"{% url 'contact' %}\">contact page</a> for more options."]
+    },
+    {
+      "tag": "system_setup",
+      "patterns": ["How do I set up the system?", "Installation guide", "Initial setup instructions", "Getting started"],
+      "responses": ["The complete setup instructions are available in the user manual. You can download it here: <a href=\"{% url 'download_user_manual' %}\">Download User Manual</a>"]
+    },
+    {
+      "tag": "troubleshooting",
+      "patterns": ["My system isn't working properly", "Troubleshooting help", "Fix irrigation problems", "System errors"],
+      "responses": ["Please refer to the troubleshooting section in the user manual. If problems persist, please contact our support team using the form below or call +256780443345 for immediate assistance."]
+    },
+    {
+      "tag": "thanks",
+      "patterns": ["Thank you", "Thanks", "That's helpful", "Appreciate your help"],
+      "responses": ["You're welcome! Is there anything else I can help you with?", "Happy to help! Let me know if you have other questions."]
+    },
+    {
+      "tag": "fallback",
+      "patterns": [],
+      "responses": ["I'm sorry, I don't understand that question. Could you please rephrase it?", "I'm not sure I can help with that. Please try asking about irrigation system help, manual download, or contact support."]
+    }
+  ]
+}

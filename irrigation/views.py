@@ -121,14 +121,14 @@ def send_support_message(request):
     return redirect('help')
 
 
+
+
 @login_required
 def visualize_data(request):
     """
     Render the visualization page.
     """
     return render(request, 'irrigation/visualize.html')
-
-
 def privacy_policy(request):
     return render(request, 'irrigation/privacy.html')
 

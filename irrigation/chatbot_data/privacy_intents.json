@@ -1,0 +1,54 @@
+{
+  "intents": [
+    {
+      "tag": "privacy_policy",
+      "patterns": ["What is your privacy policy?", "How do you handle my data?", "Privacy information", "Data collection policy"],
+      "responses": ["Our privacy policy explains how we collect, use, and protect your information. Here are the key points:", "- We collect account info, device data, irrigation system data, and usage statistics", "- We use this data to provide, maintain and improve our services", "- We implement strong security measures to protect your information", "- We may update this policy and will notify you of changes", "You can read the full policy on our Privacy Policy page."]
+    },
+    {
+      "tag": "data_collection",
+      "patterns": ["What data do you collect?", "What information do you gather?", "What personal data is stored?"],
+      "responses": ["We collect several types of information to provide better services:", "- Account information (username, email address)", "- Device information (IP address, device type)", "- Irrigation system data (sensor readings, control commands)", "- Usage data (how you interact with our system)"]
+    },
+    {
+      "tag": "data_usage",
+      "patterns": ["How is my data used?", "What do you do with my information?", "Purpose of data collection"],
+      "responses": ["We use your information to:", "- Provide, maintain, and improve our services", "- Develop new features and functionality", "- Monitor system performance and security", "- Communicate with you about your account"]
+    },
+    {
+      "tag": "data_security",
+      "patterns": ["How is my data protected?", "Security measures", "Data protection", "Is my information secure?"],
+      "responses": ["We implement appropriate security measures to protect against unauthorized access, alteration, disclosure, or destruction of your personal information."]
+    },
+    {
+      "tag": "policy_changes",
+      "patterns": ["Will the privacy policy change?", "Policy updates", "How are policy changes communicated?"],
+      "responses": ["We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on our website."]
+    },
+    {
+      "tag": "privacy_contact",
+      "patterns": ["Who can I contact about privacy?", "Privacy questions", "Data protection officer"],
+      "responses": ["If you have any questions about our Privacy Policy, please visit our <a href=\"{% url 'contact' %}\">Contact Page</a>."]
+    },
+    {
+      "tag": "about_us",
+      "patterns": ["Tell me about your company", "Who are you?", "Company information", "Learn more about you"],
+      "responses": ["If you want to know more about us, please visit our <a href=\"{% url 'about' %}\">About Page</a>."]
+    },
+    {
+      "tag": "data_deletion",
+      "patterns": ["Can I delete my data?", "How to remove my information?", "Right to be forgotten", "Delete account data"],
+      "responses": ["Please contact us through our <a href=\"{% url 'contact' %}\">Contact Page</a> to discuss data deletion options and account management."]
+    },
+    {
+      "tag": "data_sharing",
+      "patterns": ["Do you share my data?", "Third-party data sharing", "Who has access to my information?"],
+      "responses": ["We do not sell your personal data. We only share information as necessary to provide our services, maintain security, or comply with legal obligations. For specific details, please refer to our full Privacy Policy."]
+    },
+    {
+      "tag": "policy_acceptance",
+      "patterns": ["Do I have to accept the privacy policy?", "Is the policy mandatory?", "Privacy policy requirement"],
+      "responses": ["Yes, by using our Intelligent Irrigation System, you agree to our Privacy Policy and how we handle your data as described therein."]
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "intents": [
+    {
+      "tag": "system_overview",
+      "patterns": [
+        "What is McNyarenga AgriTech?", "Tell me about your company", "Who are you?",
+        "What does McNyarenga do?", "About your company", "Company information",
+        "What services do you provide?", "What is your business?"
+      ],
+      "responses": [
+        "McNyarenga AgriTech Solutions provides an Intelligent Irrigation System that revolutionizes agriculture with smart technology. We help farmers save water, time, and resources while maximizing crop yield through automated, data-driven irrigation solutions."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "emergency_stop_info",
+      "patterns": [
+        "What is emergency stop?", "Explain emergency shutdown", "How does emergency stop work?",
+        "What happens in emergency?", "Emergency system features", "Safety features",
+        "How to stop system quickly?", "Emergency procedures", "System safety"
+      ],
+      "responses": [
+        "The Emergency Stop feature immediately shuts down all irrigation systems in case of emergencies. When activated: 1) All irrigation systems stop immediately 2) A red emergency banner appears 3) The system requires manual reset to restore operations. This is a critical safety feature for preventing water waste or damage."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "activate_emergency",
+      "patterns": [
+        "How to activate emergency stop?", "Start emergency shutdown", "Trigger emergency stop",
+        "Initiate emergency procedure", "How to stop all irrigation?", "Emergency activation",
+        "Shut down system immediately", "Stop everything now"
+      ],
+      "responses": [
+        "To activate Emergency Stop: 1) Click the red Emergency button in the header (desktop) or mobile menu 2) Confirm the action in the popup modal 3) The system will immediately shut down all irrigation. Only use this in genuine emergencies as it requires manual reset to restore operations."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "reset_emergency",
+      "patterns": [
+        "How to reset emergency stop?", "Restore system after emergency", "Resume normal operations",
+        "Turn system back on", "Emergency reset procedure", "Reactivate irrigation",
+        "Clear emergency status", "System recovery"
+      ],
+      "responses": [
+        "To reset after Emergency Stop: 1) Click the green Reset button (replaces Emergency button) 2) Confirm reset in the popup modal 3) The system will restore normal irrigation operations 4) The emergency banner will disappear. All systems will return to their previous settings."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "navigation_help",
+      "patterns": [
+        "How to navigate the system?", "Where to find features?", "Site navigation",
+        "How to access different pages?", "Menu explanation", "Navigation guide",
+        "Where is the dashboard?", "How to get to control panel?"
+      ],
+      "responses": [
+        "Main Navigation Options: 1) **Dashboard**: Main control center [Link: {% url 'dashboard' %}] 2) **Control Panel**: System settings and controls [Link: {% url 'control-panel' %}] 3) **Analytics**: Data and charts [Link: {% url 'visualize-data' %}] 4) **Help**: Support and documentation 5) **Notifications**: Alert settings [Link: {% url 'notification_settings' %}] 6) **Profile**: Account management"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "footer_links_info",
+      "patterns": [
+        "What are footer links for?", "Footer information", "Bottom page links",
+        "Privacy policy information", "Terms of service", "Contact options",
+        "About page", "Legal pages", "Footer navigation"
+      ],
+      "responses": [
+        "Footer Links Provide: 1) **Privacy Policy**: Data protection information 2) **Terms**: Service terms and conditions 3) **Contact**: Support contact options 4) **About**: Company information 5) **Ask AI**: Chatbot assistance [Link: {% url 'ask_chatbot' %}] 6) **Logout**: Sign out of your account"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "mobile_app_access",
+      "patterns": [
+        "How to use mobile app?", "Mobile access", "Smartphone control",
+        "App installation", "Mobile features", "Phone access to system",
+        "Mobile irrigation control", "App download"
+      ],
+      "responses": [
+        "Our system is mobile-optimized with: 1) **Progressive Web App (PWA)**: Installable on your home screen 2) **Mobile-responsive design**: Works on all devices 3) **Touch-friendly interface**: Easy mobile control 4) **Offline functionality**: Basic features work without internet. The system automatically detects mobile devices and adjusts the interface accordingly."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "connection_status",
+      "patterns": [
+        "How to check connection status?", "System connectivity", "Online/offline status",
+        "Connection monitoring", "Network status", "Is system connected?",
+        "Device connection", "Connection problems"
+      ],
+      "responses": [
+        "Connection Status Indicators: 1) **Green pulsing dot**: System online and connected 2) **Red dot**: System offline 3) **Status text**: Shows 'Online' or 'Offline' with last connection time 4) **Disconnect button**: Available when online to manually disconnect. The system automatically monitors connection every 5 seconds."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "disconnect_system",
+      "patterns": [
+        "How to disconnect system?", "Manual disconnect", "Turn off connection",
+        "Disconnect device", "Stop system connection", "Connection control",
+        "Temporary disconnect"
+      ],
+      "responses": [
+        "To manually disconnect: 1) Ensure system shows online status (green dot) 2) Click the disconnect button (if available) 3) Confirm any prompts 4) System will show offline status (red dot). This is useful for maintenance or troubleshooting. You can reconnect by refreshing the page or waiting for automatic reconnection."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "loading_status",
+      "patterns": [
+        "What does loading spinner mean?", "System processing", "Loading indicator",
+        "When does spinner appear?", "Processing status", "System busy",
+        "Waiting for response"
+      ],
+      "responses": [
+        "The Loading Spinner appears during: 1) **Emergency stop/reset operations** 2) **System commands** 3) **Data processing** 4) **Connection changes**. It indicates the system is processing your request. Please wait until it completes - interrupting may cause incomplete operations."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "alert_messages",
+      "patterns": [
+        "What are alert messages?", "System notifications", "Message types",
+        "Alert explanations", "Notification types", "Message system",
+        "Status messages"
+      ],
+      "responses": [
+        "Alert Message Types: 1) **Success (Green)**: Operation completed successfully 2) **Error (Red)**: Operation failed or error occurred 3) **Warning (Yellow)**: Important notice or caution 4) **Info (Blue)**: General information. Messages auto-dismiss after 5 seconds or can be manually closed. They appear at the top right of the screen."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "accessibility_features",
+      "patterns": [
+        "Accessibility options", "Screen reader support", "Keyboard navigation",
+        "Accessibility features", "Disabled access", "Visual impairments",
+        "ADA compliance"
+      ],
+      "responses": [
+        "Accessibility Features: 1) **Keyboard navigation**: Full tab navigation support 2) **Screen reader compatible**: ARIA labels and semantic HTML 3) **High contrast mode**: System adapts to user preferences 4) **Focus indicators**: Clear focus rings for keyboard users 5) **Text scaling**: Responsive text sizes 6) **Reduced motion option**: Respects user motion preferences"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "dark_mode",
+      "patterns": [
+        "Does system have dark mode?", "Dark theme", "Night mode",
+        "Dark interface", "Light/dark theme", "Theme options",
+        "Appearance settings"
+      ],
+      "responses": [
+        "Our system supports automatic dark mode: 1) **Auto-detection**: Follows your device's theme preference 2) **System preference**: Uses prefers-color-scheme media query 3) **Consistent experience**: All elements adapt to dark/light theme 4) **Reduced eye strain**: Comfortable viewing in low light. The system will automatically switch based on your OS settings."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "technical_support",
+      "patterns": [
+        "How to get technical support?", "Support options", "Help resources",
+        "Technical assistance", "Support contact", "Troubleshooting help",
+        "Customer service"
+      ],
+      "responses": [
+        "Technical Support Options: 1) **Help Section**: Comprehensive documentation [Link: /help] 2) **Contact Page**: Direct support contact [Link: {% url 'contact' %}] 3) **Chatbot Assistance**: AI-powered help [Link: {% url 'ask_chatbot' %}] 4) **Emergency Hotline**: Critical issues (available in contact section) 5) **Community Forum**: User discussions and tips"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "system_requirements",
+      "patterns": [
+        "What are system requirements?", "Browser compatibility", "Device requirements",
+        "Technical requirements", "Supported browsers", "Minimum specifications",
+        "Compatibility information"
+      ],
+      "responses": [
+        "System Requirements: 1) **Browsers**: Chrome 80+, Firefox 75+, Safari 13+, Edge 80+ 2) **JavaScript**: Must be enabled 3) **Internet**: Stable connection required for full functionality 4) **Devices**: Desktop, tablet, smartphone compatible 5) **Screen Size**: Responsive down to 320px width 6) **Storage**: Local storage required for preferences"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "privacy_security",
+      "patterns": [
+        "Privacy and security", "Data protection", "Security measures",
+        "Privacy policy details", "Data security", "Information protection",
+        "Security features"
+      ],
+      "responses": [
+        "Privacy & Security Measures: 1) **Encryption**: All data encrypted in transit 2) **Authentication**: Secure user login system 3) **Data minimization**: Only collect essential data 4) **Regular audits**: Security vulnerability assessments 5) **Privacy policy**: Detailed data handling information [Link: {% url 'privacy' %}] 6) **Terms of service**: Usage guidelines [Link: /terms]"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "system_controls",
+      "patterns": [
+        "What controls are available?", "Control options", "System management",
+        "Available commands", "Control features", "Management options",
+        "What can I control?"
+      ],
+      "responses": [
+        "Available System Controls: 1) **Irrigation scheduling**: Set watering times 2) **Zone control**: Individual area management 3) **Water flow regulation**: Adjust water volume 4) **Emergency stop**: Immediate shutdown 5) **Connection management**: Online/offline control 6) **Notification settings**: Alert preferences 7) **User management**: Account controls"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "maintenance_tips",
+      "patterns": [
+        "System maintenance tips", "Maintenance recommendations", "System care",
+        "Preventive maintenance", "System upkeep", "Maintenance schedule",
+        "Care instructions"
+      ],
+      "responses": [
+        "System Maintenance Tips: 1) **Regular updates**: Keep system software current 2) **Sensor checks**: Verify sensor functionality monthly 3) **Connection testing**: Test internet connectivity regularly 4) **Emergency drills**: Practice emergency procedures 5) **Backup settings**: Export configuration periodically 6) **Seasonal adjustments**: Update settings for weather changes 7) **Professional service**: Annual technical inspection recommended"
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "troubleshooting_guide",
+      "patterns": [
+        "Troubleshooting guide", "Common problems", "Issue resolution",
+        "Problem solving", "Error fixes", "Troubleshooting help",
+        "System issues"
+      ],
+      "responses": [
+        "Basic Troubleshooting: 1) **Connection issues**: Check internet, restart router 2) **System unresponsive**: Refresh page, clear cache 3) **Login problems**: Reset password, check credentials 4) **Sensor errors**: Check physical connections, clean sensors 5) **Water flow issues**: Check valves, pipes, water source 6) **Emergency stuck**: Contact support if reset fails. Visit Help section for detailed guides."
+      ],
+      "context": [""]
+    }
+  ]
+}

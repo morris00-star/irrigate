@@ -1,0 +1,245 @@
+{
+  "intents": [
+    {
+      "tag": "analytics_dashboard_overview",
+      "patterns": [
+        "What is the analytics dashboard?", "Analytics overview", "Data visualization features",
+        "What can I see in analytics?", "Dashboard capabilities", "Visualization tools",
+        "Data analysis features", "What's in the analytics section?"
+      ],
+      "responses": [
+        "The Analytics Dashboard provides comprehensive data visualization and analysis tools: 1) **Real-time Monitoring**: Live sensor data display 2) **Interactive Charts**: Multiple visualization types 3) **Statistical Overview**: Key metrics at a glance 4) **Data Export**: Download charts and raw data 5) **Time Analysis**: Historical data review 6) **Customizable Views**: Filter by data types and time ranges."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "view_sensor_data",
+      "patterns": [
+        "How to view sensor data?", "See sensor readings", "Check data measurements",
+        "View temperature/humidity", "See moisture levels", "Display sensor information",
+        "Show data readings", "View measurements"
+      ],
+      "responses": [
+        "To view sensor data: 1) Go to Analytics Dashboard 2) Check the 'Sensor Data Types' section 3) Select desired data types (Temperature, Humidity, Moisture) 4) Choose time range 5) Click 'Generate Visualization' 6) View charts and raw data table. Current readings are shown in the statistics cards at the top."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "chart_types_available",
+      "patterns": [
+        "What chart types are available?", "Different graph types", "Visualization options",
+        "Available chart styles", "Graph varieties", "Chart options",
+        "What graphs can I use?", "Visualization formats"
+      ],
+      "responses": [
+        "Available Chart Types: 1) **Line Chart**: Trend analysis over time 2) **Bar Chart**: Comparative data display 3) **Scatter Plot**: Correlation analysis 4) **Radar Analysis**: Multi-parameter comparison 5) **Distribution Pie**: Percentage breakdowns. Select from the 'Visualization Type' dropdown to switch between them."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "time_range_selection",
+      "patterns": [
+        "How to change time range?", "Select time period", "Set analysis duration",
+        "Change time window", "Time range options", "Set historical period",
+        "Adjust time frame", "Select date range"
+      ],
+      "responses": [
+        "Time Range Options: 1) **Last Hour**: Recent data 2) **Last 6 Hours**: Short-term trends 3) **Last 24 Hours**: Daily patterns 4) **Last Week**: Weekly analysis 5) **Last Month**: Monthly trends 6) **Last 3 Months**: Seasonal patterns. Use the 'Time Analysis' dropdown to select your preferred range."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "generate_visualization",
+      "patterns": [
+        "How to create charts?", "Generate graphs", "Make visualizations",
+        "Create data charts", "Produce graphs", "Build visualizations",
+        "Generate analysis charts", "Create data views"
+      ],
+      "responses": [
+        "To generate visualizations: 1) Select desired data types 2) Choose time range 3) Pick chart type 4) Click 'Generate Visualization' button 5) Charts update automatically 6) Use zoom/pan for detailed analysis. The system will create interactive charts based on your selections."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "export_chart_data",
+      "patterns": [
+        "How to export charts?", "Download graphs", "Save visualizations",
+        "Export charts to file", "Download data images", "Save charts as images",
+        "Export graphs", "Download visualizations"
+      ],
+      "responses": [
+        "Export Options: 1) **Chart Image**: Click 'Export Chart' to download as PNG 2) **Raw Data**: Click 'Export CSV' for spreadsheet data 3) **Auto-naming**: Files include timestamp for easy organization 4) **High Quality**: Export in high resolution for reports and presentations."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "live_data_updates",
+      "patterns": [
+        "How to enable live updates?", "Real-time data refresh", "Auto-update feature",
+        "Live data streaming", "Automatic updates", "Real-time monitoring",
+        "Live refresh", "Auto data update"
+      ],
+      "responses": [
+        "Live Updates: 1) Click 'Live Updates' button to toggle 2) **Enabled**: Data refreshes every 30 seconds automatically 3) **Disabled**: Manual refresh required 4) **Indicator**: Button shows current state (play/pause) 5) **Network Efficient**: Updates only fetch new data to conserve bandwidth."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "zoom_chart_controls",
+      "patterns": [
+        "How to zoom charts?", "Chart zoom features", "Zoom in/out on graphs",
+        "Magnify charts", "Detailed view options", "Zoom controls",
+        "Chart magnification", "Close-up view"
+      ],
+      "responses": [
+        "Zoom Controls: 1) **Zoom In**: Click button or use mouse wheel 2) **Zoom Out**: Click button or hold Shift + mouse wheel 3) **Pan**: Click and drag to move around 4) **Reset**: Click 'Reset View' to return to original 5) **Touch Support**: Pinch to zoom on touch devices."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "raw_data_access",
+      "patterns": [
+        "How to view raw data?", "See data table", "Access raw measurements",
+        "View data records", "See sensor readings table", "Raw data display",
+        "Data table access", "View recorded values"
+      ],
+      "responses": [
+        "Raw Data Access: 1) Scroll to 'Raw Sensor Data' section 2) View paginated table with all readings 3) **Search**: Use search box to filter records 4) **Sort**: Click column headers to sort 5) **Pagination**: Navigate through pages of data 6) **Refresh**: Click 'Refresh Data' for latest readings."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "current_stats_view",
+      "patterns": [
+        "What are current statistics?", "See current readings", "Latest measurements",
+        "Current sensor values", "Present statistics", "Now readings",
+        "Current data points", "Live statistics"
+      ],
+      "responses": [
+        "Current Statistics (Top Cards): 1) **Temperature**: Current air temperature in °C 2) **Humidity**: Current air humidity percentage 3) **Moisture**: Current soil moisture percentage 4) **Pump Status**: ON/OFF state of water pump. These update in real-time with live data."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "data_type_selection",
+      "patterns": [
+        "How to select data types?", "Choose which data to view", "Select sensors to display",
+        "Data type filtering", "Choose measurement types", "Select parameters",
+        "Data selection options", "Choose what to analyze"
+      ],
+      "responses": [
+        "Data Type Selection: 1) Check/uncheck boxes in 'Sensor Data Types' section 2) **Available Types**: Temperature, Humidity, Moisture, Pressure 3) **Multi-select**: Choose multiple types for comparison 4) **Visual Distinction**: Each type has unique colors in charts 5) **Real-time Update**: Changes apply to all visualizations."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "crop_soil_info_display",
+      "patterns": [
+        "Where to see crop information?", "View soil details", "Crop configuration display",
+        "Soil type information", "Crop settings view", "Agricultural configuration",
+        "Crop/soil details", "Farming configuration info"
+      ],
+      "responses": [
+        "Crop & Soil Information: 1) Located in the 'Crop & Soil Information' panel 2) Shows **Crop Type**: Currently configured crop 3) **Soil Type**: Currently configured soil 4) **Optimal Threshold**: Your set moisture level 5) **Recommended Threshold**: System suggestion based on crop/soil 6) **Guidance**: Specific recommendations for your setup."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "chart_customization",
+      "patterns": [
+        "How to customize charts?", "Chart appearance options", "Customize graphs",
+        "Change chart looks", "Graph customization", "Visual style options",
+        "Chart formatting", "Appearance settings"
+      ],
+      "responses": [
+        "Chart Customization: 1) **Type Selection**: Choose from 5 chart types 2) **Color Schemes**: Automatic color assignment by data type 3) **Time Scale**: Adjustable time ranges 4) **Interactive Elements**: Hover tooltips with detailed info 5) **Zoom/Pan**: For detailed examination 6) **Export**: Customize then export for reports."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "data_analysis_tips",
+      "patterns": [
+        "How to analyze the data?", "Data interpretation tips", "Analysis guidance",
+        "How to read charts?", "Data understanding", "Interpretation help",
+        "Analysis suggestions", "Reading the graphs"
+      ],
+      "responses": [
+        "Data Analysis Tips: 1) **Trend Lines**: Look for patterns over time 2) **Correlations**: Compare multiple data types 3) **Thresholds**: Note when values cross optimal levels 4) **Anomalies**: Identify unusual patterns 5) **Seasonal Patterns**: Observe daily/weekly cycles 6) **Equipment Performance**: Monitor pump/valve operation patterns."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "mobile_analytics_access",
+      "patterns": [
+        "Can I use analytics on mobile?", "Mobile dashboard access", "Phone analytics",
+        "Tablet visualization", "Mobile data view", "Smartphone analytics",
+        "Mobile chart viewing", "Responsive analytics"
+      ],
+      "responses": [
+        "Mobile Analytics: 1) **Fully Responsive**: Works on all devices 2) **Touch Optimized**: Touch-friendly controls 3) **Mobile Layout**: Adapted interface for small screens 4) **Same Features**: All desktop features available 5) **Performance Optimized**: Efficient on mobile networks 6) **Offline Capability**: Basic functionality without internet."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "data_export_formats",
+      "patterns": [
+        "What formats can I export?", "Export options available", "Download formats",
+        "Supported export types", "File format options", "Export varieties",
+        "Downloadable formats", "Supported file types"
+      ],
+      "responses": [
+        "Export Formats: 1) **PNG Images**: High-quality chart exports 2) **CSV Data**: Raw data in spreadsheet format 3) **Automatic Naming**: Files include timestamps 4) **Batch Export**: Multiple charts/data sets 5) **Report Ready**: Formats suitable for presentations and analysis."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "troubleshooting_analytics",
+      "patterns": [
+        "Analytics not working?", "Chart display issues", "Data not loading",
+        "Visualization problems", "Dashboard errors", "Chart loading issues",
+        "Analytics problems", "Display troubleshooting"
+      ],
+      "responses": [
+        "Troubleshooting Analytics: 1) **Refresh Page**: Often fixes display issues 2) **Check Connection**: Ensure internet connectivity 3) **Browser Support**: Use updated Chrome/Firefox/Safari 4) **Clear Cache**: Sometimes needed for updates 5) **Data Availability**: Check if sensor data is being recorded 6) **Console Errors**: Check browser console for technical details."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "historical_data_access",
+      "patterns": [
+        "How to view historical data?", "Past records access", "Historical analysis",
+        "Old data viewing", "Past measurements", "Historical records",
+        "Archive data access", "Past data analysis"
+      ],
+      "responses": [
+        "Historical Data Access: 1) Use time range selector for historical periods 2) **Available History**: Up to 3 months of data 3) **Trend Analysis**: Compare different time periods 4) **Pattern Recognition**: Identify seasonal variations 5) **Performance Tracking**: Monitor long-term system performance 6) **Export History**: Download historical data for external analysis."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "real_time_monitoring_features",
+      "patterns": [
+        "What real-time features exist?", "Live monitoring capabilities", "Real-time functions",
+        "Live data features", "Real-time analytics", "Instant monitoring",
+        "Live tracking features", "Real-time capabilities"
+      ],
+      "responses": [
+        "Real-time Features: 1) **Live Updates**: Data refreshes automatically 2) **Current Values**: Real-time statistics cards 3) **Instant Alerts**: Visual indicators for thresholds 4) **Interactive Charts**: Live data visualization 5) **Status Monitoring**: Equipment status updates 6) **Performance Metrics**: Instant calculation of key metrics."
+      ],
+      "context": [""]
+    },
+    {
+      "tag": "comparative_analysis",
+      "patterns": [
+        "How to compare data types?", "Comparative analysis", "Data comparison",
+        "Compare sensors", "Multi-parameter analysis", "Comparative charts",
+        "Data correlation", "Comparison tools"
+      ],
+      "responses": [
+        "Comparative Analysis: 1) **Multi-select Data Types**: Choose multiple parameters 2) **Overlay Charts**: View multiple data sets together 3) **Correlation Tools**: Identify relationships between parameters 4) **Time Synchronization**: All data aligned by timestamp 5) **Color Coding**: Easy visual distinction 6) **Statistical Comparison**: Side-by-side metric comparison."
+      ],
+      "context": [""]
+    }
+  ]
+}
+

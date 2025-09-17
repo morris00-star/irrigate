@@ -1,0 +1,59 @@
+{
+  "intents": [
+    {
+      "tag": "terms_of_service",
+      "patterns": ["What are your terms of service?", "Terms and conditions", "User agreement", "Service terms"],
+      "responses": ["Our Terms of Service govern your use of our Intelligent Irrigation System. Key points include:", "- Acceptance of terms by using our service", "- Description of our smart irrigation solutions", "- User responsibilities and prohibited actions", "- Limitation of liability for service interruptions", "- Payment terms for premium services", "- Governing law under Ugandan jurisdiction"]
+    },
+    {
+      "tag": "acceptance_terms",
+      "patterns": ["Do I need to accept terms?", "What does accepting terms mean?", "User agreement requirement"],
+      "responses": ["By accessing or using our Intelligent Irrigation System, you agree to be bound by our Terms of Service, which constitute a legally binding agreement between you and Nduwayo Morris (Developer), operating in Kakira, Uganda."]
+    },
+    {
+      "tag": "service_description",
+      "patterns": ["What does your service provide?", "Features of irrigation system", "What solutions do you offer?"],
+      "responses": ["Our service provides smart irrigation solutions tailored for Ugandan agricultural conditions, including:", "- Remote monitoring and control of irrigation systems", "- Real-time soil moisture and weather data analysis", "- Water conservation technology for East African climate", "- Mobile and web-based management interfaces"]
+    },
+    {
+      "tag": "user_responsibilities",
+      "patterns": ["What are my responsibilities?", "What can't I do with the system?", "Prohibited actions", "User rules"],
+      "responses": ["As a user of our Ugandan-developed technology, you agree to:", "- Maintain confidentiality of your login credentials", "- Use the system only for intended agricultural purposes", "- No reverse engineering or unauthorized access", "- Share improvement suggestions for local adaptation"]
+    },
+    {
+      "tag": "liability_limitation",
+      "patterns": ["Are you liable for losses?", "What if the system fails?", "Service reliability", "Compensation for failures"],
+      "responses": ["The Service is provided \"as is\" without warranties. As a locally-developed solution, we prioritize but cannot guarantee perfect reliability given Uganda's infrastructure challenges. We shall not be liable for agricultural losses resulting from service interruptions."]
+    },
+    {
+      "tag": "payment_terms",
+      "patterns": ["How do payments work?", "Payment options", "Premium services cost", "Refund policy"],
+      "responses": ["For any paid services:", "- All payments are in Uganda Shillings (UGX)", "- Mobile Money payments are accepted (MTN, Airtel)", "- No refunds for customized solutions developed for your specific farm"]
+    },
+    {
+      "tag": "governing_law",
+      "patterns": ["Which laws apply?", "Legal jurisdiction", "Dispute resolution", "Ugandan law compliance"],
+      "responses": ["These Terms are governed by Ugandan law, specifically:", "- The Computer Misuse Act, 2011", "- The Data Protection and Privacy Act, 2019", "- The Electronic Transactions Act, 2011", "Any disputes shall first be resolved through mediation at the Jinja District Commercial Court."]
+    },
+    {
+      "tag": "developer_info",
+      "patterns": ["Who developed this system?", "Company information", "Who is behind this?"],
+      "responses": ["Developer: Nduwayo Morris", "Location: Kyebando Roundabout, Kampala District, Uganda", "Phone: +256 780 443 345", "Email: nduwayomorris@gmail.com"]
+    },
+    {
+      "tag": "prohibited_activities",
+      "patterns": ["What am I not allowed to do?", "Restricted uses", "Can I modify the system?"],
+      "responses": ["Prohibited activities include:", "- Reverse engineering the system", "- Unauthorized access to other accounts", "- Using the system for non-agricultural purposes", "- Any activity that violates Ugandan laws"]
+    },
+    {
+      "tag": "dispute_resolution",
+      "patterns": ["What if I have a legal issue?", "How are disputes handled?", "Conflict resolution process"],
+      "responses": ["Any disputes shall first be resolved through meditation at the Jinja District Commercial Court before pursuing other legal remedies under Ugandan law."]
+    },
+    {
+      "tag": "system_reliability",
+      "patterns": ["How reliable is the system?", "Uptime guarantee", "Service availability"],
+      "responses": ["As a locally-developed solution, we prioritize reliability but cannot guarantee perfect service due to Uganda's infrastructure challenges. The system is provided \"as is\" without warranties of perfect operation."]
+    }
+  ]
+}

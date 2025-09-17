@@ -1,0 +1,168 @@
+{
+  "intents": [
+    {
+      "tag": "notifications_menu",
+      "patterns": [
+        "notification settings", "manage notifications", "alert preferences",
+        "SMS settings", "notification options", "configure alerts",
+        "set up notifications", "how to get alerts", "irrigation alerts",
+        "change notification settings", "update alert preferences"
+      ],
+      "responses": [
+        "You can manage your notification settings from the Notification Settings page. Here you can enable/disable SMS alerts, set frequency, and test your settings."
+      ],
+      "context_set": "notifications"
+    },
+    {
+      "tag": "sms_notifications_status",
+      "patterns": [
+        "are SMS notifications enabled?", "am I receiving SMS alerts?",
+        "check my SMS settings", "current notification status",
+        "what are my alert settings?", "SMS notification status",
+        "are alerts turned on?", "notification preferences status"
+      ],
+      "responses": [
+        "Your current SMS notification status: {% if request.user.receive_sms_alerts %}✅ Receiving SMS every {{ request.user.sms_notification_frequency }} seconds{% if request.user.last_notification_sent %}. Last sent: {{ request.user.last_notification_sent|timesince }} ago{% endif %}{% else %}❌ SMS notifications disabled{% endif %}"
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "enable_sms_notifications",
+      "patterns": [
+        "enable SMS notifications", "turn on SMS alerts", "activate text alerts",
+        "start receiving SMS", "enable text notifications", "turn on irrigation alerts",
+        "activate SMS updates", "start getting text updates", "enable alert system"
+      ],
+      "responses": [
+        "To enable SMS notifications: 1) Go to Notification Settings 2) Check 'Enable SMS Notifications' 3) Select your preferred frequency 4) Click 'Save Preferences'. Note: SMS notifications are disabled by default for privacy and cost reasons. Standard messaging rates may apply."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "disable_sms_notifications",
+      "patterns": [
+        "disable SMS notifications", "turn off SMS alerts", "stop text alerts",
+        "deactivate SMS updates", "stop receiving texts", "disable irrigation alerts",
+        "turn off notification system", "stop alert messages"
+      ],
+      "responses": [
+        "To disable SMS notifications: 1) Go to Notification Settings 2) Uncheck 'Enable SMS Notifications' 3) Click 'Save Preferences'. This will immediately stop all SMS alerts from being sent to your phone."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "notification_frequency",
+      "patterns": [
+        "change alert frequency", "how often are notifications sent?",
+        "set notification interval", "adjust SMS frequency",
+        "notification timing", "how frequent are alerts?",
+        "change SMS update rate", "modify alert frequency",
+        "how often do I get updates?"
+      ],
+      "responses": [
+        "You can set your SMS notification frequency in the Notification Settings. Options include different time intervals (in seconds) between alerts. The frequency determines how often you'll receive irrigation updates and system status messages."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "test_sms_notification",
+      "patterns": [
+        "test SMS notification", "send test alert", "check if SMS works",
+        "test text message", "verify SMS settings", "send test notification",
+        "check alert system", "test my notification settings"
+      ],
+      "responses": [
+        "To test your SMS settings: 1) Ensure SMS notifications are enabled 2) Click 'Send Test SMS' button 3) You'll immediately receive a test message with current sensor data. This helps verify your phone number and settings are working correctly."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "sms_costs",
+      "patterns": [
+        "SMS costs", "are there charges for texts?", "notification fees",
+        "cost of SMS alerts", "messaging rates", "do alerts cost money?",
+        "SMS pricing", "are notifications free?", "text message charges"
+      ],
+      "responses": [
+        "⚠️ Important: Standard messaging rates may apply for SMS notifications. These are disabled by default for privacy and cost reasons. Enable them only if you want to receive regular updates and are aware of potential carrier charges."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "notification_types",
+      "patterns": [
+        "what types of alerts will I get?", "what do notifications include?",
+        "what information in alerts?", "notification content",
+        "what messages will I receive?", "alert message types",
+        "what do SMS updates contain?"
+      ],
+      "responses": [
+        "SMS notifications include: irrigation status updates, system alerts, sensor data readings, maintenance reminders, and important system events. Test messages include current sensor data to verify your system is working properly."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "last_notification",
+      "patterns": [
+        "when was my last notification?", "last alert sent",
+        "recent notification time", "when did I last get an alert?",
+        "last SMS received", "most recent notification"
+      ],
+      "responses": [
+        "{% if request.user.last_notification_sent %}Your last notification was sent {{ request.user.last_notification_sent|timesince }} ago{% else %}No notifications have been sent yet{% endif %}. You can check this information in your Notification Settings under Current Settings."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "notification_privacy",
+      "patterns": [
+        "notification privacy", "SMS privacy concerns", "data in text messages",
+        "are alerts private?", "notification security", "SMS data protection",
+        "privacy of alerts", "how secure are notifications?"
+      ],
+      "responses": [
+        "SMS notifications are disabled by default for privacy reasons. When enabled, messages contain only essential irrigation system information. We recommend enabling them only if you're comfortable receiving system updates via SMS."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "emergency_alerts",
+      "patterns": [
+        "emergency notifications", "critical system alerts",
+        "urgent irrigation issues", "system failure alerts",
+        "critical error messages", "emergency SMS alerts",
+        "urgent notification settings"
+      ],
+      "responses": [
+        "The system can send emergency alerts for critical issues like system failures, major leaks, or pump failures. These alerts may be sent regardless of your general notification settings for safety reasons. Check your Notification Settings for emergency alert options."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "troubleshoot_notifications",
+      "patterns": [
+        "not receiving alerts", "SMS not working", "alerts not coming through",
+        "notification problems", "SMS delivery issues",
+        "why am I not getting texts?", "alert system not working",
+        "troubleshoot notifications"
+      ],
+      "responses": [
+        "If you're not receiving notifications: 1) Check that SMS notifications are enabled 2) Verify your phone number is correct 3) Use 'Send Test SMS' to verify functionality 4) Check your phone's message blocking settings 5) Ensure you have cellular signal. If issues persist, contact support."
+      ],
+      "context_filter": "notifications"
+    },
+    {
+      "tag": "notification_schedule",
+      "patterns": [
+        "schedule notifications", "set alert times", "time-based alerts",
+        "when are notifications sent?", "alert scheduling",
+        "set notification hours", "time restrictions for alerts",
+        "quiet hours for notifications"
+      ],
+      "responses": [
+        "Currently, notifications are sent based on system events and the frequency you set. For scheduling specific alert times or setting quiet hours, please check advanced settings in your Notification Preferences or contact support for custom notification scheduling options."
+      ],
+      "context_filter": "notifications"
+    }
+  ]
+}
