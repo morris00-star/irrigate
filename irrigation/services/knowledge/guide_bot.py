@@ -10,6 +10,7 @@ import json
 from typing import Dict, List, Tuple, Optional, Any, Set
 import Levenshtein
 import re
+from irrigation.utils.json_loader import JSONIntentLoader
 
 logger = logging.getLogger(__name__)
 
@@ -119,12 +120,12 @@ class SpellingCorrector:
 
 
 class IrrigationGuide:
-    """Intelligent help system for irrigation management application with advanced features"""
+    """Intelligent help system for irrigation management application with JSON integration"""
 
     def __init__(self):
-        """Initialize all knowledge bases with lazy URL resolution"""
         try:
             self.spelling_corrector = SpellingCorrector()
+            self.json_loader = JSONIntentLoader()
             self.resources = {
                 ResourceType.ROUTE: self._load_knowledge(),
                 ResourceType.INFO: self._load_informational_pages(),
@@ -138,13 +139,13 @@ class IrrigationGuide:
                 ResourceType.EMERGENCY: self._load_emergency_resources(),
                 ResourceType.NAVIGATION: self._load_navigation_guides()
             }
-            self.user_context = {}  # Store user context for personalized responses
-            self.conversation_history = []  # Track conversation history
-            self.user_preferences = {}  # Store user preferences
+            self.user_context = {}
+            self.conversation_history = []
+            self.user_preferences = {}
         except Exception as e:
             logger.error(f"Error initializing IrrigationGuide: {str(e)}")
-            # Fallback to empty resources
             self.resources = {rt: {} for rt in ResourceType}
+            self.json_loader = JSONIntentLoader()
 
     def _lazy_reverse(self, view_name):
         """Lazy version of reverse to avoid URL resolution during import"""
@@ -1210,11 +1211,29 @@ class IrrigationGuide:
         return None, None
 
     def get_help_response(self, query, request=None, user_id=None):
-        """Generate a complete help response for a user query with enhanced features"""
+        """Generate a complete help response for a user query with JSON intent matching"""
         try:
-            # Add to conversation history
             if user_id:
                 self.add_to_conversation_history(user_id, query, "Processing...")
+
+            # First try to match against JSON intents
+            json_response = self.json_loader.get_response(query)
+            if json_response['matched'] and json_response['confidence'] >= 0.6:
+                if user_id:
+                    self.add_to_conversation_history(user_id, query, json_response['response'])
+
+                response = {
+                    "matched": True,
+                    "type": "json_intent",
+                    "query": query,
+                    "response": json_response['response'],
+                    "intent": json_response['intent'],
+                    "category": json_response['category'],
+                    "confidence": json_response['confidence'],
+                    "response_type": "success",
+                    "suggestions": json_response['suggestions']
+                }
+                return response
 
             # Check for special commands first
             special_response = self._check_special_commands(query)
@@ -1228,14 +1247,14 @@ class IrrigationGuide:
             corrected_query, corrections = self.spelling_corrector.correct_spelling(query)
             has_spelling_issues = corrected_query.lower() != query.lower()
 
-            # Check for special conversational phrases
+            # Check for conversational phrases
             conversational_response = self._check_conversational_phrases(corrected_query)
             if conversational_response:
                 if user_id:
                     self.add_to_conversation_history(user_id, query, conversational_response["response"])
                 return conversational_response
 
-            # Check for contact-related queries first
+            # Check for contact-related queries
             contact_keywords = ['contact', 'support', 'help', 'call', 'email', 'phone', 'emergency']
             if any(keyword in corrected_query.lower() for keyword in contact_keywords):
                 if 'emergency' in corrected_query.lower():
@@ -1246,44 +1265,32 @@ class IrrigationGuide:
                 if user_id:
                     self.add_to_conversation_history(user_id, query, "Provided contact information")
 
-                # Add spelling correction info if needed
                 if has_spelling_issues:
                     response['spelling_correction'] = {
                         'original_query': query,
                         'corrected_query': corrected_query,
                         'corrections': corrections
                     }
-
                 return response
 
+            # Fall back to original resource matching if no JSON intent matched
             resource_name, resource_type = self.find_best_match(corrected_query, user_id)
-
             if not resource_name:
-                # Try to match chatbot-specific responses with context awareness
-                if any(word in corrected_query.lower() for word in ["emergency", "stop", "shutdown", "danger"]):
-                    response = self._format_chat_response("emergency_info")
-                elif any(greet in corrected_query.lower() for greet in ["hello", "hi", "hey", "greetings"]):
-                    response = self._format_chat_response("greeting")
-                elif any(word in corrected_query.lower() for word in ["help", "support", "assistance"]):
-                    response = self._format_chat_response("help_offer")
-                else:
-                    response = {
-                        "matched": False,
-                        "message": "I couldn't find an exact match for your query. Try being more specific or ask about:",
-                        "suggestions": self.get_suggestions(corrected_query),
-                        "response_type": "error"
-                    }
-
-                # Add spelling correction info if needed
+                response = {
+                    "matched": False,
+                    "message": "I couldn't find an exact match for your query. Try being more specific or ask about:",
+                    "suggestions": self.get_suggestions(corrected_query),
+                    "response_type": "error"
+                }
                 if has_spelling_issues:
                     response['spelling_correction'] = {
                         'original_query': query,
                         'corrected_query': corrected_query,
                         'corrections': corrections
                     }
-
                 return response
 
+            # Process resource-based response
             resource_data = self.resources[resource_type][resource_name]
             response = {
                 "matched": True,
@@ -1300,7 +1307,6 @@ class IrrigationGuide:
                 "response_type": "success"
             }
 
-            # Add spelling correction info if needed
             if has_spelling_issues:
                 response['spelling_correction'] = {
                     'original_query': query,
@@ -1323,28 +1329,10 @@ class IrrigationGuide:
                     response["resource"]["safety_warning"] = resource_data["safety_warning"]
                 if "safety_note" in resource_data:
                     response["resource"]["safety_note"] = resource_data["safety_note"]
-                if "confirmation_required" in resource_data:
-                    response["resource"]["confirmation_required"] = resource_data["confirmation_required"]
-
-            elif resource_type == ResourceType.TUTORIAL:
-                response["resource"]["steps"] = resource_data.get("steps", [])
-                response["resource"]["estimated_time"] = resource_data.get("estimated_time", "")
-                response["resource"]["difficulty"] = resource_data.get("difficulty", "Beginner")
-
-            elif resource_type == ResourceType.TROUBLESHOOTING:
-                response["resource"]["symptoms"] = resource_data.get("symptoms", [])
-                response["resource"]["steps"] = resource_data.get("steps", [])
-                response["resource"]["emergency"] = resource_data.get("emergency", False)
 
             # Enhance with contact information when relevant
             response = self._enhance_with_contact_intelligence(corrected_query, response)
 
-            # Add contextual help based on conversation history
-            if user_id and user_id in self.conversation_history:
-                recent_topics = [interaction["query"] for interaction in self.conversation_history[user_id][-3:]]
-                response["contextual_help"] = self._get_contextual_help(recent_topics, resource_name)
-
-            # Update conversation history with actual response
             if user_id:
                 self.add_to_conversation_history(user_id, query, f"Found resource: {resource_name}")
 

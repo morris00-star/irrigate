@@ -296,16 +296,13 @@ def trigger_notifications(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
-
 @csrf_exempt
 @require_POST
 def chatbot_view(request):
-    """API endpoint for chatbot requests with enhanced error handling"""
+    """API endpoint for chatbot requests with JSON intent support"""
     try:
-        # Log the request for debugging
-        logger.info(f"Chatbot request received: {request.method}, Content-Type: {request.content_type}")
+        logger.info(f"Chatbot request received: {request.method}")
 
-        # Parse the request body
         try:
             if request.content_type == 'application/json':
                 data = json.loads(request.body)
@@ -313,6 +310,7 @@ def chatbot_view(request):
                 data = request.POST
 
             query = data.get('query', '').strip()
+            user_id = data.get('user_id', 'anonymous')
         except Exception as e:
             logger.error(f"Error parsing request data: {str(e)}")
             return JsonResponse({
@@ -327,13 +325,11 @@ def chatbot_view(request):
                 'message': 'Please enter a question or command'
             }, status=400)
 
-        # Log the query
-        logger.info(f"Processing query: {query}")
+        logger.info(f"Processing query from user {user_id}: {query}")
 
-        # Import here to avoid circular imports
         try:
             guide = IrrigationGuide()
-            response_data = guide.get_help_response(query, request)
+            response_data = guide.get_help_response(query, request, user_id)
         except Exception as e:
             logger.error(f"Error creating IrrigationGuide: {str(e)}")
             return JsonResponse({
@@ -341,22 +337,41 @@ def chatbot_view(request):
                 'message': 'Unable to process your request at this time'
             }, status=500)
 
-        # Add typing simulation metadata
         response_data['typing_duration'] = min(len(query) * 0.05, 2.5)
         response_data['response_time'] = datetime.now().strftime('%H:%M:%S')
+        response_data['user_id'] = user_id
 
-        # Log successful response
         logger.info(f"Response generated for query: {query}")
 
         return JsonResponse(response_data)
 
     except Exception as e:
-        # Log the full error with traceback
         logger.error(f"Unexpected error in chatbot_view: {str(e)}", exc_info=True)
-
         return JsonResponse({
             'error': 'Internal server error',
             'message': 'An unexpected error occurred while processing your request'
+        }, status=500)
+
+
+@csrf_exempt
+@require_POST
+def reload_intents(request):
+    """API endpoint to reload JSON intents"""
+    try:
+        from .chatbot.utils.json_loader import JSONIntentLoader
+        loader = JSONIntentLoader()
+        intents = loader.reload_intents()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Intents reloaded successfully',
+            'intent_count': sum(len(data.get('intents', [])) for data in intents.values())
+        })
+    except Exception as e:
+        logger.error(f"Error reloading intents: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error reloading intents: {str(e)}'
         }, status=500)
 
 

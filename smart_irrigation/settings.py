@@ -131,7 +131,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'smart_irrigation_db',
+            'NAME': 'irrigation_db',
             'USER': os.getenv('USER_DB'),
             'PASSWORD': os.getenv('PASSWORD_DB'),
             'HOST': 'localhost',
@@ -142,6 +142,7 @@ else:
             'CONN_MAX_AGE': 0,  # Don't persist connections
         }
     }
+
 
 WHITENOISE_MIMETYPES = {
     '.webmanifest': 'application/manifest+json',
